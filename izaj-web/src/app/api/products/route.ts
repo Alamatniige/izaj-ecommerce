@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { IzajDesktopApiService } from '../../../services/izajDesktopApi';
+import { InternalApiService } from '../../../services/internalApi';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
     const page = searchParams.get('page') || '1';
     const limit = searchParams.get('limit') || '100';
 
-    // Fetch from izaj-desktop API with media URLs
-    const response = await IzajDesktopApiService.getProductsWithMedia({
+    // Fetch from internal API with media URLs
+    const response = await InternalApiService.getProductsWithMedia({
       page: parseInt(page),
       limit: parseInt(limit),
       category: category || undefined,
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         pagination: response.pagination,
       });
     } else {
-      throw new Error('Failed to fetch products from izaj-desktop');
+      throw new Error('Failed to fetch products from internal API');
     }
   } catch (error) {
     console.error('Error in products API route:', error);
@@ -61,14 +61,16 @@ export async function POST(request: NextRequest) {
     };
 
     // In a real app, you would save this to a database
-    mockProducts.push(newProduct);
+    // For now, just return the created product
+    console.log('Product created:', newProduct);
 
     return NextResponse.json({
       success: true,
       data: newProduct,
       message: 'Product created successfully',
     }, { status: 201 });
-  } catch (error) {
+  } catch (err) {
+    console.error('Error creating product:', err);
     return NextResponse.json(
       { success: false, error: 'Failed to create product' },
       { status: 500 }

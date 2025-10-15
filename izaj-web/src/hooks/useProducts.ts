@@ -2,28 +2,28 @@
 
 import { useState, useEffect } from 'react';
 import { Product, ProductFilter, ProductSort } from '../types';
-import { IzajDesktopApiService, IzajDesktopProduct } from '../services/izajDesktopApi';
+import { InternalApiService, InternalProduct } from '../services/internalApi';
 
-// Transform izaj-desktop product to izaj-web product format
-const transformProduct = (izajProduct: IzajDesktopProduct): Product => {
+// Transform internal product to izaj-web product format
+const transformProduct = (internalProduct: InternalProduct): Product => {
   return {
-    id: izajProduct.id,
-    name: izajProduct.product_name,
-    description: izajProduct.description || '',
-    price: parseFloat(izajProduct.price) || 0,
-    images: izajProduct.image_url ? [izajProduct.image_url] : [],
-    category: izajProduct.category || 'Uncategorized',
+    id: internalProduct.id,
+    name: internalProduct.product_name,
+    description: internalProduct.description || '',
+    price: parseFloat(internalProduct.price.toString()) || 0,
+    images: internalProduct.image_url ? [internalProduct.image_url] : [],
+    category: internalProduct.category || 'Uncategorized',
     brand: 'IZAJ', // Default brand
     rating: 4.5, // Default rating
     reviewCount: 0, // Default review count
-    stock: izajProduct.display_quantity || 0,
-    sku: izajProduct.product_id,
-    tags: [izajProduct.category].filter(Boolean),
+    stock: internalProduct.display_quantity || 0,
+    sku: internalProduct.product_id,
+    tags: [internalProduct.category].filter(Boolean),
     isNew: false,
     isOnSale: false,
     isFeatured: false,
-    createdAt: new Date(izajProduct.last_sync_at),
-    updatedAt: new Date(izajProduct.last_sync_at),
+    createdAt: new Date(internalProduct.last_sync_at),
+    updatedAt: new Date(internalProduct.last_sync_at),
   };
 };
 
@@ -37,8 +37,8 @@ export const useProducts = (filters?: ProductFilter, sort?: ProductSort) => {
     setError(null);
 
     try {
-      // Fetch from izaj-desktop API
-      const response = await IzajDesktopApiService.getProducts({
+      // Fetch from internal API
+      const response = await InternalApiService.getProducts({
         page: 1,
         limit: 100,
         category: filters?.category,
@@ -92,7 +92,7 @@ export const useProducts = (filters?: ProductFilter, sort?: ProductSort) => {
 
         setProducts(transformedProducts);
       } else {
-        throw new Error('Failed to fetch products from izaj-desktop');
+        throw new Error('Failed to fetch products from internal API');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred while fetching products');

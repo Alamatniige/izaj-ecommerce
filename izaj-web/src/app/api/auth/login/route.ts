@@ -88,7 +88,7 @@ export async function POST(request: Request) {
                         const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
                         const users = list?.users || [];
                         for (const u of users) {
-                            const m = (u as any)?.user_metadata || {};
+                            const m = u?.user_metadata || {};
                             const metaPhone = (m.phone || '').toString();
                             const metaDigits = metaPhone.replace(/\D/g, '');
                             let metaLocal10 = metaDigits;
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
 		}
 
 		// Merge profile phone if available so clients always see phone
-		let mergedUser = data.user as any;
+		let mergedUser = data.user;
 		try {
 			const { data: prof } = await supabaseAdmin
 				.from('profiles')

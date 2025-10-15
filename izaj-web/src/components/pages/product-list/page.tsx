@@ -197,7 +197,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     setDeals(sampleDeals);
   }, []);
 
-  // Fetch products from izaj-desktop
+  // Fetch products from internal API
   useEffect(() => {
     const fetchProducts = async () => {
       try {

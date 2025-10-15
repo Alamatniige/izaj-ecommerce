@@ -1,6 +1,4 @@
-const IZAJ_DESKTOP_API_URL = process.env.NEXT_PUBLIC_IZAJ_DESKTOP_API_URL || 'http://localhost:3001';
-
-export interface IzajDesktopProduct {
+export interface InternalProduct {
   id: string;
   product_id: string;
   product_name: string;
@@ -15,9 +13,9 @@ export interface IzajDesktopProduct {
   last_sync_at: string;
 }
 
-export interface IzajDesktopApiResponse {
+export interface InternalApiResponse {
   success: boolean;
-  products: IzajDesktopProduct[];
+  products: InternalProduct[];
   pagination: {
     page: number;
     limit: number;
@@ -27,26 +25,26 @@ export interface IzajDesktopApiResponse {
   timestamp: string;
 }
 
-export interface IzajDesktopMediaResponse {
+export interface InternalMediaResponse {
   success: boolean;
   mediaUrls: string[];
   timestamp: string;
 }
 
-export interface IzajDesktopCategoriesResponse {
+export interface InternalCategoriesResponse {
   success: boolean;
   categories: string[];
   timestamp: string;
 }
 
-export class IzajDesktopApiService {
+export class InternalApiService {
   static async getProducts(params?: {
     page?: number;
     limit?: number;
     category?: string;
     search?: string;
     status?: string;
-  }): Promise<IzajDesktopApiResponse> {
+  }): Promise<InternalApiResponse> {
     const queryParams = new URLSearchParams();
     
     if (params?.page) queryParams.append('page', params.page.toString());
@@ -55,7 +53,7 @@ export class IzajDesktopApiService {
     if (params?.search) queryParams.append('search', params.search);
     if (params?.status) queryParams.append('status', params.status);
 
-    const response = await fetch(`${IZAJ_DESKTOP_API_URL}/api/client-products?${queryParams}`);
+    const response = await fetch(`/api/internal-products?${queryParams}`);
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -66,14 +64,14 @@ export class IzajDesktopApiService {
 
   static async getProductMedia(productId: string): Promise<string[]> {
     try {
-      const response = await fetch(`${IZAJ_DESKTOP_API_URL}/api/products/${productId}/media`);
+      const response = await fetch(`/api/internal-products/${productId}/media`);
       
       if (!response.ok) {
         console.warn(`Failed to fetch media for product ${productId}: ${response.statusText}`);
         return [];
       }
 
-      const data: IzajDesktopMediaResponse = await response.json();
+      const data: InternalMediaResponse = await response.json();
       return data.mediaUrls || [];
     } catch (error) {
       console.warn(`Error fetching media for product ${productId}:`, error);
@@ -83,13 +81,13 @@ export class IzajDesktopApiService {
 
   static async getCategories(): Promise<string[]> {
     try {
-      const response = await fetch(`${IZAJ_DESKTOP_API_URL}/api/client-products/categories`);
+      const response = await fetch('/api/internal-products/categories');
       
       if (!response.ok) {
         throw new Error('Failed to fetch categories');
       }
 
-      const data: IzajDesktopCategoriesResponse = await response.json();
+      const data: InternalCategoriesResponse = await response.json();
       return data.categories || [];
     } catch (error) {
       console.warn('Error fetching categories:', error);
@@ -100,14 +98,14 @@ export class IzajDesktopApiService {
   static async getActiveProducts(params?: {
     category?: string;
     status?: string;
-  }): Promise<IzajDesktopProduct[]> {
+  }): Promise<InternalProduct[]> {
     try {
       const queryParams = new URLSearchParams();
 
       if (params?.category) queryParams.append('category', params.category);
       if (params?.status) queryParams.append('status', params.status || 'active');
 
-      const response = await fetch(`${IZAJ_DESKTOP_API_URL}/api/active-client-products?${queryParams}`);
+      const response = await fetch(`/api/internal-products/active?${queryParams}`);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -127,16 +125,16 @@ export class IzajDesktopApiService {
     category?: string;
     search?: string;
     status?: string;
-  }): Promise<IzajDesktopApiResponse> {
+  }): Promise<InternalApiResponse> {
     try {
-      console.log('🔄 IzajDesktopApiService.getProductsWithMedia: Starting...');
+      console.log('🔄 InternalApiService.getProductsWithMedia: Starting...');
       
       // First, get the products
       const productsResponse = await this.getProducts(params);
-      console.log('📦 IzajDesktopApiService.getProductsWithMedia: Products response:', productsResponse);
+      console.log('📦 InternalApiService.getProductsWithMedia: Products response:', productsResponse);
       
       if (!productsResponse.success) {
-        console.log('❌ IzajDesktopApiService.getProductsWithMedia: Products response failed');
+        console.log('❌ InternalApiService.getProductsWithMedia: Products response failed');
         return productsResponse;
       }
 
@@ -145,7 +143,7 @@ export class IzajDesktopApiService {
         productsResponse.products.map(async (product) => {
           try {
             const mediaUrls = await this.getProductMedia(product.id);
-            console.log(`📸 IzajDesktopApiService.getProductsWithMedia: Media for ${product.product_name}:`, mediaUrls);
+            console.log(`📸 InternalApiService.getProductsWithMedia: Media for ${product.product_name}:`, mediaUrls);
             return {
               ...product,
               image_url: mediaUrls.length > 0 ? mediaUrls[0] : undefined,
@@ -162,13 +160,13 @@ export class IzajDesktopApiService {
         })
       );
 
-      console.log('✅ IzajDesktopApiService.getProductsWithMedia: Final result:', productsWithMedia);
+      console.log('✅ InternalApiService.getProductsWithMedia: Final result:', productsWithMedia);
       return {
         ...productsResponse,
         products: productsWithMedia
       };
     } catch (error) {
-      console.error('❌ IzajDesktopApiService.getProductsWithMedia: Error:', error);
+      console.error('❌ InternalApiService.getProductsWithMedia: Error:', error);
       return {
         success: false,
         products: [],
@@ -185,13 +183,13 @@ export class IzajDesktopApiService {
 
   static async getCategoriesWithCounts(): Promise<{ category: string; count: number }[]> {
     try {
-      console.log('🔄 IzajDesktopApiService.getCategoriesWithCounts: Starting...');
+      console.log('🔄 InternalApiService.getCategoriesWithCounts: Starting...');
       
       // Get all products to extract categories and counts
       const productsResponse = await this.getProducts({ limit: 1000 });
       
       if (!productsResponse.success) {
-        console.log('❌ IzajDesktopApiService.getCategoriesWithCounts: Failed to fetch products');
+        console.log('❌ InternalApiService.getCategoriesWithCounts: Failed to fetch products');
         return [];
       }
 
@@ -207,10 +205,10 @@ export class IzajDesktopApiService {
         .map(([category, count]) => ({ category, count }))
         .sort((a, b) => a.category.localeCompare(b.category));
 
-      console.log('✅ IzajDesktopApiService.getCategoriesWithCounts: Result:', categoriesWithCounts);
+      console.log('✅ InternalApiService.getCategoriesWithCounts: Result:', categoriesWithCounts);
       return categoriesWithCounts;
     } catch (error) {
-      console.error('❌ IzajDesktopApiService.getCategoriesWithCounts: Error:', error);
+      console.error('❌ InternalApiService.getCategoriesWithCounts: Error:', error);
       return [];
     }
   }

@@ -290,7 +290,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
       // Update local user data
       if (user) {
-        const updatedUser = { ...user, profilePicture: null };
+        const updatedUser = { ...user, profilePicture: undefined };
         setUser(updatedUser);
         
         // Update localStorage/sessionStorage

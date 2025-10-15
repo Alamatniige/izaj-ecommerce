@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
-import { IzajDesktopApiService } from '../../../services/izajDesktopApi';
+import { InternalApiService } from '../../../services/internalApi';
 
 interface SidebarProps {
   sidebarDropdownOpen: boolean;
@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     const fetchCategories = async () => {
       try {
         console.log('🔄 ProductListSidebar: Fetching categories...');
-        const categoriesData = await IzajDesktopApiService.getCategoriesWithCounts();
+        const categoriesData = await InternalApiService.getCategoriesWithCounts();
         console.log('📂 ProductListSidebar: Received categories:', categoriesData);
         setCategories(categoriesData);
       } catch (error) {

@@ -212,7 +212,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
     setDeals(sampleDeals);
   }, []);
 
-  // Fetch real products from izaj-desktop
+  // Fetch real products from internal API
   useEffect(() => {
     const fetchProducts = async () => {
       try {

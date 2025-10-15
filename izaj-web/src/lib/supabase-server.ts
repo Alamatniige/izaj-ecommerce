@@ -5,7 +5,6 @@ export async function getSupabaseServerClient() {
 	const cookieStore = await cookies();
 	return createServerClient(
 		process.env.NEXT_PUBLIC_SUPABASE_URL!,
-		// Use anon key for auth flows; keep service role for admin-only utilities, not SSR client
 		process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 		{
 			cookies: {

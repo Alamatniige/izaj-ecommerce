@@ -58,7 +58,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
           
           // Check if image exists before trying to manipulate it
           if (found.image && typeof found.image === 'string' && found.image !== '/placeholder.jpg') {
-            // For real images from izaj-desktop, use the same image for all thumbnails
+            // For real images from internal API, use the same image for all thumbnails
             // since we only have one image per product
             setThumbnails([found.image, found.image, found.image, found.image]);
           } else {
