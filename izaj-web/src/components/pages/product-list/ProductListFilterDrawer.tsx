@@ -59,7 +59,7 @@ const ProductListFilterDrawer: React.FC<ProductListFilterDrawerProps> = ({
           >
             &times;
           </button>
-          <span className="text-xl font-extrabold tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>Filters</span>
+          <span className="text-xl font-extrabold tracking-tight font-playfair">Filters</span>
         </div>
         {/* Filter Content (scrollable) */}
         <div className="flex-1 overflow-y-auto px-4 pb-28 pt-4">

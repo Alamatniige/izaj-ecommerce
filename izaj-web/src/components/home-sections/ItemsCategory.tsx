@@ -166,15 +166,13 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
       <style>{improvedEffects}</style>
       <div className="flex items-center justify-between mb-4 px-4 sm:px-6 md:px-8 mt-8 md:mt-16 mx-4 sm:mx-8 md:mx-20 gap-x-4">
         <h2
-          className="text-lg md:text-xl text-black font-bold"
-          style={{ fontFamily: "'Avenir Next', sans-serif" }}
+          className="text-lg md:text-xl text-black font-poppins font-semibold"
         >
           Lighting Category
         </h2>
         <Link
           href="/product-list"
-          className="text-sm md:text-base font-bold text-gray-500 hover:underline"
-          style={{ fontFamily: "'Poppins', sans-serif" }}
+          className="text-sm md:text-base font-bold text-gray-500 hover:underline font-lora"
         >
           View all
         </Link>
@@ -239,8 +237,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
               </div>
               <div className="relative">
                 <h3
-                  className={`${isMobile ? 'text-base' : isTablet ? 'text-sm' : 'text-xs sm:text-base md:text-lg'} font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center`}
-                  style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "300" }}
+                  className={`${isMobile ? 'text-base' : isTablet ? 'text-sm' : 'text-xs sm:text-base md:text-lg'} font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center font-lora`}
                 >
                   <span
                     className={`inline-flex items-center transition-transform duration-500 ${

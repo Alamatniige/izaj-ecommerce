@@ -299,7 +299,7 @@ function capitalize(str: string) {
             className={`${promoBanners[currentBannerIndex].color} text-white text-center py-2 md:py-3 flex items-center justify-center w-full relative transition-all duration-500 z-50`}
             style={{ minHeight: '40px' }}
           >
-            <p className="text-xs md:text-sm px-2 md:px-12 truncate whitespace-nowrap overflow-x-auto w-full animate-fade-in" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xs md:text-sm px-2 md:px-12 truncate whitespace-nowrap overflow-x-auto w-full animate-fade-in font-lora font-medium" style={{ letterSpacing: '0.025em', lineHeight: '1.6' }}>
               {promoBanners[currentBannerIndex].text}
             </p>
             <button
@@ -343,12 +343,11 @@ function capitalize(str: string) {
               {/* Logo with animation */}
               <Link href="/" className="flex flex-col items-start flex-shrink-0 w-full group">
                 <div
-                  className={`tracking-wide flex-shrink-0 leading-tight font-semibold transition-all duration-300 ${
+                  className={`tracking-wide flex-shrink-0 leading-tight font-semibold transition-all duration-300 font-playfair ${
                     scrolled ? 'text-2xl lg:text-4xl' : 'text-3xl lg:text-6xl'
                   }`}
                   style={{
                     color: "#000000",
-                    fontFamily: "'Cinzel', serif",
                     textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
                     letterSpacing: "8px",
                     whiteSpace: "nowrap",
@@ -381,10 +380,10 @@ function capitalize(str: string) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setShowSearchSuggestions(true)}
-                  className={`w-full border border-gray-300 pl-10 pr-4 text-sm text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-full transition-all duration-300 ${
+                  className={`w-full border border-gray-300 pl-10 pr-4 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-full transition-all duration-300 font-lora ${
                     scrolled ? 'py-2' : 'py-3'
                   }`}
-                  style={{ fontFamily: "'Inter', sans-serif" }}
+                  style={{ letterSpacing: '0.015em', lineHeight: '1.6' }}
                 />
                 <Icon 
                   icon="ic:outline-search" 
@@ -423,10 +422,10 @@ function capitalize(str: string) {
                             />
                           </div>
                           <div className="ml-3 flex-1">
-                            <p className="text-sm font-medium text-gray-800 group-hover:text-black transition-colors duration-200">
+                            <p className="text-sm font-medium text-gray-800 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
                               {product.name}
                             </p>
-                            <p className="text-xs text-gray-500">{product.category}</p>
+                            <p className="text-xs text-gray-500" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{product.category}</p>
                           </div>
                           <Icon 
                             icon="mdi:arrow-right" 
@@ -441,6 +440,7 @@ function capitalize(str: string) {
                       <Link
                         href={`/product-list?search=${searchQuery}`}
                         className="text-sm text-black hover:text-gray-600 font-medium flex items-center justify-center gap-2 transition-colors duration-200"
+                        style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.6' }}
                         onClick={() => {
                           setShowSearchSuggestions(false);
                           setSearchQuery('');
@@ -474,7 +474,7 @@ function capitalize(str: string) {
                       aria-label="Login"
                     >
                       <Icon icon="lucide:user" width="28" height="28" />
-                      <span className="hidden md:inline-block text-sm font-medium text-gray-700 opacity-0 max-w-0 overflow-hidden group-hover:opacity-100 group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap">
+                      <span className="hidden md:inline-block text-sm font-medium text-gray-700 opacity-0 max-w-0 overflow-hidden group-hover:opacity-100 group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-lora" style={{ letterSpacing: '0.025em', lineHeight: '1.5' }}>
                       Hello! Log in
                       </span>
                     </button>
@@ -517,10 +517,10 @@ function capitalize(str: string) {
                           className="flex items-center space-x-2 text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                           aria-label="Login"
                         >
-                          <Icon icon="lucide:user" width="28" height="28" />
-                          <span className="hidden md:inline-block text-sm font-medium text-gray-700 opacity-0 max-w-0 overflow-hidden group-hover:opacity-100 group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap">
-                          Hello! Log in
-                          </span>
+                        <Icon icon="lucide:user" width="28" height="28" />
+                        <span className="hidden md:inline-block text-sm font-medium text-gray-700 opacity-0 max-w-0 overflow-hidden group-hover:opacity-100 group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-lora" style={{ letterSpacing: '0.025em', lineHeight: '1.5' }}>
+                        Hello! Log in
+                        </span>
                         </button>
                       </div>
                     ) : (
@@ -544,15 +544,15 @@ function capitalize(str: string) {
                           )}
                           <div className="hidden md:flex flex-col ml-2 text-left">
                             <span
-                              className="font-normal text-xs text-gray-500 leading-none"
-                              style={{ fontFamily: "'Inter', sans-serif", fontWeight: "400", letterSpacing: "0.02em" }}
+                              className="font-normal text-xs text-gray-500 leading-none font-lora"
+                              style={{ letterSpacing: "0.02em" }}
                             >
                               Hello, {user ? `${capitalize((user.firstName || '').split(' ')[0])}` : 'Guest'}
                             </span>
                             <div className="flex items-center text-black">
                               <span
-                                className="font-semibold text-base"
-                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: "600", letterSpacing: "0.01em" }}
+                                className="font-semibold text-base font-poppins"
+                                style={{ letterSpacing: "0.01em" }}
                               >
                                 My Account
                               </span>
@@ -591,10 +591,10 @@ function capitalize(str: string) {
                                   </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-gray-800 truncate">
+                                  <p className="text-sm font-semibold text-gray-800 truncate" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
                                     {capitalize(user.firstName)} {capitalize(user.lastName)}
                                   </p>
-                                  <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                                  <p className="text-xs text-gray-600 truncate" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{user.email}</p>
                                 </div>
                               </div>
                             </div>
@@ -603,6 +603,7 @@ function capitalize(str: string) {
                               <Link
                                 href="/account"
                                 className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-all duration-200 group"
+                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5' }}
                                 onClick={() => setIsAccountDropdownOpen(false)}
                               >
                                 <Icon icon="mdi:account-circle-outline" className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
@@ -612,6 +613,7 @@ function capitalize(str: string) {
                               <Link
                                 href="/orders"
                                 className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-all duration-200 group"
+                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5' }}
                                 onClick={() => setIsAccountDropdownOpen(false)}
                               >
                                 <Icon icon="mdi:package-variant" className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
@@ -621,6 +623,7 @@ function capitalize(str: string) {
                               <Link
                                 href="/favorites"
                                 className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-all duration-200 group"
+                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5' }}
                                 onClick={() => setIsAccountDropdownOpen(false)}
                               >
                                 <Icon icon="mdi:heart-outline" className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
@@ -631,6 +634,7 @@ function capitalize(str: string) {
                               <button
                                 onClick={handleLogoutClick}
                                 className="flex items-center w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-all duration-200 group"
+                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.02em', lineHeight: '1.5' }}
                               >
                                 <Icon icon="mdi:logout" className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
                                 Logout
@@ -751,13 +755,13 @@ function capitalize(str: string) {
                             onMouseLeave={() => setIsCartPreviewOpen(false)}
                           >
                             <div className="py-3 px-5 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
-                              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                              <h3 className="font-semibold text-gray-800 flex items-center gap-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.5' }}>
                                 <Icon icon="mdi:cart-outline" className="w-5 h-5 text-black" />
                                 Shopping Cart
                               </h3>
                             </div>
                             <div className="max-h-64 overflow-y-auto p-4">
-                              <p className="text-sm text-gray-600 text-center py-8">
+                              <p className="text-sm text-gray-600 text-center py-8" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '0.015em', lineHeight: '1.6' }}>
                                 {cart.totalItems} {cart.totalItems === 1 ? 'item' : 'items'} in cart
                               </p>
                             </div>
@@ -765,6 +769,7 @@ function capitalize(str: string) {
                               <Link
                                 href="/cart"
                                 className="block w-full text-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-300 font-medium text-sm"
+                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.06em', lineHeight: '1.5' }}
                                 onClick={() => setIsCartPreviewOpen(false)}
                               >
                                 View Cart
@@ -805,8 +810,8 @@ function capitalize(str: string) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSearchSuggestions(true)}
-                className="w-full border border-gray-300 pl-10 pr-10 py-2 text-sm text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black rounded-full"
-                style={{ fontFamily: "'Inter', sans-serif" }}
+                className="w-full border border-gray-300 pl-10 pr-10 py-2 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black rounded-full font-lora"
+                style={{ letterSpacing: '0.015em', lineHeight: '1.6' }}
                 autoFocus
               />
               <Icon 
@@ -849,10 +854,10 @@ function capitalize(str: string) {
                           />
                         </div>
                         <div className="ml-3 flex-1">
-                          <p className="text-sm font-medium text-gray-800">
+                          <p className="text-sm font-medium text-gray-800" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
                             {product.name}
                           </p>
-                          <p className="text-xs text-gray-500">{product.category}</p>
+                          <p className="text-xs text-gray-500" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{product.category}</p>
                         </div>
                       </Link>
                     ))}
@@ -879,10 +884,9 @@ function capitalize(str: string) {
                 <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
                   <Link href="/" className="flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
                     <div
-                      className="text-3xl tracking-wide leading-tight font-semibold"
+                      className="text-3xl tracking-wide leading-tight font-semibold font-playfair"
                       style={{
                         color: "#000000",
-                        fontFamily: "'Cinzel', serif",
                         textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
                         letterSpacing: "10px",
                       }}
@@ -904,11 +908,12 @@ function capitalize(str: string) {
                       <li>
                         <Link
                           href="/"
-                          className={`flex items-center px-4 py-3 text-lg font-medium rounded-lg transition-all duration-200 ${
+                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200 font-poppins font-semibold ${
                             isLinkActive('/') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
+                          style={{ letterSpacing: '0.03em', lineHeight: '1.5' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <Icon icon="mdi:home-outline" className="mr-3 text-gray-600" width="24" height="24" />
@@ -917,9 +922,10 @@ function capitalize(str: string) {
                       </li>
                       <li>
                         <button
-                          className={`w-full flex items-center justify-between px-4 py-3 text-lg font-medium rounded-lg transition-all duration-200 focus:outline-none ${
+                          className={`w-full flex items-center justify-between px-4 py-3 text-base rounded-lg transition-all duration-200 focus:outline-none font-poppins font-semibold ${
                             isDropdownOpen ? 'bg-gray-50' : 'hover:bg-gray-50'
                           }`}
+                          style={{ letterSpacing: '0.03em', lineHeight: '1.5' }}
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                           aria-expanded={isDropdownOpen}
                           aria-controls="mobile-products-dropdown"
@@ -944,7 +950,8 @@ function capitalize(str: string) {
                             <li>
                               <Link
                                 href="/product-list"
-                                className="block px-4 py-2 text-base text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200"
+                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200 font-poppins font-semibold"
+                                style={{ letterSpacing: '0.02em', lineHeight: '1.6' }}
                                 onClick={() => setIsMobileMenuOpen(false)}
                               >
                                 All Lighting Fixtures
@@ -953,7 +960,8 @@ function capitalize(str: string) {
                             <li>
                               <Link
                                 href="/collection"
-                                className="block px-4 py-2 text-base text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200"
+                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200 font-poppins font-semibold"
+                                style={{ letterSpacing: '0.02em', lineHeight: '1.6' }}
                                 onClick={() => setIsMobileMenuOpen(false)}
                               >
                                 New Arrivals
@@ -962,7 +970,8 @@ function capitalize(str: string) {
                             <li>
                               <Link
                                 href="/sales"
-                                className="block px-4 py-2 text-base text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200"
+                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200 font-poppins font-semibold"
+                                style={{ letterSpacing: '0.02em', lineHeight: '1.6' }}
                                 onClick={() => setIsMobileMenuOpen(false)}
                               >
                                 Special Offers
@@ -974,11 +983,12 @@ function capitalize(str: string) {
                       <li>
                         <Link
                           href="/collection"
-                          className={`flex items-center px-4 py-3 text-lg font-medium rounded-lg transition-all duration-200 ${
+                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200 font-poppins font-semibold ${
                             isLinkActive('/collection') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
+                          style={{ letterSpacing: '0.03em', lineHeight: '1.5' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <Icon icon="mdi:star-outline" className="mr-3 text-gray-600" width="24" height="24" />
@@ -988,11 +998,12 @@ function capitalize(str: string) {
                       <li>
                         <Link
                           href="/sales"
-                          className={`flex items-center px-4 py-3 text-lg font-medium rounded-lg transition-all duration-200 ${
+                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200 font-poppins font-semibold ${
                             isLinkActive('/sales') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
+                          style={{ letterSpacing: '0.03em', lineHeight: '1.5' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <Icon icon="mdi:tag-outline" className="mr-3 text-gray-600" width="24" height="24" />
@@ -1002,11 +1013,12 @@ function capitalize(str: string) {
                       <li>
                         <Link
                           href="/static/aboutus"
-                          className={`flex items-center px-4 py-3 text-lg font-medium rounded-lg transition-all duration-200 ${
+                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200 font-poppins font-semibold ${
                             isLinkActive('/static/aboutus') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
+                          style={{ letterSpacing: '0.03em', lineHeight: '1.5' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <Icon icon="mdi:information-outline" className="mr-3 text-gray-600" width="24" height="24" />
@@ -1032,10 +1044,10 @@ function capitalize(str: string) {
                             </div>
                           )}
                           <div className="ml-3">
-                            <p className="text-sm font-semibold text-gray-800">
+                            <p className="text-sm font-semibold text-gray-800" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
                               {capitalize(user.firstName)} {capitalize(user.lastName)}
                             </p>
-                            <p className="text-xs text-gray-600">{user.email}</p>
+                            <p className="text-xs text-gray-600" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{user.email}</p>
                           </div>
                         </div>
                         <button
@@ -1043,7 +1055,8 @@ function capitalize(str: string) {
                             handleLogoutClick();
                             setIsMobileMenuOpen(false);
                           }}
-                          className="w-full flex items-center px-4 py-3 text-lg font-medium text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+                          className="w-full flex items-center px-4 py-3 text-base font-medium text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+                          style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.5' }}
                         >
                           <Icon icon="mdi:logout" className="mr-3" width="24" height="24" />
                           Logout
@@ -1055,7 +1068,8 @@ function capitalize(str: string) {
                           setIsLoginModalOpen(true);
                           setIsMobileMenuOpen(false);
                         }}
-                        className="w-full flex items-center justify-center px-4 py-3 text-lg font-medium text-white bg-gradient-to-r from-gray-800 to-black hover:from-gray-900 hover:to-gray-800 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        className="w-full flex items-center justify-center px-4 py-3 text-base font-medium text-white bg-gradient-to-r from-gray-800 to-black hover:from-gray-900 hover:to-gray-800 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.06em', lineHeight: '1.5' }}
                       >
                         <Icon icon="mdi:login" className="mr-2" width="24" height="24" />
                         Login / Sign Up
@@ -1071,7 +1085,7 @@ function capitalize(str: string) {
         {/* Desktop Navbar - Hidden on mobile with enhanced animations - NOT STICKY */}
         <nav className={`hidden lg:block bg-white px-4 lg:px-10 transition-all duration-300 border-t border-gray-100 ${
           scrolled ? 'py-3' : 'py-4'
-        }`} style={{ fontFamily: "'Inter', sans-serif" }}>
+        }`} style={{ fontFamily: "'Inter', sans-serif", position: 'relative', zIndex: 100 }}>
             <ul className="flex justify-center items-center text-sm font-semibold relative" style={{gap: '3rem'}}>
               {/* HOME NAVIGATION */}
               <li className="flex items-center h-full relative">
@@ -1105,7 +1119,7 @@ function capitalize(str: string) {
                     />
                   )}
                   
-                  <span className="relative z-10">HOME</span>
+                  <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>HOME</span>
                   
                   {/* Ripple Effects */}
                   {ripples.map(ripple => (
@@ -1171,7 +1185,7 @@ function capitalize(str: string) {
                     />
                   )}
                   
-                  <span className="relative z-10">PRODUCTS</span>
+                  <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>PRODUCTS</span>
                   
                   <Icon 
                     icon="mdi:chevron-down" 
@@ -1204,9 +1218,13 @@ function capitalize(str: string) {
                 {isDropdownOpen && (
                   <div 
                     ref={productsDropdownContentRef}
-                    className="fixed left-0 right-0 bg-white text-black shadow-2xl z-50 border-t-4 border-black dropdown-content animate-slide-down"
+                    className="fixed top-0 left-0 right-0 bg-white text-black shadow-2xl border-t-4 border-black dropdown-content animate-slide-down"
                     style={{ 
-                      top: `${productsDropdownPosition}px`
+                      zIndex: 9999,
+                      width: '100vw',
+                      maxHeight: '80vh',
+                      overflowY: 'auto',
+                      top: '200px'
                     }}
                     onMouseEnter={() => {
                       if (dropdownCloseTimer.current) {
@@ -1223,148 +1241,244 @@ function capitalize(str: string) {
                       }, 200);
                     }}
                   >
-                    <div className="max-w-6xl mx-auto px-6 py-6">
-                      {/* 3-Column Grid Layout with Cards */}
-                      <div className="grid grid-cols-3 gap-6">
-                        {/* First Column - Quick Links Card */}
-                        <div 
-                          className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-5 border border-gray-200 hover:-translate-y-1"
-                        >
-                          <h3 className="text-base font-bold mb-4 text-black tracking-wide border-b-2 border-black pb-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: "700", letterSpacing: "0.08em" }}>
-                            QUICK ACCESS
-                          </h3>
-                          <ul className="space-y-2">
-                            {[
-                              { name: "All Lighting", icon: "mdi:lightbulb-on", count: "150+", href: "/product-list" },
-                              { name: "New Arrivals", icon: "mdi:star-circle", count: "12", href: "/collection" },
-                              { name: "Special Offers", icon: "mdi:tag-multiple", count: "5", href: "/sales" }
-                            ].map((item, index) => (
-                              <li key={index} className="group">
+                    <div className="max-w-6xl mx-auto px-6 py-8">
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        {/* Featured Categories */}
+                        <div className="space-y-4">
+                          <div className="border-b border-gray-200 pb-3">
+                            <h3 className="text-sm font-bold text-black font-poppins uppercase tracking-wider" style={{ letterSpacing: '0.1em' }}>
+                              Shop by Category
+                            </h3>
+                          </div>
+                          <ul className="space-y-1">
+                            <li>
                               <Link 
-                                  href={item.href} 
-                                  className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Icon 
-                                      icon={item.icon} 
-                                      className="text-gray-600 group-hover:text-black group-hover:scale-110 transition-all duration-200" 
-                                      width="18" 
-                                      height="18" 
-                                    />
-                                    <span className="font-medium text-sm group-hover:text-black transition-all duration-200">
-                                      {item.name}
-                                </span>
-                                  </div>
-                                  <span className="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-bold text-gray-700 group-hover:bg-black group-hover:text-white transition-all duration-200">
-                                    {item.count}
-                                </span>
+                                href="/product-list" 
+                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
+                                onClick={() => setIsDropdownOpen(false)}
+                              >
+                                <Icon icon="mdi:lightbulb-group" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
+                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>All Lighting Fixtures</span>
+                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
                               </Link>
                             </li>
-                            ))}
+                            <li>
+                              <Link 
+                                href="/product-list?category=ceiling-lights" 
+                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
+                                onClick={() => setIsDropdownOpen(false)}
+                              >
+                                <Icon icon="mdi:ceiling-light" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
+                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Ceiling Lights</span>
+                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
+                              </Link>
+                            </li>
+                            <li>
+                              <Link 
+                                href="/product-list?category=chandeliers" 
+                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
+                                onClick={() => setIsDropdownOpen(false)}
+                              >
+                                <Icon icon="mdi:crystal-ball" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
+                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Chandeliers</span>
+                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
+                              </Link>
+                            </li>
+                            <li>
+                              <Link 
+                                href="/product-list?category=pendant-lights" 
+                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
+                                onClick={() => setIsDropdownOpen(false)}
+                              >
+                                <Icon icon="mdi:lightbulb-on" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
+                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Pendant Lights</span>
+                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
+                              </Link>
+                            </li>
+                            <li>
+                              <Link 
+                                href="/product-list?category=floor-lamps" 
+                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
+                                onClick={() => setIsDropdownOpen(false)}
+                              >
+                                <Icon icon="mdi:floor-lamp" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
+                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Floor Lamps</span>
+                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
+                              </Link>
+                            </li>
+                            <li>
+                              <Link 
+                                href="/product-list?category=wall-lights" 
+                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
+                                onClick={() => setIsDropdownOpen(false)}
+                              >
+                                <Icon icon="mdi:wall-sconce" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
+                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Wall Lights</span>
+                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
+                              </Link>
+                            </li>
+                            <li>
+                              <Link 
+                                href="/product-list?category=table-lamps" 
+                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
+                                onClick={() => setIsDropdownOpen(false)}
+                              >
+                                <Icon icon="mdi:lamp" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
+                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Table Lamps</span>
+                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
+                              </Link>
+                            </li>
+                            <li>
+                              <Link 
+                                href="/product-list?category=outdoor-lights" 
+                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
+                                onClick={() => setIsDropdownOpen(false)}
+                              >
+                                <Icon icon="mdi:outdoor-lamp" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
+                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Outdoor Lighting</span>
+                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
+                              </Link>
+                            </li>
                           </ul>
                         </div>
-  
-                        {/* Second Column - Popular Categories with Images */}
-                        <div 
-                          className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-5 border border-gray-200 hover:-translate-y-1"
-                        >
-                          <h3 className="text-base font-bold mb-4 text-black tracking-wide border-b-2 border-black pb-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: "700", letterSpacing: "0.08em" }}>
-                            POPULAR
-                          </h3>
-                          <div className="grid grid-cols-2 gap-3">
-                            {[
-                              { name: "Ceiling", image: "/ceiling.avif", count: "45" },
-                              { name: "Chandeliers", image: "/chandelier.avif", count: "28" },
-                              { name: "Pendant", image: "/pendant.avif", count: "32" },
-                              { name: "Wall", image: "/wall.avif", count: "18" }
-                            ].map((category, index) => (
-                              <div 
-                                key={index} 
-                                className="group cursor-pointer rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-                              >
-                                <div className="relative h-24 overflow-hidden">
-                                  <img 
-                                    src={category.image} 
-                                    alt={category.name} 
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300" 
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent group-hover:from-gray-900/80 transition-all duration-300"></div>
-                                  <div className="absolute bottom-2 left-2 right-2 flex justify-between items-end">
-                                    <p className="text-white text-xs font-bold">{category.name}</p>
-                                    <span className="text-xs bg-white text-black px-1.5 py-0.5 rounded-full font-bold">
-                                      {category.count}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
+
+                        {/* Quick Links & Services */}
+                        <div className="space-y-4">
+                          <div className="border-b border-gray-200 pb-3">
+                            <h3 className="text-sm font-bold text-black font-poppins uppercase tracking-wider" style={{ letterSpacing: '0.1em' }}>
+                              Quick Links
+                            </h3>
+                          </div>
+                          
+                          {/* Design Consultation */}
+                          <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200">
+                            <div className="flex items-center mb-2">
+                              <Icon icon="mdi:palette" className="w-5 h-5 text-black mr-3 flex-shrink-0" />
+                              <span className="text-sm font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
+                                Free Design Consultation
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              Get expert lighting design advice for your space
+                            </p>
+                            <Link 
+                              href="/static/aboutus" 
+                              className="inline-flex items-center text-xs font-medium text-black hover:text-gray-600 transition-colors duration-200"
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Book Consultation <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                            </Link>
+                          </div>
+
+                          {/* Installation Services */}
+                          <div className="bg-white border-2 border-gray-300 rounded-lg p-4 hover:border-black transition-all duration-200">
+                            <div className="flex items-center mb-2">
+                              <Icon icon="mdi:tools" className="w-5 h-5 text-black mr-3 flex-shrink-0" />
+                              <span className="text-sm font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
+                                Professional Installation
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              Expert installation services available
+                            </p>
+                            <Link 
+                              href="/static/aboutus" 
+                              className="inline-flex items-center text-xs font-medium text-black hover:text-gray-600 transition-colors duration-200"
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Learn More <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                            </Link>
+                          </div>
+
+                          {/* Customer Support */}
+                          <div className="bg-black text-white rounded-lg p-4 hover:bg-gray-800 transition-colors duration-200">
+                            <div className="flex items-center mb-2">
+                              <Icon icon="mdi:headset" className="w-5 h-5 text-white mr-3 flex-shrink-0" />
+                              <span className="text-sm font-bold text-white" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
+                                24/7 Customer Support
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-200 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              We're here to help with any questions
+                            </p>
+                            <Link 
+                              href="/static/aboutus" 
+                              className="inline-flex items-center text-xs font-medium text-white hover:text-gray-200 transition-colors duration-200"
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Contact Us <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                            </Link>
                           </div>
                         </div>
 
-                        {/* Third Column - All Categories List */}
-                        <div 
-                          className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-5 border border-gray-200 hover:-translate-y-1"
-                        >
-                          <h3 className="text-base font-bold mb-4 text-black tracking-wide border-b-2 border-black pb-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: "700", letterSpacing: "0.08em" }}>
-                            ALL CATEGORIES
-                          </h3>
-                          <ul className="space-y-1.5 max-h-72 overflow-y-auto custom-scrollbar">
-                            {[
-                              { name: "Ceiling Lights", count: "45" },
-                              { name: "Semi Flush", count: "12" },
-                              { name: "Chandeliers", count: "28" },
-                              { name: "Cluster", count: "8" },
-                              { name: "Floor Lamps", count: "22" },
-                              { name: "Table Lamps", count: "31" },
-                              { name: "Rechargeable", count: "15" },
-                              { name: "Wall Lights", count: "18" },
-                              { name: "Painting", count: "9" },
-                              { name: "Indoor Lights", count: "27" }
-                            ].map((category, index) => (
-                              <li key={index} className="group">
-                                <a 
-                                  href="#product3" 
-                                  className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Icon 
-                                      icon="mdi:chevron-right" 
-                                      className="text-gray-400 group-hover:text-black group-hover:translate-x-1 transition-all duration-200" 
-                                      width="14" 
-                                      height="14" 
-                                    />
-                                    <span className="text-sm font-medium group-hover:text-black transition-all duration-200">
-                                      {category.name}
-                                    </span>
-                                  </div>
-                                  <span className="text-xs bg-gray-200 px-2 py-0.5 rounded-full font-bold text-gray-600 group-hover:bg-black group-hover:text-white transition-all duration-200">
-                                    {category.count}
-                                  </span>
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-  
-                      {/* Bottom Banner Section - Compact */}
-                      <div className="mt-5 pt-4 border-t border-gray-200">
-                        <div className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200 hover:shadow-lg transition-all duration-300">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-black rounded-full flex items-center justify-center shadow-md">
-                              <Icon icon="mdi:truck-fast" className="text-white" width="24" height="24" />
-                            </div>
-                            <div>
-                              <p className="text-sm font-bold text-gray-900">Free Installation on Orders Above ₱10,000</p>
-                              <p className="text-xs text-gray-600">Within San Pablo City Area</p>
-                            </div>
+                        {/* Special Offers & Quick Links */}
+                        <div className="space-y-4">
+                          <div className="border-b border-gray-200 pb-3">
+                            <h3 className="text-sm font-bold text-black font-poppins uppercase tracking-wider" style={{ letterSpacing: '0.1em' }}>
+                              Special Offers
+                            </h3>
                           </div>
-                          <Link 
-                            href="/sales" 
-                            className="px-5 py-2 bg-black text-white text-sm rounded-lg hover:bg-gray-800 transition-all duration-300 font-bold shadow-md hover:shadow-lg"
-                          >
-                            VIEW PROMOTIONS
-                          </Link>
+                          
+                          {/* Monthly Sale Banner */}
+                          <div className="bg-black text-white rounded-lg p-4 mb-4 hover:bg-gray-800 transition-colors duration-200">
+                            <div className="flex items-center mb-2">
+                              <Icon icon="mdi:tag" className="w-5 h-5 text-white mr-3 flex-shrink-0" />
+                              <span className="text-sm font-bold text-white" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
+                                Monthly Sale
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-200 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              Up to 25% off on selected items
+                            </p>
+                            <Link 
+                              href="/sales" 
+                              className="inline-flex items-center text-xs font-medium text-white hover:text-gray-200 transition-colors duration-200"
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Shop Sale <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                            </Link>
+                          </div>
+
+                          {/* New Arrivals */}
+                          <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 mb-4 hover:bg-gray-50 transition-colors duration-200">
+                            <div className="flex items-center mb-2">
+                              <Icon icon="mdi:star" className="w-5 h-5 text-black mr-3 flex-shrink-0" />
+                              <span className="text-sm font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
+                                New Arrivals
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              Latest lighting fixtures just arrived
+                            </p>
+                            <Link 
+                              href="/collection" 
+                              className="inline-flex items-center text-xs font-medium text-black hover:text-gray-600 transition-colors duration-200"
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              View New Items <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                            </Link>
+                          </div>
+
+                          {/* Free Installation */}
+                          <div className="bg-white border-2 border-black rounded-lg p-4 mb-4 hover:bg-gray-50 transition-colors duration-200">
+                            <div className="flex items-center mb-2">
+                              <Icon icon="mdi:tools" className="w-5 h-5 text-black mr-3 flex-shrink-0" />
+                              <span className="text-sm font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
+                                Free Installation
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
+                              Free installation on orders above ₱10,000
+                            </p>
+                            <Link 
+                              href="/static/aboutus" 
+                              className="inline-flex items-center text-xs font-medium text-black hover:text-gray-600 transition-colors duration-200"
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Learn More <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                            </Link>
+                          </div>
+
                         </div>
                       </div>
                     </div>
@@ -1401,10 +1515,10 @@ function capitalize(str: string) {
                     />
                   )}
                   
-                  <span className="relative z-10">NEW</span>
+                  <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>NEW</span>
                   
                   {/* Number Badge */}
-                  <span className="ml-1 px-1.5 py-0.5 bg-black text-white text-xs rounded-full font-bold">
+                  <span className="ml-1 px-1.5 py-0.5 bg-black text-white text-xs rounded-full font-bold" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
                     5
                   </span>
                   
@@ -1458,7 +1572,7 @@ function capitalize(str: string) {
                     />
                   )}
                   
-                  <span className="relative z-10">SALES</span>
+                  <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>SALES</span>
                   
                   {/* Ripple Effects */}
                   {ripples.map(ripple => (
@@ -1507,7 +1621,7 @@ function capitalize(str: string) {
                     />
                   )}
                   
-                  <span className="relative z-10">ABOUT US</span>
+                  <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>ABOUT US</span>
                   
                   {/* Ripple Effects */}
                   {ripples.map(ripple => (
@@ -1545,7 +1659,7 @@ function capitalize(str: string) {
                 }`}
               >
                 <Icon icon="mdi:home" width="24" height="24" />
-                <span className="text-xs mt-1 font-medium">Home</span>
+                <span className="text-xs mt-1 font-poppins font-semibold" style={{ letterSpacing: '0.02em' }}>Home</span>
               </Link>
               
               <Link
@@ -1557,7 +1671,7 @@ function capitalize(str: string) {
                 }`}
               >
                 <Icon icon="mdi:lightbulb" width="24" height="24" />
-                <span className="text-xs mt-1 font-medium">Products</span>
+                <span className="text-xs mt-1 font-poppins font-semibold" style={{ letterSpacing: '0.02em' }}>Products</span>
               </Link>
               
               <Link
@@ -1569,7 +1683,7 @@ function capitalize(str: string) {
                 }`}
               >
                 <Icon icon="mdi:cart" width="24" height="24" />
-                <span className="text-xs mt-1 font-medium">Cart</span>
+                <span className="text-xs mt-1 font-poppins font-semibold" style={{ letterSpacing: '0.02em' }}>Cart</span>
                 {cart.totalItems > 0 && (
                   <span className="absolute top-0 right-4 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                     {cart.totalItems}
@@ -1586,7 +1700,7 @@ function capitalize(str: string) {
                 }`}
               >
                 <Icon icon="mdi:heart" width="24" height="24" />
-                <span className="text-xs mt-1 font-medium">Favorites</span>
+                <span className="text-xs mt-1 font-poppins font-semibold" style={{ letterSpacing: '0.02em' }}>Favorites</span>
               </Link>
               
               <Link
@@ -1604,7 +1718,7 @@ function capitalize(str: string) {
                 }`}
               >
                 <Icon icon="mdi:account" width="24" height="24" />
-                <span className="text-xs mt-1 font-medium">Account</span>
+                <span className="text-xs mt-1 font-poppins font-semibold" style={{ letterSpacing: '0.02em' }}>Account</span>
               </Link>
             </div>
           </div>

@@ -74,7 +74,7 @@ export default function CartPage() {
                   </div>
                   
                   <div className="text-center max-w-md">
-                    <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-4 font-playfair">
                       Your cart is empty
                     </h3>
                     <p className="text-gray-600 text-base lg:text-lg mb-8 leading-relaxed">
@@ -189,7 +189,7 @@ export default function CartPage() {
             <div className="lg:sticky lg:top-8">
               <div className="space-y-4 lg:space-y-6">
                 <div className="bg-white p-4 lg:p-8 border border-gray-200 shadow-sm rounded-xl">
-                  <h2 className="text-lg lg:text-xl font-extrabold mb-4 lg:mb-5 text-black" style={{ fontFamily: "'Poppins', sans-serif" }}>Order Summary</h2>
+                  <h2 className="text-lg lg:text-xl font-extrabold mb-4 lg:mb-5 text-black font-playfair">Order Summary</h2>
                   <div className="mb-4 lg:mb-6">
                     <div className="flex gap-2">
                       <input type="text" placeholder="Enter promo code" className="flex-1 px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black text-sm lg:text-base" />

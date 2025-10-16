@@ -49,14 +49,13 @@ const ProductListRecentlyViewed: React.FC<ProductListRecentlyViewedProps> = ({
   return (
     <section className="container mx-auto px-1 sm:px-2 md:px-4 lg:px-6 py-8 max-w-[98%] relative">
       <div className="flex justify-between items-baseline mb-6">
-        <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Maven Pro', sans-serif", fontWeight: "bold" }}>
+        <h2 className="text-lg md:text-xl text-black font-playfair font-bold">
           Recently Viewed
         </h2>
         <div className="flex-grow"></div>
         <Link
           href="/product-list"
-          className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
-          style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+          className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-lato"
         >
           View all
         </Link>

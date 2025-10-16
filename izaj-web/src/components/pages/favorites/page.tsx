@@ -68,7 +68,7 @@ const MyFavorites: React.FC = () => {
               </div>
               
               <div className="text-center max-w-md">
-                <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-4" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-4 font-playfair">
                   Your favorites list is empty
                 </h3>
                 <p className="text-gray-600 text-base lg:text-lg mb-8 leading-relaxed">

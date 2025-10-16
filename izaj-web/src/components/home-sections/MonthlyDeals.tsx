@@ -164,40 +164,38 @@ export default function MonthlyDeals() {
     return (
       <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
         <div className="flex justify-between items-baseline mb-6">
-          <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Avenir Next', sans-serif", fontWeight: "bold" }}>
+          <h2 className="text-lg md:text-xl text-black font-poppins font-semibold">
             Monthly Deals 
           </h2>
           <div className="flex-grow"></div>
           <Link
             href="/sales"
-            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
-            style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
+            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-lora"
           >
             View all
           </Link>
         </div>
         <div className="flex justify-center items-center py-8">
-          <div className="text-gray-500">Loading products...</div>
+          <div className="text-gray-500 font-lora">Loading products...</div>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
-      <div className="flex justify-between items-baseline mb-6">
-        <h2 className="text-lg md:text-xl text-black" style={{ fontFamily: "'Avenir Next', sans-serif", fontWeight: "bold" }}>
-          Monthly Deals 
-        </h2>
-        <div className="flex-grow"></div>
-        <Link
-          href="/sales"
-          className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center"
-          style={{ fontFamily: "'Poppins', sans-serif", fontWeight: "bold" }}
-        >
-          View all
-        </Link>
-      </div>
+      <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
+        <div className="flex justify-between items-baseline mb-6">
+          <h2 className="text-lg md:text-xl text-black font-poppins font-semibold">
+            Monthly Deals 
+          </h2>
+          <div className="flex-grow"></div>
+          <Link
+            href="/sales"
+            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-lora"
+          >
+            View all
+          </Link>
+        </div>
 
       <div 
         className="relative px-4 sm:px-12"
@@ -249,7 +247,7 @@ export default function MonthlyDeals() {
                     <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1  shadow-sm whitespace-nowrap">SALE</span>
                   </div>
                   <div className="p-3 flex flex-col flex-1">
-                    <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
+                    <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 min-h-[2.5rem] font-lora">{product.name}</h3>
                   
                     <div className="flex items-center space-x-2 mb-2">
                       {product.colors?.map((color: string) => (
@@ -264,12 +262,12 @@ export default function MonthlyDeals() {
                         />
                       ))}
                     </div>
-                    <p className="font-bold text-gray-800 text-sm">{product.price}</p>
-                    <p className="text-green-600 text-xs mt-1">● In stock</p>
+                    <p className="font-bold text-gray-800 text-sm font-lora">{product.price}</p>
+                    <p className="text-green-600 text-xs mt-1 font-lora">● In stock</p>
                     <div className="flex-grow"></div>
                     <Link
                       href={`/item-description/${product.id}`}
-                      className="mt-auto w-full bg-black text-white py-1.5 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block"
+                      className="mt-auto w-full bg-black text-white py-1.5 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block font-lora"
                       style={{ marginTop: '16px' }}
                     >
                       Choose options
@@ -289,7 +287,7 @@ export default function MonthlyDeals() {
                     <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1  shadow-sm whitespace-nowrap">SALE</span>
                   </div>
                   <div className="p-3 sm:p-4 flex flex-col flex-grow">
-                    <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
+                    <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem] font-lora">{product.name}</h3>
                    
                     <div className="flex items-center space-x-2 mb-2">
                       {product.colors?.map((color: string) => (
@@ -304,11 +302,11 @@ export default function MonthlyDeals() {
                         />
                       ))}
                     </div>
-                    <p className="font-bold text-gray-800 mt-auto text-sm sm:text-base">{product.price}</p>
-                    <p className="text-green-600 text-xs mt-1 mb-3">● In stock</p>
+                    <p className="font-bold text-gray-800 mt-auto text-sm sm:text-base font-lora">{product.price}</p>
+                    <p className="text-green-600 text-xs mt-1 mb-3 font-lora">● In stock</p>
                     <Link
                       href={`/item-description/${product.id}`}
-                      className="mt-auto w-full bg-black text-white py-1.5 sm:py-2 hover:bg-gray-800 transition-colors duration-300 text-xs sm:text-sm text-center block"
+                      className="mt-auto w-full bg-black text-white py-1.5 sm:py-2 hover:bg-gray-800 transition-colors duration-300 text-xs sm:text-sm text-center block font-lora"
                     >
                       Choose options
                     </Link>
