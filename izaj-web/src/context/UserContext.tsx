@@ -50,27 +50,64 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         const storedUser = localStorage.getItem('user');
         const rememberMe = localStorage.getItem('rememberMe');
         if (storedUser && rememberMe === 'true') {
-          const userData = JSON.parse(storedUser);
-          console.log('✅ UserContext: Found user in localStorage (remember me):', userData);
-          setUser(userData);
-          setIsLoading(false);
-          return;
+          try {
+            const userData = JSON.parse(storedUser);
+            console.log('✅ UserContext: Found user in localStorage (remember me):', userData);
+            setUser(userData);
+            setIsLoading(false);
+            return;
+          } catch (error) {
+            console.error('❌ UserContext: Failed to parse localStorage user data:', error);
+            // Clear corrupted data
+            localStorage.removeItem('user');
+            localStorage.removeItem('rememberMe');
+          }
         }
         
         // Check sessionStorage for session-only users
         const sessionUser = sessionStorage.getItem('user');
         if (sessionUser) {
-          const userData = JSON.parse(sessionUser);
-          console.log('✅ UserContext: Found user in sessionStorage:', userData);
-          setUser(userData);
-          setIsLoading(false);
-          return;
+          try {
+            const userData = JSON.parse(sessionUser);
+            console.log('✅ UserContext: Found user in sessionStorage:', userData);
+            setUser(userData);
+            setIsLoading(false);
+            return;
+          } catch (error) {
+            console.error('❌ UserContext: Failed to parse sessionStorage user data:', error);
+            // Clear corrupted data
+            sessionStorage.removeItem('user');
+          }
         }
         
         // If no localStorage user, check server
         console.log('🔍 UserContext: No localStorage user, checking server...');
         const res = await fetch('/api/auth/me', { cache: 'no-store' });
-        const { user: supabaseUser } = await res.json();
+        
+        // Check if response is ok and content type is JSON
+        if (!res.ok) {
+          console.log('❌ UserContext: Server responded with error:', res.status, res.statusText);
+          setIsLoading(false);
+          return;
+        }
+        
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          console.log('❌ UserContext: Server response is not JSON:', contentType);
+          setIsLoading(false);
+          return;
+        }
+        
+        let responseData;
+        try {
+          responseData = await res.json();
+        } catch (jsonError) {
+          console.error('❌ UserContext: Failed to parse JSON response:', jsonError);
+          setIsLoading(false);
+          return;
+        }
+        
+        const { user: supabaseUser } = responseData;
         
         if (!supabaseUser) {
           console.log('❌ UserContext: No user found on server');

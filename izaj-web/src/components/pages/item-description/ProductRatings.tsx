@@ -44,14 +44,62 @@ const ProductRatings: React.FC<ProductRatingsProps> = ({ productId }) => {
       try {
         setIsLoading(true);
         const response = await fetch(`/api/reviews/${productId}`);
+        
+        // Check if response is ok
+        if (!response.ok) {
+          console.warn(`Reviews API returned ${response.status}, showing empty state`);
+          setReviews([]);
+          setSummary({
+            total_reviews: 0,
+            average_rating: 0,
+            five_star: 0,
+            four_star: 0,
+            three_star: 0,
+            two_star: 0,
+            one_star: 0
+          });
+          return;
+        }
+
         const result = await response.json();
 
-        if (result.success) {
-          setReviews(result.data.reviews);
-          setSummary(result.data.summary);
+        if (result.success && result.data) {
+          setReviews(result.data.reviews || []);
+          setSummary(result.data.summary || {
+            total_reviews: 0,
+            average_rating: 0,
+            five_star: 0,
+            four_star: 0,
+            three_star: 0,
+            two_star: 0,
+            one_star: 0
+          });
+        } else {
+          // No reviews yet
+          setReviews([]);
+          setSummary({
+            total_reviews: 0,
+            average_rating: 0,
+            five_star: 0,
+            four_star: 0,
+            three_star: 0,
+            two_star: 0,
+            one_star: 0
+          });
         }
       } catch (error) {
         console.error('Error fetching reviews:', error);
+        // Set empty state on error
+        setReviews([]);
+        setSummary({
+          total_reviews: 0,
+          average_rating: 0,
+          five_star: 0,
+          four_star: 0,
+          three_star: 0,
+          two_star: 0,
+          one_star: 0
+        });
       } finally {
         setIsLoading(false);
       }

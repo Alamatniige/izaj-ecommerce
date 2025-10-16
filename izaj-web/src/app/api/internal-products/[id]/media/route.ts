@@ -1,20 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Mock media data - replace this with your actual database/backend logic
-const mockMediaData: { [key: string]: string[] } = {
-  '1': ['/abed.webp', '/abed2.webp'],
-  '2': ['/abed2.webp', '/abed.webp'],
-  '3': ['/aber.webp', '/aber2.webp', '/aber3.webp'],
-  '4': ['/aber2.webp', '/aber.webp'],
-  '5': ['/acad.webp'],
-  '6': ['/aeris.webp'],
-  '7': ['/afina.webp'],
-  '8': ['/aina.webp'],
-  '9': ['/alab.webp'],
-  '10': ['/alph.webp'],
-  '11': ['/ama.webp'],
-  '12': ['/ant.webp'],
-};
+// Desktop backend configuration
+const DESKTOP_BACKEND_URL = process.env.DESKTOP_BACKEND_URL || 'http://localhost:3001';
 
 export async function GET(
   request: NextRequest,
@@ -22,18 +9,28 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const mediaUrls = mockMediaData[id] || [];
+    
+    console.log('🔄 Product Media API: Fetching media for product:', id);
+
+    // For now, return empty array since media handling might be different
+    // You can implement actual media fetching from desktop backend here
+    const mediaUrls: string[] = [];
+
+    console.log('✅ Product Media API: Returning media URLs:', mediaUrls);
 
     return NextResponse.json({
       success: true,
       mediaUrls,
       timestamp: new Date().toISOString(),
     });
+
   } catch (error) {
-    console.error('Error in product media API route:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch product media' },
-      { status: 500 }
-    );
+    console.error('❌ Product Media API: Error:', error);
+    return NextResponse.json({
+      success: true,
+      mediaUrls: [],
+      timestamp: new Date().toISOString(),
+      error: 'Failed to fetch media'
+    });
   }
 }

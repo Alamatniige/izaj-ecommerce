@@ -1,176 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-// Mock product data - replace this with your actual database/backend logic
-const mockProducts = [
-  {
-    id: '1',
-    product_id: 'P001',
-    product_name: 'Abednego | Chandelier/Large',
-    price: 2999,
-    status: 'active',
-    category: 'Chandelier',
-    branch: 'Main',
-    description: 'Elegant large chandelier perfect for dining rooms and living spaces',
-    image_url: '/abed.webp',
-    publish_status: true,
-    display_quantity: 10,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    product_id: 'P002',
-    product_name: 'Abednego | Chandelier/Medium',
-    price: 2499,
-    status: 'active',
-    category: 'Chandelier',
-    branch: 'Main',
-    description: 'Medium-sized chandelier ideal for bedrooms and smaller spaces',
-    image_url: '/abed2.webp',
-    publish_status: true,
-    display_quantity: 15,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    product_id: 'P003',
-    product_name: 'Aberdeen | Ceiling Light',
-    price: 1299,
-    status: 'active',
-    category: 'Ceiling Light',
-    branch: 'Main',
-    description: 'Modern ceiling light with LED technology',
-    image_url: '/aber.webp',
-    publish_status: true,
-    display_quantity: 25,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '4',
-    product_id: 'P004',
-    product_name: 'Aberdeen | Pendant Light',
-    price: 899,
-    status: 'active',
-    category: 'Pendant Light',
-    branch: 'Main',
-    description: 'Stylish pendant light for kitchen islands and dining areas',
-    image_url: '/aber2.webp',
-    publish_status: true,
-    display_quantity: 20,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '5',
-    product_id: 'P005',
-    product_name: 'Academy | Floor Lamp',
-    price: 1599,
-    status: 'active',
-    category: 'Floor Lamp',
-    branch: 'Main',
-    description: 'Contemporary floor lamp with adjustable height',
-    image_url: '/acad.webp',
-    publish_status: true,
-    display_quantity: 12,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '6',
-    product_id: 'P006',
-    product_name: 'Aeris | Table Lamp',
-    price: 699,
-    status: 'active',
-    category: 'Table Lamp',
-    branch: 'Main',
-    description: 'Compact table lamp perfect for bedside tables',
-    image_url: '/aeris.webp',
-    publish_status: true,
-    display_quantity: 30,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '7',
-    product_id: 'P007',
-    product_name: 'Afina | Wall Lamp',
-    price: 799,
-    status: 'active',
-    category: 'Wall Lamp',
-    branch: 'Main',
-    description: 'Elegant wall lamp for ambient lighting',
-    image_url: '/afina.webp',
-    publish_status: true,
-    display_quantity: 18,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '8',
-    product_id: 'P008',
-    product_name: 'Aina | Outdoor Lighting',
-    price: 1999,
-    status: 'active',
-    category: 'Outdoor Lighting',
-    branch: 'Main',
-    description: 'Weather-resistant outdoor lighting fixture',
-    image_url: '/aina.webp',
-    publish_status: true,
-    display_quantity: 8,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '9',
-    product_id: 'P009',
-    product_name: 'Alabaster | Smart Lighting',
-    price: 3499,
-    status: 'active',
-    category: 'Smart Lighting',
-    branch: 'Main',
-    description: 'WiFi-enabled smart lighting with app control',
-    image_url: '/alab.webp',
-    publish_status: true,
-    display_quantity: 5,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '10',
-    product_id: 'P010',
-    product_name: 'Alpha | LED Strip',
-    price: 299,
-    status: 'active',
-    category: 'LED Strip',
-    branch: 'Main',
-    description: 'Flexible LED strip lighting for accent illumination',
-    image_url: '/alph.webp',
-    publish_status: true,
-    display_quantity: 50,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '11',
-    product_id: 'P011',
-    product_name: 'Amara | Bulb',
-    price: 199,
-    status: 'active',
-    category: 'Bulb',
-    branch: 'Main',
-    description: 'Energy-efficient LED bulb with warm white light',
-    image_url: '/ama.webp',
-    publish_status: true,
-    display_quantity: 100,
-    last_sync_at: new Date().toISOString(),
-  },
-  {
-    id: '12',
-    product_id: 'P012',
-    product_name: 'Antique | Emergency Light',
-    price: 1299,
-    status: 'active',
-    category: 'Emergency Light',
-    branch: 'Main',
-    description: 'Battery backup emergency lighting system',
-    image_url: '/ant.webp',
-    publish_status: true,
-    display_quantity: 15,
-    last_sync_at: new Date().toISOString(),
-  },
-];
+// Supabase Product Database configuration
+const SUPABASE_PRODUCT_URL = process.env.NEXT_PUBLIC_SUPABASE_PRODUCT_URL || process.env.SUPABASE_PRODUCT_URL;
+const SUPABASE_PRODUCT_KEY = process.env.SUPABASE_PRODUCT_SERVICE_KEY || process.env.SUPABASE_PRODUCT_KEY;
 
 export async function GET(request: NextRequest) {
   try {
@@ -181,36 +14,121 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const status = searchParams.get('status');
 
-    let filteredProducts = [...mockProducts];
+    console.log('🔄 Internal Products API: Fetching directly from Supabase...', {
+      page,
+      limit,
+      category,
+      search,
+      status
+    });
+
+    // Check if Supabase credentials are configured
+    if (!SUPABASE_PRODUCT_URL || !SUPABASE_PRODUCT_KEY) {
+      console.error('❌ Internal Products API: Missing Supabase Product credentials');
+      return NextResponse.json({
+        success: true,
+        products: [],
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          totalPages: 0,
+        },
+        timestamp: new Date().toISOString(),
+        error: 'Supabase Product database not configured'
+      });
+    }
+
+    // Create Supabase client
+    const supabase = createClient(SUPABASE_PRODUCT_URL, SUPABASE_PRODUCT_KEY);
+
+    // Calculate offset for pagination
+    const offset = (page - 1) * limit;
+
+    // Build query
+    let query = supabase
+      .from('products')
+      .select(`
+        id,
+        product_id,
+        product_name,       
+        price,
+        status,
+        category,
+        branch,
+        inserted_at,
+        description,
+        image_url,
+        publish_status,
+        product_stock (
+          display_quantity,
+          last_sync_at
+        )
+      `, { count: 'exact' })
+      .eq('publish_status', true)
+      .order('inserted_at', { ascending: false });
 
     // Apply filters
-    if (category) {
-      filteredProducts = filteredProducts.filter(p => p.category === category);
+    if (status && status !== 'all') {
+      query = query.eq('status', status);
     }
 
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filteredProducts = filteredProducts.filter(p => 
-        p.product_name.toLowerCase().includes(searchLower) ||
-        p.description?.toLowerCase().includes(searchLower)
-      );
+    if (category && category !== 'all') {
+      query = query.eq('category', category);
     }
 
-    if (status) {
-      filteredProducts = filteredProducts.filter(p => p.status === status);
+    if (search && search.trim()) {
+      query = query.ilike('product_name', `%${search.trim()}%`);
     }
 
     // Apply pagination
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+    query = query.range(offset, offset + limit - 1);
 
-    const total = filteredProducts.length;
+    // Execute query
+    const { data: products, error: fetchError, count } = await query;
+
+    if (fetchError) {
+      console.error('❌ Internal Products API: Supabase fetch error:', fetchError);
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to fetch products from database',
+        details: fetchError.message
+      }, { status: 500 });
+    }
+
+    console.log(`✅ Internal Products API: Found ${products?.length || 0} products`);
+
+    // Transform products to match expected format
+    const transformedProducts = (products || []).map((product: any) => {
+      const stock = product.product_stock || {};
+      return {
+        id: product.id.toString(),
+        product_id: product.product_id,
+        product_name: product.product_name,
+        price: product.price,
+        status: product.status,
+        category: product.category,
+        branch: product.branch,
+        description: product.description || '',
+        image_url: product.image_url || '',
+        publish_status: product.publish_status,
+        display_quantity: stock.display_quantity ?? 0,
+        last_sync_at: stock.last_sync_at || product.inserted_at || new Date().toISOString(),
+      };
+    });
+
+    const total = count || 0;
     const totalPages = Math.ceil(total / limit);
+
+    console.log('✅ Internal Products API: Returning products:', {
+      count: transformedProducts.length,
+      total,
+      totalPages
+    });
 
     return NextResponse.json({
       success: true,
-      products: paginatedProducts,
+      products: transformedProducts,
       pagination: {
         page,
         limit,
@@ -219,11 +137,21 @@ export async function GET(request: NextRequest) {
       },
       timestamp: new Date().toISOString(),
     });
+
   } catch (error) {
-    console.error('Error in internal-products API route:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch products' },
-      { status: 500 }
-    );
+    console.error('❌ Internal Products API: Error:', error);
+    
+    return NextResponse.json({
+      success: true,
+      products: [],
+      pagination: {
+        page: 1,
+        limit: 100,
+        total: 0,
+        totalPages: 0,
+      },
+      timestamp: new Date().toISOString(),
+      error: error instanceof Error ? error.message : 'Failed to fetch products'
+    });
   }
 }

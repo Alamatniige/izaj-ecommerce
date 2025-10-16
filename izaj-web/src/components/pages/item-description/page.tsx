@@ -76,7 +76,8 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
     };
 
     fetchProduct();
-  }, [id, addToRecentlyViewed]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]); // Only depend on id to prevent infinite re-renders
 
   const handleAddToCart = () => {
     if (!product) return;
