@@ -6,46 +6,70 @@ import { Icon } from '@iconify/react';
 
 const ConfirmEmailPage: React.FC = () => {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState('Confirming your email...');
   const searchParams = useSearchParams();
   const router = useRouter();
 
   useEffect(() => {
     const confirmEmail = async () => {
       const token = searchParams.get('token');
-      
+      const error = searchParams.get('error');
+      const confirmed = searchParams.get('confirmed');
+
+      if (confirmed === 'true') {
+        setStatus('success');
+        setMessage('Your email has been confirmed successfully! You can now log in to your account.');
+        return;
+      }
+
+      if (error) {
+        setStatus('error');
+        if (error === 'no_token') {
+          setMessage('No confirmation token provided.');
+        } else if (error === 'invalid_token') {
+          setMessage('Invalid or already used confirmation token.');
+        } else if (error === 'expired') {
+          setMessage('Confirmation link has expired. Please request a new one.');
+        } else {
+          setMessage('Failed to confirm email. Please try again.');
+        }
+        return;
+      }
+
       if (!token) {
         setStatus('error');
         setMessage('No confirmation token provided');
         return;
       }
 
+      // Call confirmation API (v2)
       try {
-        const response = await fetch('/api/auth/confirm-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ token }),
-        });
-
+        setMessage('Verifying your email...');
+        
+        const response = await fetch(`/api/auth/confirm-v2?token=${token}`);
         const result = await response.json();
-
-        if (response.ok) {
+        
+        // For successful confirmation
+        if (response.ok && result.success) {
           setStatus('success');
-          setMessage(result.message);
-        } else {
-          setStatus('error');
-          setMessage(result.error || 'Failed to confirm email');
+          setMessage('Your email has been confirmed successfully! You can now log in to your account.');
+          return;
         }
-      } catch (error) {
+        
+        // For errors
+        console.error('Confirmation failed:', result);
         setStatus('error');
-        setMessage('An error occurred while confirming your email');
+        setMessage(result.error || 'Failed to confirm email. The link may be invalid or expired.');
+        
+      } catch (error) {
+        console.error('Confirmation error:', error);
+        setStatus('error');
+        setMessage('An error occurred while confirming your email.');
       }
     };
 
     confirmEmail();
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   const handleGoToLogin = () => {
     router.push('/login');
@@ -70,7 +94,7 @@ const ConfirmEmailPage: React.FC = () => {
               Confirming Your Email
             </h1>
             <p className="text-gray-600">
-              Please wait while we confirm your email address...
+              {message}
             </p>
           </>
         )}

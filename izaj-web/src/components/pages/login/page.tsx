@@ -55,9 +55,9 @@ const LoginPage: React.FC = () => {
       emailInputRef.current.focus();
     }
     
-    // Check for signup success message
+    // Check for success messages
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('signup') === 'success') {
+    if (urlParams.get('signup') === 'success' || urlParams.get('confirmed') === 'true' || urlParams.get('reset') === 'success') {
       setShowSuccessMessage(true);
       
       // Auto-hide message after 8 seconds
@@ -340,12 +340,43 @@ const LoginPage: React.FC = () => {
                 <div className="flex items-start">
                   <Icon icon="mdi:check-circle" className="w-5 h-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-green-800 mb-1">
-                      Account created successfully!
-                    </p>
-                    <p className="text-sm text-green-700">
-                      Please check your email to confirm your account before logging in.
-                    </p>
+                    {(() => {
+                      const urlParams = new URLSearchParams(window.location.search);
+                      if (urlParams.get('confirmed') === 'true') {
+                        return (
+                          <>
+                            <p className="text-sm font-semibold text-green-800 mb-1">
+                              Email confirmed successfully!
+                            </p>
+                            <p className="text-sm text-green-700">
+                              You can now log in to your account.
+                            </p>
+                          </>
+                        );
+                      } else if (urlParams.get('reset') === 'success') {
+                        return (
+                          <>
+                            <p className="text-sm font-semibold text-green-800 mb-1">
+                              Password reset successfully!
+                            </p>
+                            <p className="text-sm text-green-700">
+                              You can now log in with your new password.
+                            </p>
+                          </>
+                        );
+                      } else {
+                        return (
+                          <>
+                            <p className="text-sm font-semibold text-green-800 mb-1">
+                              Account created successfully!
+                            </p>
+                            <p className="text-sm text-green-700">
+                              Please check your email to confirm your account before logging in.
+                            </p>
+                          </>
+                        );
+                      }
+                    })()}
                   </div>
                   <button
                     onClick={() => setShowSuccessMessage(false)}

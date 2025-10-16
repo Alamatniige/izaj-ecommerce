@@ -2,26 +2,43 @@ import { NextResponse } from 'next/server';
 import { getSupabaseServerClient } from '@/lib/supabase-server';
 
 export async function GET(request: Request) {
-	const url = new URL(request.url);
-	const code = url.searchParams.get('code');
-	const type = url.searchParams.get('type');
-	const redirectPath = url.searchParams.get('redirect') || '/';
+	const { searchParams } = new URL(request.url);
+	const code = searchParams.get('code');
+	const next = searchParams.get('next') ?? '/';
+	const type = searchParams.get('type');
 
-	const supabase = await getSupabaseServerClient();
-	
 	if (code) {
-		if (type === 'recovery') {
-			// For password reset, redirect to reset page with the code (don't auto-login)
-			const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002';
-			return NextResponse.redirect(new URL(`/reset-password?code=${code}`, base));
-		} else {
-			// Exchange the OAuth code for a session and set cookies
-			await supabase.auth.exchangeCodeForSession(code);
+		const supabase = await getSupabaseServerClient();
+		
+		// Exchange code for session
+		const { error } = await supabase.auth.exchangeCodeForSession(code);
+		
+		if (error) {
+			console.error('Auth callback error:', error);
+			
+			// Redirect to error page or login
+			return NextResponse.redirect(
+				new URL('/login?error=auth_callback_failed', request.url)
+			);
 		}
+
+		// Handle different callback types
+		if (type === 'recovery') {
+			// Password reset flow - redirect to reset password page
+			return NextResponse.redirect(new URL('/reset-password', request.url));
+		}
+
+		// Email confirmation or regular callback - redirect to success page or next URL
+		if (type === 'signup' || searchParams.get('confirmation') === 'true') {
+			return NextResponse.redirect(
+				new URL('/login?confirmed=true', request.url)
+			);
+		}
+
+		// Default redirect
+		return NextResponse.redirect(new URL(next, request.url));
 	}
 
-	const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002';
-	return NextResponse.redirect(new URL(redirectPath, base));
+	// No code provided, redirect to login
+	return NextResponse.redirect(new URL('/login', request.url));
 }
-
-

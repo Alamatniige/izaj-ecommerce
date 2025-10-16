@@ -222,23 +222,18 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const register = async (userData: RegisterData) => {
     setIsLoading(true);
     try {
-      const fullName = `${userData.firstName} ${userData.lastName}`.trim();
-      
       const payload = {
         email: userData.email,
         password: userData.password,
-        name: fullName,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
         phone: userData.phone,
         address: userData.address,
       };
       
       console.log('📝 UserContext - Register payload:', {
         ...payload,
-        password: '***hidden***',
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        fullNameLength: fullName.length,
-        nameValue: `"${fullName}"`
+        password: '***hidden***'
       });
       
       const response = await fetch('/api/auth/signup', {
@@ -246,17 +241,21 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      
       const result = await response.json();
       if (!response.ok) {
-        throw new Error(result?.error || 'Signup failed');
+        console.error('❌ API Error Response:', result);
+        const errorMsg = result?.error || 'Signup failed';
+        const errorDetails = result?.details ? ` (${result.details})` : '';
+        const errorHint = result?.hint ? `\nHint: ${result.hint}` : '';
+        throw new Error(errorMsg + errorDetails + errorHint);
       }
       
-      // Address is now automatically saved to the database during signup
-      // No need to save to localStorage since it will be fetched from the database
+      console.log('✅ UserContext - Registration successful:', result.message);
       
-      // Do not auto-login after signup; user should login explicitly.
+      // Do not auto-login after signup; user should verify email first
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('❌ UserContext - Registration error:', error);
       throw error;
     } finally {
       setIsLoading(false);
