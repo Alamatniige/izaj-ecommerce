@@ -45,35 +45,39 @@ export async function GET(
       );
     }
 
-    // Get ratings summary
-    const { data: summary, error: summaryError } = await supabase
-      .from('product_ratings_summary')
-      .select('*')
-      .eq('product_id', productId)
-      .single();
+    // Calculate ratings summary from reviews
+    const total_reviews = reviews?.length || 0;
+    const ratings = reviews?.map(r => r.rating) || [];
+    const average_rating = total_reviews > 0 
+      ? ratings.reduce((sum, rating) => sum + rating, 0) / total_reviews 
+      : 0;
+    
+    const five_star = reviews?.filter(r => r.rating === 5).length || 0;
+    const four_star = reviews?.filter(r => r.rating === 4).length || 0;
+    const three_star = reviews?.filter(r => r.rating === 3).length || 0;
+    const two_star = reviews?.filter(r => r.rating === 2).length || 0;
+    const one_star = reviews?.filter(r => r.rating === 1).length || 0;
 
-    if (summaryError && summaryError.code !== 'PGRST116') {
-      console.error('❌ [API] Error fetching summary:', summaryError);
-    }
+    const summary = {
+      total_reviews,
+      average_rating: Number(average_rating.toFixed(1)),
+      five_star,
+      four_star,
+      three_star,
+      two_star,
+      one_star
+    };
 
     console.log('✅ [API] Reviews fetched:', {
-      total: reviews?.length || 0,
-      average: summary?.average_rating || 0
+      total: total_reviews,
+      average: average_rating.toFixed(1)
     });
 
     return NextResponse.json({
       success: true,
       data: {
         reviews: reviews || [],
-        summary: summary || {
-          total_reviews: 0,
-          average_rating: 0,
-          five_star: 0,
-          four_star: 0,
-          three_star: 0,
-          two_star: 0,
-          one_star: 0
-        }
+        summary
       }
     });
 

@@ -59,6 +59,8 @@ export async function POST(request: NextRequest) {
       comment: comment,
       product_name: item.product_name,
       order_number: order_number,
+      status: 'published',
+      verified_purchase: true,
       created_at: new Date().toISOString()
     }));
 
