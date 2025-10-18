@@ -6,12 +6,17 @@ import { InternalApiService, InternalProduct } from '../services/internalApi';
 
 // Transform internal product to izaj-web product format
 const transformProduct = (internalProduct: InternalProduct): Product => {
+  // Use media_urls if available, otherwise fallback to image_url
+  const images = internalProduct.media_urls && internalProduct.media_urls.length > 0 
+    ? internalProduct.media_urls 
+    : (internalProduct.image_url ? [internalProduct.image_url] : []);
+    
   return {
     id: internalProduct.id,
     name: internalProduct.product_name,
     description: internalProduct.description || '',
     price: parseFloat(internalProduct.price.toString()) || 0,
-    images: internalProduct.image_url ? [internalProduct.image_url] : [],
+    images: images,
     category: internalProduct.category || 'Uncategorized',
     brand: 'IZAJ', // Default brand
     rating: 4.5, // Default rating

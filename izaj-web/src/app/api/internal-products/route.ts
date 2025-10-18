@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
         inserted_at,
         description,
         image_url,
+        media_urls,
         publish_status,
         product_stock (
           display_quantity,
@@ -101,6 +102,29 @@ export async function GET(request: NextRequest) {
     // Transform products to match expected format
     const transformedProducts = (products || []).map((product: any) => {
       const stock = product.product_stock || {};
+      
+      // Parse media URLs if they exist
+      let mediaUrls: string[] = [];
+      if (product.media_urls) {
+        try {
+          if (Array.isArray(product.media_urls)) {
+            mediaUrls = product.media_urls.map((entry) =>
+              typeof entry === 'string' && entry.startsWith('[')
+                ? JSON.parse(entry) // if stringified array, parse it
+                : entry
+            ).flat();
+          } else if (typeof product.media_urls === 'string') {
+            mediaUrls = JSON.parse(product.media_urls);
+          }
+        } catch (parseError) {
+          console.warn('Error parsing media URLs for product:', product.id, parseError);
+          mediaUrls = [];
+        }
+      }
+      
+      // Use first media URL as image_url if available, otherwise fallback to existing image_url
+      const primaryImageUrl = mediaUrls.length > 0 ? mediaUrls[0] : (product.image_url || '');
+      
       return {
         id: product.id.toString(),
         product_id: product.product_id,
@@ -110,7 +134,8 @@ export async function GET(request: NextRequest) {
         category: product.category,
         branch: product.branch,
         description: product.description || '',
-        image_url: product.image_url || '',
+        image_url: primaryImageUrl,
+        media_urls: mediaUrls,
         publish_status: product.publish_status,
         display_quantity: stock.display_quantity ?? 0,
         last_sync_at: stock.last_sync_at || product.inserted_at || new Date().toISOString(),

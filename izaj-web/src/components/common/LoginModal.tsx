@@ -208,7 +208,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-gray-600/20 backdrop-blur-[1px] z-50 flex items-start justify-end"
+          className="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-[9999] flex items-start justify-end"
           role="dialog"
           aria-modal="true"
           aria-labelledby="login-modal-title"
@@ -220,7 +220,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 400, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="relative w-[400px] sm:w-[480px] md:w-[520px] lg:w-[560px] bg-white h-screen shadow-xl rounded-lg overflow-y-auto"
+            className="relative w-[400px] sm:w-[480px] md:w-[520px] lg:w-[560px] bg-white h-screen shadow-xl rounded-lg overflow-y-auto z-[10000]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}

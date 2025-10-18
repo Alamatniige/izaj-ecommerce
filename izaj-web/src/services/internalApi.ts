@@ -8,6 +8,7 @@ export interface InternalProduct {
   branch: string;
   description?: string;
   image_url?: string;
+  media_urls?: string[];
   publish_status: boolean;
   display_quantity: number;
   last_sync_at: string;

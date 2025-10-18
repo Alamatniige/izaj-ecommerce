@@ -3,8 +3,12 @@ export interface Product {
   name: string;
   price: string;
   image: string;
+  mediaUrls?: string[];
   colors?: string[];
   description?: string;
+  category?: string;
+  stock?: number;
+  status?: string;
 }
 
 import { InternalApiService, InternalProduct } from './internalApi';
@@ -18,13 +22,22 @@ const transformToLegacyProduct = (internalProduct: InternalProduct): Product => 
     numericId = parseInt(internalProduct.id.replace(/[^0-9]/g, '').slice(0, 8)) || 0;
   }
   
+  // Use first media URL if available, otherwise fallback to image_url
+  const primaryImage = internalProduct.media_urls && internalProduct.media_urls.length > 0 
+    ? internalProduct.media_urls[0] 
+    : (internalProduct.image_url || "/placeholder.jpg");
+  
   return {
     id: numericId,
     name: internalProduct.product_name,
     price: `₱${parseFloat(internalProduct.price.toString()).toLocaleString()}`,
-    image: internalProduct.image_url || "/placeholder.jpg",
+    image: primaryImage,
+    mediaUrls: internalProduct.media_urls || [],
     colors: ["black"], // Default color
-    description: internalProduct.description
+    description: internalProduct.description,
+    category: internalProduct.category,
+    stock: internalProduct.display_quantity || 0,
+    status: internalProduct.status || 'In Stock'
   };
 };
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Lato, Great_Vibes, Poppins, Lora, Cinzel } from "next/font/google";
+import { Playfair_Display, Lato, Great_Vibes, Poppins, Lora, Cinzel, Jost } from "next/font/google";
 import "./globals.css";
 import { Header } from "../components/layout";
 import Footer from "../components/layout/Footer";
@@ -46,6 +46,13 @@ const cinzel = Cinzel({
   display: "swap",
 });
 
+const jost = Jost({
+  variable: "--font-jost",
+  weight: ["400"],
+  subsets: ["latin"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "IZAJ",
   description: "Your one-stop shop for quality products at great prices",
@@ -63,7 +70,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body
-        className={`${playfairDisplay.variable} ${lato.variable} ${greatVibes.variable} ${poppins.variable} ${lora.variable} ${cinzel.variable} antialiased bg-white`}
+        className={`${playfairDisplay.variable} ${lato.variable} ${greatVibes.variable} ${poppins.variable} ${lora.variable} ${cinzel.variable} ${jost.variable} antialiased bg-white`}
       >
         <ClientProviders>
           <Header />
