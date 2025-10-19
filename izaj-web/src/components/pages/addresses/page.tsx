@@ -6,7 +6,6 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import RequireAuth from '../../common/RequireAuth';
 import { addressService, Address } from '../../../services/addressService';
-import { psgcService, Province, City, Barangay } from '../../../services/psgcService';
 
 interface LocalAddress {
   id: string;
@@ -34,13 +33,6 @@ const MyPurchase: React.FC = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Cascading dropdown state
-  const [provinces, setProvinces] = useState<Province[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
-  const [barangays, setBarangays] = useState<Barangay[]>([]);
-  const [selectedProvince, setSelectedProvince] = useState<string>('');
-  const [selectedCity, setSelectedCity] = useState<string>('');
-  const [selectedBarangay, setSelectedBarangay] = useState<string>('');
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
@@ -60,8 +52,6 @@ const MyPurchase: React.FC = () => {
 
         // Load addresses from database
         loadAddresses();
-        // Load provinces
-        psgcService.getProvinces().then(setProvinces).catch(() => {});
       } catch (error) {
         console.error('Error parsing stored user data:', error);
       }
@@ -118,31 +108,6 @@ const MyPurchase: React.FC = () => {
     }));
   };
 
-  const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const code = e.target.value;
-    setSelectedProvince(code);
-    setSelectedCity('');
-    setSelectedBarangay('');
-    setCities([]);
-    setBarangays([]);
-    if (code) {
-      try { setCities(await psgcService.getCities(code)); } catch {}
-    }
-  };
-
-  const handleCityChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const code = e.target.value;
-    setSelectedCity(code);
-    setSelectedBarangay('');
-    setBarangays([]);
-    if (code) {
-      try { setBarangays(await psgcService.getBarangays(code)); } catch {}
-    }
-  };
-
-  const handleBarangayChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedBarangay(e.target.value);
-  };
 
   const handleAddNewAddress = () => {
     setEditingAddress(null);
@@ -199,7 +164,7 @@ const MyPurchase: React.FC = () => {
     e.preventDefault();
     
     // Validate form data
-    if (!formData.name.trim() || !formData.phone.trim() || !selectedProvince || !selectedCity || !selectedBarangay || !formData.address.trim()) {
+    if (!formData.name.trim() || !formData.phone.trim() || !formData.province.trim() || !formData.city.trim() || !formData.barangay.trim() || !formData.address.trim()) {
       alert('Please fill in all fields');
       return;
     }
@@ -214,10 +179,7 @@ const MyPurchase: React.FC = () => {
     try {
       setIsLoading(true);
 
-      const provinceName = provinces.find(p => p.code === selectedProvince)?.name || '';
-      const cityName = cities.find(c => c.code === selectedCity)?.name || '';
-      const barangayName = barangays.find(b => b.code === selectedBarangay)?.name || '';
-      const composedAddress = `${formData.address.trim()}, ${barangayName}, ${cityName}, ${provinceName}`.replace(/,\s*,/g, ', ').trim();
+      const composedAddress = `${formData.address.trim()}, ${formData.barangay.trim()}, ${formData.city.trim()}, ${formData.province.trim()}`.replace(/,\s*,/g, ', ').trim();
 
       if (editingAddress) {
         // Update existing address
@@ -251,13 +213,11 @@ const MyPurchase: React.FC = () => {
       setFormData({
         name: '',
         phone: '',
-        address: ''
+        address: '',
+        province: '',
+        city: '',
+        barangay: ''
       });
-      setSelectedProvince('');
-      setSelectedCity('');
-      setSelectedBarangay('');
-      setCities([]);
-      setBarangays([]);
 
       // Reload addresses from database
       await loadAddresses();
@@ -295,13 +255,11 @@ const MyPurchase: React.FC = () => {
     setFormData({
       name: '',
       phone: '',
-      address: ''
+      address: '',
+      province: '',
+      city: '',
+      barangay: ''
     });
-    setSelectedProvince('');
-    setSelectedCity('');
-    setSelectedBarangay('');
-    setCities([]);
-    setBarangays([]);
   };
 
   return (
@@ -394,6 +352,9 @@ const MyPurchase: React.FC = () => {
                 <Link href="/account#profile" className="text-black hover:text-gray-900 text-base block transition-colors">Profile</Link>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors">My Orders</Link>
+              </li>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
                 <Link href="/payments" className="text-black hover:text-gray-900 text-base block transition-colors">Payment Methods</Link>
               </li>
               <li className="pl-8 py-3 bg-gray-100 rounded-lg transition-colors duration-300">
@@ -433,6 +394,12 @@ const MyPurchase: React.FC = () => {
                     <Link href="/account#profile" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
                       <Icon icon="mdi:account-outline" className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
                       Profile
+                    </Link>
+                  </li>
+                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
+                    <Link href="/orders" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
+                      <Icon icon="mdi:package-variant" className="w-4 h-4 mr-2" />
+                      My Orders
                     </Link>
                   </li>
                   <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
@@ -565,17 +532,15 @@ const MyPurchase: React.FC = () => {
                             <Icon icon="mdi:map-outline" className="w-4 h-4 mr-2 text-black" />
                             Province
                           </label>
-                          <select
-                            value={selectedProvince}
-                            onChange={handleProvinceChange}
+                          <input
+                            type="text"
+                            name="province"
+                            value={formData.province}
+                            onChange={handleInputChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                            placeholder="Enter your province"
                             required
-                          >
-                            <option value="">Select Province</option>
-                            {provinces.map(p => (
-                              <option key={p.code} value={p.code}>{p.name}</option>
-                            ))}
-                          </select>
+                          />
                         </div>
 
                         {/* City / Municipality */}
@@ -584,18 +549,15 @@ const MyPurchase: React.FC = () => {
                             <Icon icon="mdi:city" className="w-4 h-4 mr-2 text-black" />
                             City / Municipality
                           </label>
-                          <select
-                            value={selectedCity}
-                            onChange={handleCityChange}
+                          <input
+                            type="text"
+                            name="city"
+                            value={formData.city}
+                            onChange={handleInputChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                            placeholder="Enter your city or municipality"
                             required
-                            disabled={!selectedProvince}
-                          >
-                            <option value="">Select City / Municipality</option>
-                            {cities.map(c => (
-                              <option key={c.code} value={c.code}>{c.name}</option>
-                            ))}
-                          </select>
+                          />
                         </div>
 
                         {/* Barangay */}
@@ -604,18 +566,15 @@ const MyPurchase: React.FC = () => {
                             <Icon icon="mdi:home-city" className="w-4 h-4 mr-2 text-black" />
                             Barangay
                           </label>
-                          <select
-                            value={selectedBarangay}
-                            onChange={handleBarangayChange}
+                          <input
+                            type="text"
+                            name="barangay"
+                            value={formData.barangay}
+                            onChange={handleInputChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                            placeholder="Enter your barangay"
                             required
-                            disabled={!selectedCity}
-                          >
-                            <option value="">Select Barangay</option>
-                            {barangays.map(b => (
-                              <option key={b.code} value={b.code}>{b.name}</option>
-                            ))}
-                          </select>
+                          />
                         </div>
                         <div className="flex space-x-3 pt-4">
                           <button

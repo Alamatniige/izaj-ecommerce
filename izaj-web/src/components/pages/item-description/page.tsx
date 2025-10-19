@@ -274,21 +274,23 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
         <div className="flex flex-col lg:flex-row gap-0 max-w-7xl mx-auto">
           
           {/* Left Column - Two Images Side by Side */}
-          <div className="w-full lg:w-[70%]">
+          <div className="w-full lg:w-[70%] pr-0 lg:pr-8">
             <div className="flex gap-4">
               {/* First Image */}
               <div className="w-1/2">
                 <div 
                   ref={imgRef}
-                  className="relative overflow-hidden rounded-lg aspect-square w-full bg-gray-50 cursor-pointer group"
+                  className="relative overflow-hidden rounded-lg w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
+                  style={{ aspectRatio: '4/5', minHeight: '400px' }}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
                   onClick={() => handleImageClick(mainImage)}
                 >
                   <img
                     src={mainImage}
-                    className="w-full h-full object-cover rounded-lg transition-all duration-300 group-hover:scale-110"
+                    className="max-w-full max-h-full object-contain rounded-lg transition-all duration-300 group-hover:scale-105"
                     alt="Product Image 1"
+                    style={{ maxHeight: '100%', maxWidth: '100%' }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = '/placeholder.jpg';
@@ -313,15 +315,17 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
               <div className="w-1/2">
                 <div 
                   ref={imgRef2}
-                  className="relative overflow-hidden rounded-lg aspect-square w-full bg-gray-50 cursor-pointer group"
+                  className="relative overflow-hidden rounded-lg w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
+                  style={{ aspectRatio: '4/5', minHeight: '400px' }}
                   onMouseMove={handleMouseMove2}
                   onMouseLeave={handleMouseLeave2}
                   onClick={() => handleImageClick(thumbnails[1] || thumbnails[0] || mainImage)}
                 >
                   <img
                     src={thumbnails[1] || thumbnails[0] || mainImage}
-                    className="w-full h-full object-cover rounded-lg transition-all duration-300"
+                    className="max-w-full max-h-full object-contain rounded-lg transition-all duration-300 group-hover:scale-105"
                     alt="Product Image 2"
+                    style={{ maxHeight: '100%', maxWidth: '100%' }}
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.src = '/placeholder.jpg';

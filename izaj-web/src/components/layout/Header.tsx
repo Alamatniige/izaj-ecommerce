@@ -325,7 +325,7 @@ function capitalize(str: string) {
         )}
 
         <header 
-          className={`bg-white px-4 lg:px-10 flex flex-col sticky top-0 z-40 transition-all duration-300 ${
+          className={`bg-white px-4 lg:px-10 flex flex-col sticky top-0 z-10 transition-all duration-300 ${
             scrolled ? 'py-2 shadow-lg' : 'py-3 shadow-md'
           }`}
         >
@@ -402,7 +402,7 @@ function capitalize(str: string) {
 
                 {/* Search Suggestions Dropdown */}
                 {showSearchSuggestions && searchSuggestions.length > 0 && (
-                  <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-slide-down">
+                  <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[9997] animate-slide-down">
                     <div className="py-2">
                       {searchSuggestions.map((product) => (
                         <Link
@@ -573,8 +573,10 @@ function capitalize(str: string) {
                           <div className={`absolute ${isMobile ? 'left-4 right-4 origin-top' : 
                             accountDropdownPosition === 'center' ? 'left-1/2 transform -translate-x-1/2 origin-top' :
                             accountDropdownPosition === 'right' ? 'right-0 origin-top-right' :
-                            'left-0 origin-top-left'} mt-80 w-64 ${isMobile ? '!w-auto max-w-none' : ''} bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-100 animate-scale-in`} style={{
-                            maxWidth: isMobile ? 'none' : 'calc(100vw - 2rem)'
+                            'left-0 origin-top-left'} top-full mt-1 w-64 ${isMobile ? '!w-auto max-w-none' : ''} bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-scale-in`} style={{
+                            maxWidth: isMobile ? 'none' : 'calc(100vw - 2rem)',
+                            zIndex: 999999,
+                            position: 'absolute'
                           }}>
                             {/* User Info Header */}
                             <div className="px-4 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
@@ -751,7 +753,7 @@ function capitalize(str: string) {
                         {isCartPreviewOpen && cart.totalItems > 0 && !isMobile && (
                           <div 
                             ref={cartPreviewRef}
-                            className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-100 top-full animate-scale-in"
+                            className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl z-[9998] overflow-hidden border border-gray-100 top-full animate-scale-in"
                             onMouseLeave={() => setIsCartPreviewOpen(false)}
                           >
                             <div className="py-3 px-5 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
@@ -833,7 +835,7 @@ function capitalize(str: string) {
 
               {/* Mobile Search Suggestions */}
               {showSearchSuggestions && searchSuggestions.length > 0 && (
-                <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-slide-down">
+                <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[9997] animate-slide-down">
                   <div className="py-2">
                     {searchSuggestions.map((product) => (
                       <Link
@@ -872,7 +874,7 @@ function capitalize(str: string) {
             <>
               {/* Backdrop */}
               <div 
-                className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 animate-fade-in"
+                className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in"
                 onClick={() => setIsMobileMenuOpen(false)}
               />
               {/* Modal Content */}
@@ -1085,7 +1087,7 @@ function capitalize(str: string) {
         {/* Desktop Navbar - Hidden on mobile with enhanced animations - NOT STICKY */}
         <nav className={`hidden lg:block bg-white px-4 lg:px-10 transition-all duration-300 border-t border-gray-100 ${
           scrolled ? 'py-3' : 'py-4'
-        }`} style={{ fontFamily: "'Inter', sans-serif", position: 'relative', zIndex: 100 }}>
+        }`} style={{ fontFamily: "'Inter', sans-serif", position: 'relative', zIndex: 1 }}>
             <ul className="flex justify-center items-center text-sm font-semibold relative" style={{gap: '3rem'}}>
               {/* HOME NAVIGATION */}
               <li className="flex items-center h-full relative">
@@ -1648,7 +1650,7 @@ function capitalize(str: string) {
 
         {/* Mobile Bottom Navigation Bar */}
         {isMobile && isClient && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 shadow-2xl lg:hidden">
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30 shadow-2xl lg:hidden">
             <div className="flex justify-around items-center py-2">
               <Link
                 href="/"

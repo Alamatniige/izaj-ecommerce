@@ -157,6 +157,9 @@ const BankandCard: React.FC = () => {
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
                 <Link href="/account#profile" className="text-black hover:text-gray-900 text-base block transition-colors">Profile</Link>
               </li>
+              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
+                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors">My Orders</Link>
+              </li>
               <li className="pl-8 py-3 bg-gray-100 rounded-lg transition-colors duration-300">
                 <Link href="/payments" className="text-black font-semibold text-base block transition-colors">Payment Methods</Link>
               </li>
@@ -197,6 +200,12 @@ const BankandCard: React.FC = () => {
                     <Link href="/account#profile" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
                       <Icon icon="mdi:account-outline" className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
                       Profile
+                    </Link>
+                  </li>
+                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
+                    <Link href="/orders" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
+                      <Icon icon="mdi:package-variant" className="w-4 h-4 mr-2" />
+                      My Orders
                     </Link>
                   </li>
                   <li className="pl-4 py-2 bg-black rounded-lg">

@@ -30,8 +30,8 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
 
   const [currentPage, setCurrentPage] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
-  const [totalPages, setTotalPages] = useState(Math.ceil(allItems.length / 6));
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [totalPages, setTotalPages] = useState(Math.ceil(allItems.length / 5));
   const [slideDirection, setSlideDirection] = useState<'forward' | 'backward'>('forward');
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -52,11 +52,11 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
         setItemsPerPage(allItems.length); // Show all on mobile
         setTotalPages(1);
       } else if (width >= 640 && width < 1024) {
-        setItemsPerPage(4); // Tablet: 4 per page
-        setTotalPages(Math.ceil(allItems.length / 4));
+        setItemsPerPage(5); // Tablet: 5 per page
+        setTotalPages(Math.ceil(allItems.length / 5));
       } else {
-        setItemsPerPage(6); // Desktop: 6 per page
-        setTotalPages(Math.ceil(allItems.length / 6));
+        setItemsPerPage(5); // Desktop: 5 per page
+        setTotalPages(Math.ceil(allItems.length / 5));
       }
     };
     handleResize();
@@ -164,23 +164,23 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
       <style>{slideLeftKeyframes}</style>
       <style>{slideAnimationKeyframes}</style>
       <style>{improvedEffects}</style>
-      <div className="flex items-center justify-between mb-4 px-4 sm:px-6 md:px-8 mt-8 md:mt-16 mx-4 sm:mx-8 md:mx-20 gap-x-4">
-        <h2
-          className="text-lg md:text-xl text-black font-poppins font-semibold"
-        >
-          Lighting Category
-        </h2>
-        <Link
-          href="/product-list"
-          className="text-sm md:text-base font-bold text-gray-500 hover:underline font-lora"
-        >
-          View all
-        </Link>
-      </div>
+      <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
+        <div className="flex justify-between items-baseline mb-6">
+          <h2 className="text-lg md:text-xl text-black font-poppins font-semibold">
+            Lighting Category
+          </h2>
+          <div className="flex-grow"></div>
+          <Link
+            href="/product-list"
+            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-lora"
+          >
+            View all
+          </Link>
+        </div>
 
-      <div
-        ref={containerRef}
-        className={`relative group mx-4 sm:mx-8 md:mx-20 ${isMobile || isTablet ? 'overflow-x-auto' : ''}`}
+        <div
+          ref={containerRef}
+          className={`relative group ${isMobile || isTablet ? 'overflow-x-auto' : ''}`}
         style={{
           minHeight: "180px",
           scrollbarWidth: "none",
@@ -284,7 +284,8 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
             <Icon icon="mdi:chevron-right" className="h-4 w-4 sm:h-6 sm:w-6 text-gray-600" width="24" height="24" />
           </button>
         )}
-      </div>
+        </div>
+      </section>
     </>
   );
 };

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Icon } from '@iconify/react';
 import { useRouter } from 'next/navigation';
 import { useUserContext } from '../../../context/UserContext';
-import { psgcService, Province, City, Barangay } from '../../../services/psgcService';
 
 const SignupPage: React.FC = () => {
   const [formData, setFormData] = useState({

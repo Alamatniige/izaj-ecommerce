@@ -6,7 +6,6 @@ import { useCartContext } from '@/context/CartContext';
 import { useUserContext } from '@/context/UserContext';
 import { useRouter } from 'next/navigation';
 import { createOrder } from '@/services/orderService';
-import { psgcService, Province, City, Barangay } from '@/services/psgcService';
 import Link from 'next/link';
 import RequireAuth from '../../common/RequireAuth';
 
