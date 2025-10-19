@@ -6,6 +6,7 @@ import { useCartContext } from '@/context/CartContext';
 import { useUserContext } from '@/context/UserContext';
 import { useRouter } from 'next/navigation';
 import { createOrder } from '@/services/orderService';
+import { addressService, Address } from '@/services/addressService';
 import Link from 'next/link';
 import RequireAuth from '../../common/RequireAuth';
 
@@ -17,21 +18,16 @@ const Checkout = () => {
   const [deliveryMethod, setDeliveryMethod] = useState('ship');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+  const [showSavedAddresses, setShowSavedAddresses] = useState(false);
   
-  // PSGC State
-  const [provinces, setProvinces] = useState<Province[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
-  const [barangays, setBarangays] = useState<Barangay[]>([]);
-  const [selectedProvince, setSelectedProvince] = useState<string>('');
-  const [selectedCity, setSelectedCity] = useState<string>('');
-  const [selectedBarangay, setSelectedBarangay] = useState<string>('');
   
   // Form data
   const [formData, setFormData] = useState({
     email: user?.email || '',
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
-    company: '',
     address: '',
     postalCode: '',
     barangay: '',
@@ -45,21 +41,16 @@ const Checkout = () => {
 
   // Redirect if cart is empty
   useEffect(() => {
-    if (!cart.isLoading && cart.totalItems === 0) {
+    if (cart.totalItems === 0) {
       router.push('/cart');
     }
-  }, [cart.isLoading, cart.totalItems, router]);
+  }, [cart.totalItems, router]);
 
-  // Load provinces on mount
-  useEffect(() => {
-    psgcService.getProvinces()
-      .then(setProvinces)
-      .catch(err => console.error('Error loading provinces:', err));
-  }, []);
 
-  // Update form when user data is available
+  // Load saved addresses when user is available
   useEffect(() => {
     if (user) {
+      loadSavedAddresses();
       setFormData(prev => ({
         ...prev,
         email: user.email || prev.email,
@@ -69,68 +60,61 @@ const Checkout = () => {
     }
   }, [user]);
 
-  // PSGC Handlers
-  const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const code = e.target.value;
-    const provinceName = provinces.find(p => p.code === code)?.name || '';
-    
-    setSelectedProvince(code);
-    setSelectedCity('');
-    setSelectedBarangay('');
-    setCities([]);
-    setBarangays([]);
-    
-    setFormData(prev => ({
-      ...prev,
-      province: provinceName,
-      city: '',
-      barangay: ''
-    }));
-    
-    if (code) {
-      try {
-        const citiesData = await psgcService.getCities(code);
-        setCities(citiesData);
-      } catch (err) {
-        console.error('Error loading cities:', err);
+  // Load saved addresses
+  const loadSavedAddresses = async () => {
+    try {
+      const addresses = await addressService.getAddresses();
+      setSavedAddresses(addresses);
+      // Auto-select default address if available
+      const defaultAddress = addresses.find(addr => addr.is_default);
+      if (defaultAddress) {
+        handleAddressSelect(defaultAddress.id);
       }
+    } catch (error) {
+      console.error('Error loading saved addresses:', error);
     }
   };
 
-  const handleCityChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const code = e.target.value;
-    const cityName = cities.find(c => c.code === code)?.name || '';
-    
-    setSelectedCity(code);
-    setSelectedBarangay('');
-    setBarangays([]);
-    
-    setFormData(prev => ({
-      ...prev,
-      city: cityName,
-      barangay: ''
-    }));
-    
-    if (code) {
-      try {
-        const barangaysData = await psgcService.getBarangays(code);
-        setBarangays(barangaysData);
-      } catch (err) {
-        console.error('Error loading barangays:', err);
+  // Handle address selection
+  const handleAddressSelect = (addressId: string) => {
+    setSelectedAddressId(addressId);
+    const selectedAddress = savedAddresses.find(addr => addr.id === addressId);
+    if (selectedAddress) {
+      // Parse the address to extract components
+      const addressParts = selectedAddress.address.split(',').map(part => part.trim());
+      let streetAddress = '';
+      let barangay = '';
+      let city = '';
+      let province = '';
+      
+      if (addressParts.length >= 4) {
+        streetAddress = addressParts[0];
+        barangay = addressParts[1];
+        city = addressParts[2];
+        province = addressParts[3];
+      } else if (addressParts.length >= 3) {
+        streetAddress = addressParts[0];
+        city = addressParts[1];
+        province = addressParts[2];
+      } else if (addressParts.length >= 2) {
+        streetAddress = addressParts[0];
+        city = addressParts[1];
+      } else {
+        streetAddress = selectedAddress.address;
       }
+
+      setFormData(prev => ({
+        ...prev,
+        address: streetAddress,
+        city: city,
+        province: province,
+        phone: selectedAddress.phone,
+        firstName: selectedAddress.name.split(' ')[0] || prev.firstName,
+        lastName: selectedAddress.name.split(' ').slice(1).join(' ') || prev.lastName,
+      }));
     }
   };
 
-  const handleBarangayChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const code = e.target.value;
-    const barangayName = barangays.find(b => b.code === code)?.name || '';
-    
-    setSelectedBarangay(code);
-    setFormData(prev => ({
-      ...prev,
-      barangay: barangayName
-    }));
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -148,8 +132,8 @@ const Checkout = () => {
       return false;
     }
     
-    if (!formData.address || !formData.barangay || !formData.city || !formData.province) {
-      setError('Please fill in all address fields (Province, City, Barangay, and Street Address)');
+    if (!formData.address || !formData.city || !formData.province) {
+      setError('Please fill in all address fields (Province, City, and Street Address)');
       return false;
     }
     
@@ -196,7 +180,7 @@ const Checkout = () => {
 
     try {
       // Prepare order data with complete address
-      const fullAddress = `${formData.address}, ${formData.barangay}`;
+      const fullAddress = formData.address;
       
       const orderData = {
         items: cart.items.map(item => ({
@@ -207,7 +191,7 @@ const Checkout = () => {
           quantity: item.quantity
         })),
         shipping_address_line1: fullAddress,
-        shipping_address_line2: formData.company || undefined,
+        shipping_address_line2: undefined,
         shipping_city: formData.city,
         shipping_province: formData.province,
         shipping_postal_code: formData.postalCode || undefined,
@@ -248,13 +232,6 @@ const Checkout = () => {
     }
   };
 
-  if (cart.isLoading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <Icon icon="mdi:loading" className="w-8 h-8 text-black animate-spin" />
-      </div>
-    );
-  }
 
   if (cart.totalItems === 0) {
     return null; // Will redirect
@@ -383,6 +360,72 @@ const Checkout = () => {
               </div>
 
               <div className="space-y-4">
+                  {/* Saved Addresses Selection */}
+                  {savedAddresses.length > 0 && (
+                    <div className="mb-6">
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="block text-sm font-medium text-gray-700 flex items-center">
+                          <Icon icon="mdi:bookmark" className="w-4 h-4 mr-2 text-black" />
+                          Saved Addresses
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setShowSavedAddresses(!showSavedAddresses)}
+                          className="text-sm text-black hover:underline flex items-center"
+                        >
+                          {showSavedAddresses ? 'Hide' : 'Show'} Saved Addresses
+                          <Icon icon={showSavedAddresses ? "mdi:chevron-up" : "mdi:chevron-down"} className="w-4 h-4 ml-1" />
+                        </button>
+                      </div>
+                      
+                      {showSavedAddresses && (
+                        <div className="space-y-3 max-h-48 overflow-y-auto">
+                          {savedAddresses.map((address) => (
+                            <div
+                              key={address.id}
+                              className={`p-4 border rounded-lg cursor-pointer transition-all hover:bg-gray-50 ${
+                                selectedAddressId === address.id 
+                                  ? 'border-black bg-gray-50' 
+                                  : 'border-gray-200'
+                              }`}
+                              onClick={() => handleAddressSelect(address.id)}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-medium text-gray-800">{address.name}</span>
+                                    {address.is_default && (
+                                      <span className="px-2 py-1 bg-black text-white text-xs rounded-full">Default</span>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-gray-600 mb-1">{address.phone}</p>
+                                  <p className="text-sm text-gray-700">{address.address}</p>
+                                </div>
+                                <input
+                                  type="radio"
+                                  name="selectedAddress"
+                                  checked={selectedAddressId === address.id}
+                                  onChange={() => handleAddressSelect(address.id)}
+                                  className="mt-1"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <div className="text-center pt-3 border-t border-gray-200">
+                        <Link 
+                          href="/addresses" 
+                          className="text-sm text-black hover:underline flex items-center justify-center gap-2"
+                        >
+                          <Icon icon="mdi:plus" className="w-4 h-4" />
+                          Manage Addresses
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+
                   <select 
                     name="country"
                     className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black"
@@ -412,72 +455,33 @@ const Checkout = () => {
                     />
                   </div>
                   
-                  <input 
-                    type="text"
-                    name="company"
-                    value={formData.company}
-                    onChange={handleInputChange}
-                    placeholder="Company (optional)" 
-                    className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
-                  />
                   
-                  {/* Province Dropdown */}
+                  {/* Province Input */}
                   <div className="relative">
                     <Icon icon="mdi:map-marker" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    <select 
-                      value={selectedProvince}
-                      onChange={handleProvinceChange}
+                    <input 
+                      type="text"
+                      name="province"
+                      value={formData.province}
+                      onChange={handleInputChange}
+                      placeholder="Province "
                       required
-                      className="w-full pl-10 p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black appearance-none"
-                    >
-                      <option value="">Select Province</option>
-                      {provinces.map(province => (
-                        <option key={province.code} value={province.code}>
-                          {province.name}
-                        </option>
-                      ))}
-                    </select>
-                    <Icon icon="mdi:chevron-down" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-                </div>
+                      className="w-full pl-10 p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
+                    />
+                  </div>
                   
-                  {/* City Dropdown */}
+                  {/* City Input */}
                   <div className="relative">
                     <Icon icon="mdi:city" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    <select 
-                      value={selectedCity}
-                      onChange={handleCityChange}
+                    <input 
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      placeholder="City/Municipality "
                       required
-                      disabled={!selectedProvince}
-                      className="w-full pl-10 p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black appearance-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    >
-                      <option value="">Select City/Municipality</option>
-                      {cities.map(city => (
-                        <option key={city.code} value={city.code}>
-                          {city.name}
-                        </option>
-                      ))}
-                    </select>
-                    <Icon icon="mdi:chevron-down" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-                </div>
-                  
-                  {/* Barangay Dropdown */}
-                  <div className="relative">
-                    <Icon icon="mdi:home-map-marker" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
-                    <select 
-                      value={selectedBarangay}
-                      onChange={handleBarangayChange}
-                      required
-                      disabled={!selectedCity}
-                      className="w-full pl-10 p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black appearance-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    >
-                      <option value="">Select Barangay</option>
-                      {barangays.map(barangay => (
-                        <option key={barangay.code} value={barangay.code}>
-                          {barangay.name}
-                        </option>
-                      ))}
-                </select>
-                    <Icon icon="mdi:chevron-down" className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      className="w-full pl-10 p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
+                    />
                   </div>
                   
                   {/* Street Address */}
@@ -486,7 +490,7 @@ const Checkout = () => {
                     name="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    placeholder="House No., Street Name (e.g., 123 Main Street)"
+                    placeholder="House No., Street Name "
                     required
                     className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
                   />
@@ -497,7 +501,7 @@ const Checkout = () => {
                     name="postalCode"
                     value={formData.postalCode}
                     onChange={handleInputChange}
-                    placeholder="Postal code (optional)" 
+                    placeholder="Postal code " 
                     className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
                   />
                   
@@ -518,14 +522,14 @@ const Checkout = () => {
                   </div>
                   
                   {/* Address Preview */}
-                  {formData.address && formData.barangay && formData.city && formData.province && (
+                  {formData.address && formData.city && formData.province && (
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                       <div className="flex items-start gap-2">
                         <Icon icon="mdi:information" className="text-blue-600 w-5 h-5 mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="text-xs font-semibold text-gray-700 mb-1">Complete Address:</p>
                           <p className="text-sm text-gray-800">
-                            {formData.address}, {formData.barangay}, {formData.city}, {formData.province}
+                            {formData.address}, {formData.city}, {formData.province}
                             {formData.postalCode && `, ${formData.postalCode}`}
                           </p>
                         </div>

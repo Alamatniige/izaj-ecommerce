@@ -14,6 +14,8 @@ const SignupPage: React.FC = () => {
     phoneNumber: '',
     confirmPassword: '',
     address: '',
+    province: '',
+    city: '',
     agreeToPrivacy: false
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -25,12 +27,6 @@ const SignupPage: React.FC = () => {
   const emailInputRef = useRef<HTMLInputElement>(null);
   
   // PSGC cascading dropdown state
-  const [provinces, setProvinces] = useState<Province[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
-  const [barangays, setBarangays] = useState<Barangay[]>([]);
-  const [selectedProvince, setSelectedProvince] = useState<string>('');
-  const [selectedCity, setSelectedCity] = useState<string>('');
-  const [selectedBarangay, setSelectedBarangay] = useState<string>('');
   
   const router = useRouter();
   
@@ -96,12 +92,6 @@ const SignupPage: React.FC = () => {
     }
   }, []);
 
-  // Load provinces when address form is shown
-  useEffect(() => {
-    if (showAddressForm && provinces.length === 0) {
-      psgcService.getProvinces().then(setProvinces).catch(() => {});
-    }
-  }, [showAddressForm, provinces.length]);
 
   // Auto-rotate product showcase
   useEffect(() => {
@@ -130,39 +120,6 @@ const SignupPage: React.FC = () => {
     }
   };
 
-  const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const code = e.target.value;
-    setSelectedProvince(code);
-    setSelectedCity('');
-    setSelectedBarangay('');
-    setCities([]);
-    setBarangays([]);
-    if (code) {
-      try { 
-        setCities(await psgcService.getCities(code)); 
-      } catch {
-        // Silently fail
-      }
-    }
-  };
-
-  const handleCityChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const code = e.target.value;
-    setSelectedCity(code);
-    setSelectedBarangay('');
-    setBarangays([]);
-    if (code) {
-      try { 
-        setBarangays(await psgcService.getBarangays(code)); 
-      } catch {
-        // Silently fail
-      }
-    }
-  };
-
-  const handleBarangayChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedBarangay(e.target.value);
-  };
 
 
   // Password validation function
@@ -224,19 +181,15 @@ const SignupPage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Prepare address data if address form is filled with PSGC data
+      // Prepare address data if address form is filled
       let addressData = undefined;
-      if (showAddressForm && selectedProvince && selectedCity && selectedBarangay && formData.address) {
-        const provinceName = provinces.find(p => p.code === selectedProvince)?.name || '';
-        const cityName = cities.find(c => c.code === selectedCity)?.name || '';
-        const barangayName = barangays.find(b => b.code === selectedBarangay)?.name || '';
-        const composedAddress = `${formData.address.trim()}, ${barangayName}, ${cityName}, ${provinceName}`.replace(/,\s*,/g, ', ').trim();
+      if (showAddressForm && formData.address && formData.province && formData.city) {
+        const composedAddress = `${formData.address.trim()}, ${formData.city.trim()}, ${formData.province.trim()}`.replace(/,\s*,/g, ', ').trim();
         
         addressData = {
           address: composedAddress,
-          province: provinceName,
-          city: cityName,
-          barangay: barangayName
+          province: formData.province.trim(),
+          city: formData.city.trim()
         };
       }
 
@@ -607,16 +560,14 @@ const SignupPage: React.FC = () => {
                         <Icon icon="mdi:map-outline" className="w-4 h-4 mr-2 text-black" />
                         Province
                       </label>
-                      <select
-                        value={selectedProvince}
-                        onChange={handleProvinceChange}
-                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none"
-                      >
-                        <option value="">Select Province</option>
-                        {provinces.map(p => (
-                          <option key={p.code} value={p.code}>{p.name}</option>
-                        ))}
-                      </select>
+                      <input
+                        type="text"
+                        name="province"
+                        value={formData.province}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none"
+                        placeholder="e.g., Laguna"
+                      />
                     </div>
 
                     {/* City / Municipality */}
@@ -625,36 +576,14 @@ const SignupPage: React.FC = () => {
                         <Icon icon="mdi:city" className="w-4 h-4 mr-2 text-black" />
                         City / Municipality
                       </label>
-                      <select
-                        value={selectedCity}
-                        onChange={handleCityChange}
-                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none"
-                        disabled={!selectedProvince}
-                      >
-                        <option value="">Select City / Municipality</option>
-                        {cities.map(c => (
-                          <option key={c.code} value={c.code}>{c.name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Barangay */}
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-black flex items-center">
-                        <Icon icon="mdi:home-city" className="w-4 h-4 mr-2 text-black" />
-                        Barangay
-                      </label>
-                      <select
-                        value={selectedBarangay}
-                        onChange={handleBarangayChange}
-                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none"
-                        disabled={!selectedCity}
-                      >
-                        <option value="">Select Barangay</option>
-                        {barangays.map(b => (
-                          <option key={b.code} value={b.code}>{b.name}</option>
-                        ))}
-                      </select>
+                      <input
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none"
+                        placeholder="e.g., San Pablo City"
+                      />
                     </div>
 
                     {/* Street Address */}

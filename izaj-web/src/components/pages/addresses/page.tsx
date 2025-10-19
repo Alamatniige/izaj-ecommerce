@@ -27,7 +27,10 @@ const MyPurchase: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    address: ''
+    address: '',
+    province: '',
+    city: '',
+    barangay: ''
   });
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -114,27 +117,48 @@ const MyPurchase: React.FC = () => {
     setFormData({
       name: '',
       phone: '',
-      address: ''
+      address: '',
+      province: '',
+      city: '',
+      barangay: ''
     });
-    setSelectedProvince('');
-    setSelectedCity('');
-    setSelectedBarangay('');
-    setCities([]);
-    setBarangays([]);
     setIsAddingNew(true);
   };
 
   const handleEditAddress = (address: Address) => {
     setEditingAddress(address);
+    
+    // Parse the address to extract components
+    const addressParts = address.address.split(',').map(part => part.trim());
+    let streetAddress = '';
+    let barangay = '';
+    let city = '';
+    let province = '';
+    
+    if (addressParts.length >= 4) {
+      streetAddress = addressParts[0];
+      barangay = addressParts[1];
+      city = addressParts[2];
+      province = addressParts[3];
+    } else if (addressParts.length >= 3) {
+      streetAddress = addressParts[0];
+      city = addressParts[1];
+      province = addressParts[2];
+    } else if (addressParts.length >= 2) {
+      streetAddress = addressParts[0];
+      city = addressParts[1];
+    } else {
+      streetAddress = address.address;
+    }
+    
     setFormData({
       name: address.name,
       phone: address.phone,
-      address: address.address
+      address: streetAddress,
+      province: province,
+      city: city,
+      barangay: barangay
     });
-    // Best-effort parse to prefill dropdowns (optional)
-    setSelectedProvince('');
-    setSelectedCity('');
-    setSelectedBarangay('');
     setIsAddingNew(true);
   };
 
