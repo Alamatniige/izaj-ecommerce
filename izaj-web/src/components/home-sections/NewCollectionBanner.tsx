@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export default function NewCollectionBanner() {
   return (
-    <div className="relative w-full h-auto overflow-hidden z-0 flex flex-col md:flex-row">
+    <div className="relative w-full h-auto overflow-hidden z-0 flex flex-col md:flex-row mt-12 sm:mt-16">
       {/* Left side - Image */}
       <div className="w-full md:w-1/2 h-[300px] md:h-[400px]">
         <img 
@@ -34,6 +34,7 @@ export default function NewCollectionBanner() {
           </Link>
         </div>
       </div>
+      <div className="mb-12 sm:mb-16"></div>
     </div>
   );
 }

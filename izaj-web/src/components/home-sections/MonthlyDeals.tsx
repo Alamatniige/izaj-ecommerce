@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getAllProducts } from '../../services/productService';
+import { InternalApiService } from '../../services/internalApi';
 
 export default function MonthlyDeals() {
   const [isMobile, setIsMobile] = useState(false);
@@ -14,6 +16,9 @@ export default function MonthlyDeals() {
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
+  const [isImageTransitioning, setIsImageTransitioning] = useState<{ [key: number]: boolean }>({});
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -57,16 +62,37 @@ export default function MonthlyDeals() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Fetch products
+  // Fetch sales products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log('🔄 MonthlyDeals: Starting to fetch products...');
-        const products = await getAllProducts();
-        console.log('📦 MonthlyDeals: Received products:', products);
-        setAllProducts(products);
+        console.log('🔄 MonthlyDeals: Starting to fetch sales products...');
+        const salesProducts = await InternalApiService.getSalesProducts();
+        console.log('📦 MonthlyDeals: Received sales products:', salesProducts);
+        
+        // Transform to legacy format for compatibility
+        const transformedProducts = salesProducts.map(product => {
+          // Get stock from product_stock array
+          let stock = 10; // Default stock for sales products
+          if ((product as any).product_stock && (product as any).product_stock.length > 0) {
+            stock = (product as any).product_stock[0].display_quantity || 10;
+          }
+          
+          return {
+          id: parseInt(product.product_id) || 0,
+          name: product.product_name,
+          price: `₱${parseFloat(product.price.toString()).toLocaleString()}`,
+          image: product.media_urls?.[0] || "/placeholder.jpg",
+            mediaUrls: product.media_urls || [],
+          colors: ["black"], // Default color
+            sale: (product as any).sale || [], // Include sale information
+            stock: stock
+          };
+        });
+        
+        setAllProducts(transformedProducts);
       } catch (error) {
-        console.error('❌ MonthlyDeals: Error fetching products:', error);
+        console.error('❌ MonthlyDeals: Error fetching sales products:', error);
         setAllProducts([]);
       } finally {
         console.log('✅ MonthlyDeals: Setting loading to false');
@@ -83,6 +109,71 @@ export default function MonthlyDeals() {
       [productId]: color
     }));
   };
+
+  // Handle hover events for image switching
+  const handleMouseEnter = (productId: number) => {
+    setHoveredProduct(productId);
+    setCurrentImageIndex(prev => ({
+      ...prev,
+      [productId]: 0
+    }));
+  };
+
+  const handleMouseLeave = (productId: number) => {
+    setHoveredProduct(null);
+    setCurrentImageIndex(prev => ({
+      ...prev,
+      [productId]: 0
+    }));
+  };
+
+  // Get current image for a product
+  const getCurrentImage = (product: any) => {
+    if (!product.mediaUrls || product.mediaUrls.length === 0) {
+      return product.image;
+    }
+    
+    const index = currentImageIndex[product.id] || 0;
+    return product.mediaUrls[index] || product.image;
+  };
+
+  // Image cycling effect when hovering
+  useEffect(() => {
+    if (!hoveredProduct) return;
+
+    const product = allProducts.find(p => p.id === hoveredProduct);
+    if (!product || !product.mediaUrls || product.mediaUrls.length <= 1) return;
+
+    const interval = setInterval(() => {
+      // Start fade out
+      setIsImageTransitioning(prev => ({
+        ...prev,
+        [hoveredProduct]: true
+      }));
+
+      // After fade out, change image and fade in
+      setTimeout(() => {
+        setCurrentImageIndex(prev => {
+          const currentIndex = prev[hoveredProduct] || 0;
+          const nextIndex = (currentIndex + 1) % product.mediaUrls.length;
+          return {
+            ...prev,
+            [hoveredProduct]: nextIndex
+          };
+        });
+
+        // Fade in
+        setTimeout(() => {
+          setIsImageTransitioning(prev => ({
+            ...prev,
+            [hoveredProduct]: false
+          }));
+        }, 50);
+      }, 300); // Half of transition duration
+    }, 1200); // Increased interval to account for fade time
+
+    return () => clearInterval(interval);
+  }, [hoveredProduct, allProducts]);
 
   // Determine productsPerPage based on screen size (avoid window on SSR)
   let productsPerPage = 5;
@@ -162,8 +253,8 @@ export default function MonthlyDeals() {
 
   if (isLoading) {
     return (
-      <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
-        <div className="flex justify-between items-baseline mb-6">
+      <section className="container mx-auto px-2 sm:px-6 md:px-8 lg:px-12 py-8 max-w-[95%] relative">
+        <div className="flex justify-between items-baseline mb-4">
           <h2 className="text-lg md:text-xl text-black font-poppins font-semibold">
             Monthly Deals 
           </h2>
@@ -175,7 +266,7 @@ export default function MonthlyDeals() {
             View all
           </Link>
         </div>
-        <div className="flex justify-center items-center py-8">
+        <div className="flex justify-center items-center py-4">
           <div className="text-gray-500 font-lora">Loading products...</div>
         </div>
       </section>
@@ -183,8 +274,8 @@ export default function MonthlyDeals() {
   }
 
   return (
-      <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
-        <div className="flex justify-between items-baseline mb-6">
+      <section className="container mx-auto px-2 sm:px-6 md:px-8 lg:px-12 py-8 max-w-[95%] relative">
+        <div className="flex justify-between items-baseline mb-4">
           <h2 className="text-lg md:text-xl text-black font-poppins font-semibold">
             Monthly Deals 
           </h2>
@@ -235,42 +326,49 @@ export default function MonthlyDeals() {
           onTouchEnd={onTouchEnd}
         >
           {(isMobile || isTablet) ? (
-            <div className="flex flex-nowrap overflow-x-auto gap-4 pb-2 px-1 -mx-1">
+            <div className="flex flex-nowrap overflow-x-auto gap-6 pb-2 px-1 -mx-1">
               {allProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="bg-white overflow-hidden flex flex-col h-[460px] max-w-[380px] min-w-0"
-                  style={isMobile ? { width: '60vw', minWidth: '60vw', flex: '0 0 60vw' } : isTablet ? { width: '33.33vw', minWidth: '33.33vw', flex: '0 0 33.33vw' } : {}}
+                  className="bg-white overflow-hidden flex flex-col max-w-[500px] min-w-0 rounded-lg shadow-sm"
+                  style={isMobile ? { width: '70vw', minWidth: '70vw', flex: '0 0 70vw' } : isTablet ? { width: '40vw', minWidth: '40vw', flex: '0 0 40vw' } : {}}
+                  onMouseEnter={() => handleMouseEnter(product.id)}
+                  onMouseLeave={() => handleMouseLeave(product.id)}
                 >
-                  <div className="relative flex-shrink-0 h-[380px] flex items-center justify-center overflow-hidden">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-contain object-left-top" />
-                    <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1  shadow-sm whitespace-nowrap">SALE</span>
+                  <div className="relative">
+                    <Image 
+                      src={getCurrentImage(product)} 
+                      alt={product.name} 
+                      width={400}
+                      height={320}
+                      className={`w-full h-56 sm:h-80 object-cover transition-all duration-300 hover:scale-110 ${
+                        isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
+                      }`} 
+                    />
+                    <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap">SALE</span>
                   </div>
-                  <div className="p-3 flex flex-col flex-1">
-                    <h3 className="font-semibold text-gray-800 text-xs line-clamp-2 min-h-[2.5rem] font-lora">{product.name}</h3>
-                  
-                    <div className="flex items-center space-x-2 mb-2">
-                      {product.colors?.map((color: string) => (
-                        <button
-                          key={color}
-                          onClick={() => handleColorSelect(product.id, color)}
-                          className={`w-3 h-3 border border-gray-300 transition-all duration-200 ${
-                            selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
-                          }`}
-                          style={{ backgroundColor: color, marginTop: '8px' }}
-                          title={color.charAt(0).toUpperCase() + color.slice(1)}
-                        />
-                      ))}
+                  <div className="px-5 pt-4 pb-0 flex flex-col bg-white">
+                    <div className="space-y-1.5">
+                      <h3 className="font-bold text-gray-900 text-sm font-lora text-left line-clamp-2 leading-tight">{product.name}</h3>
+                      <p className="font-bold text-gray-900 text-base font-lora">{product.price}</p>
+                      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        product.stock > 5 ? 'bg-green-100 text-green-800' : 
+                        product.stock > 0 ? 'bg-orange-100 text-orange-800' : 
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        <span className={`w-2 h-2 rounded-full mr-1 ${
+                          product.stock > 5 ? 'bg-green-500' : 
+                          product.stock > 0 ? 'bg-orange-500' : 
+                          'bg-red-500'
+                        }`}></span>
+                        {product.stock > 5 ? 'In Stock' : product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
+                      </div>
                     </div>
-                    <p className="font-bold text-gray-800 text-sm font-lora">{product.price}</p>
-                    <p className="text-green-600 text-xs mt-1 font-lora">● In stock</p>
-                    <div className="flex-grow"></div>
                     <Link
                       href={`/item-description/${product.id}`}
-                      className="mt-auto w-full bg-black text-white py-1.5 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block font-lora"
-                      style={{ marginTop: '16px' }}
+                      className="mt-3 w-full bg-black text-white py-2 px-3 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block font-lora font-semibold rounded-md border border-black"
                     >
-                      Choose options
+                      VIEW
                     </Link>
                   </div>
                 </div>
@@ -278,37 +376,49 @@ export default function MonthlyDeals() {
             </div>
           ) : (
             <div 
-              className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 justify-center transition-all duration-300 ease-out ${getSlideClass(isAnimating, slideDirection)}`}
+              className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 justify-center transition-all duration-300 ease-out ${getSlideClass(isAnimating, slideDirection)}`}
             >
               {currentProducts.map((product) => (
-                <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-[460px]">
-                  <div className="relative flex-grow h-[380px] flex items-center justify-center overflow-hidden">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-contain object-left-top" />
-                    <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-2 py-1  shadow-sm whitespace-nowrap">SALE</span>
+                <div 
+                  key={product.id} 
+                  className="bg-white overflow-hidden relative flex flex-col shadow-sm"
+                  onMouseEnter={() => handleMouseEnter(product.id)}
+                  onMouseLeave={() => handleMouseLeave(product.id)}
+                >
+                  <div className="relative">
+                    <Image 
+                      src={getCurrentImage(product)} 
+                      alt={product.name} 
+                      width={400}
+                      height={320}
+                      className={`w-full h-56 sm:h-80 object-cover transition-all duration-300 hover:scale-110 ${
+                        isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
+                      }`} 
+                    />
+                    <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap">SALE</span>
                   </div>
-                  <div className="p-3 sm:p-4 flex flex-col flex-grow">
-                    <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem] font-lora">{product.name}</h3>
-                   
-                    <div className="flex items-center space-x-2 mb-2">
-                      {product.colors?.map((color: string) => (
-                        <button
-                          key={color}
-                          onClick={() => handleColorSelect(product.id, color)}
-                          className={`w-3 h-3 sm:w-4 sm:h-4 border border-gray-300 transition-all duration-200 ${
-                            selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
-                          }`}
-                          style={{ backgroundColor: color, marginTop: '8px' }}
-                          title={color.charAt(0).toUpperCase() + color.slice(1)}
-                        />
-                      ))}
+                  <div className="px-5 pt-4 pb-0 flex flex-col bg-white">
+                    <div className="space-y-1.5">
+                      <h3 className="font-bold text-gray-900 text-sm font-lora text-left line-clamp-2 leading-tight">{product.name}</h3>
+                      <p className="font-bold text-gray-900 text-base font-lora">{product.price}</p>
+                      <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        product.stock > 5 ? 'bg-green-100 text-green-800' : 
+                        product.stock > 0 ? 'bg-orange-100 text-orange-800' : 
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        <span className={`w-2 h-2 rounded-full mr-1 ${
+                          product.stock > 5 ? 'bg-green-500' : 
+                          product.stock > 0 ? 'bg-orange-500' : 
+                          'bg-red-500'
+                        }`}></span>
+                        {product.stock > 5 ? 'In Stock' : product.stock > 0 ? 'Low Stock' : 'Out of Stock'}
+                      </div>
                     </div>
-                    <p className="font-bold text-gray-800 mt-auto text-sm sm:text-base font-lora">{product.price}</p>
-                    <p className="text-green-600 text-xs mt-1 mb-3 font-lora">● In stock</p>
                     <Link
                       href={`/item-description/${product.id}`}
-                      className="mt-auto w-full bg-black text-white py-1.5 sm:py-2 hover:bg-gray-800 transition-colors duration-300 text-xs sm:text-sm text-center block font-lora"
+                      className="mt-3 w-full bg-black text-white py-2 px-3 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block font-lora font-semibold rounded-md border border-black"
                     >
-                      Choose options
+                      VIEW
                     </Link>
                   </div>
                 </div>

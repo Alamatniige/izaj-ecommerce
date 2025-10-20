@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function FeaturedProducts() {
   return (
-    <div className="mt-8 sm:mt-16 px-4">
+    <div className="mt-8 sm:mt-12 px-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
         {/* Top Picks Card */}
         <div className="relative w-full h-64 overflow-hidden">
@@ -36,6 +36,7 @@ export default function FeaturedProducts() {
           </div>
         </div>
       </div>
+      <div className="mb-8 sm:mb-12"></div>
     </div>
   );
 }

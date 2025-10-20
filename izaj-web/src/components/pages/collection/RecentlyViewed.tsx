@@ -115,9 +115,21 @@ const RecentlyViewed: React.FC<RecentlyViewedProps> = ({
                   >
                     <div className="relative flex-shrink-0 h-[280px]">
                       <img src={product.image} alt={product.name} className="w-full h-full object-contain p-4" />
+                      {/* Product Badges */}
+                      {/* NEW badge - left side */}
                       {product.isNew && (
-                        <div className="absolute top-3 right-3 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md z-10">
-                          NEW
+                        <div className="absolute top-3 left-3 z-10">
+                          <div className="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md">
+                            NEW
+                          </div>
+                        </div>
+                      )}
+                      {/* SALE badge - right side */}
+                      {product.isOnSale && (
+                        <div className="absolute top-3 right-3 z-10">
+                          <div className="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md">
+                            SALE
+                          </div>
                         </div>
                       )}
                     </div>

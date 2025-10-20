@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import CompactChat from '../../common/CompactChat';
@@ -21,14 +22,14 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
   const { addToRecentlyViewed } = useRecentlyViewed();
   const [mainImage, setMainImage] = useState("");
   const [zoomStyle, setZoomStyle] = useState({});
-  const [zoomStyle2, setZoomStyle2] = useState({});
   const imgRef = useRef<HTMLDivElement>(null);
-  const imgRef2 = useRef<HTMLDivElement>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isDeliveryOpen, setIsDeliveryOpen] = useState(false);
   const [isCareOpen, setIsCareOpen] = useState(false);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
+  const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
   const [reviews, setReviews] = useState<any[]>([]);
   const [summary, setSummary] = useState({
@@ -83,15 +84,26 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
             colors: found.colors
           });
           
-          // Prefer multiple media URLs if available
+          // Handle all uploaded images
           const mediaUrls = Array.isArray(found.mediaUrls) ? found.mediaUrls.filter(Boolean) : [];
+          console.log('🖼️ ItemDescription: Media URLs found:', mediaUrls);
+          console.log('🖼️ ItemDescription: Product image:', found.image);
+          
           if (mediaUrls.length > 0) {
             setThumbnails(mediaUrls);
             setMainImage(mediaUrls[0]);
+            setCurrentImageIndex(0);
+            console.log('✅ ItemDescription: Using media URLs, total images:', mediaUrls.length);
           } else if (found.image && typeof found.image === 'string' && found.image !== '/placeholder.jpg') {
             setThumbnails([found.image]);
+            setMainImage(found.image);
+            setCurrentImageIndex(0);
+            console.log('✅ ItemDescription: Using single image');
           } else {
             setThumbnails(['/placeholder.jpg']);
+            setMainImage('/placeholder.jpg');
+            setCurrentImageIndex(0);
+            console.log('⚠️ ItemDescription: Using placeholder image');
           }
         } else {
           console.log('❌ ItemDescription: Product not found');
@@ -162,22 +174,21 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
     setZoomStyle({});
   };
 
-  const handleMouseMove2 = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!imgRef2.current) return;
-    
-    const { left, top, width, height } = imgRef2.current.getBoundingClientRect();
-    const x = ((e.clientX - left) / width) * 100;
-    const y = ((e.clientY - top) / height) * 100;
-    
-    setZoomStyle2({
-      backgroundImage: `url(${thumbnails[1] || thumbnails[0] || mainImage})`,
-      backgroundPosition: `${x}% ${y}%`,
-      backgroundSize: '200%',
-    });
+  // Handle image selection
+  const handleImageSelect = (index: number) => {
+    setCurrentImageIndex(index);
+    setMainImage(thumbnails[index]);
   };
 
-  const handleMouseLeave2 = () => {
-    setZoomStyle2({});
+  // Handle next/previous image
+  const handleNextImage = () => {
+    const nextIndex = (currentImageIndex + 1) % thumbnails.length;
+    handleImageSelect(nextIndex);
+  };
+
+  const handlePrevImage = () => {
+    const prevIndex = currentImageIndex === 0 ? thumbnails.length - 1 : currentImageIndex - 1;
+    handleImageSelect(prevIndex);
   };
 
   const handleImageClick = (imageSrc: string) => {
@@ -269,87 +280,97 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
 
   return (
     <div className="bg-white min-h-screen">
+      <style jsx>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;  /* Internet Explorer 10+ */
+          scrollbar-width: none;  /* Firefox */
+        }
+        .scrollbar-hide::-webkit-scrollbar { 
+          display: none;  /* Safari and Chrome */
+        }
+        
+        .modal-backdrop {
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+        }
+      `}</style>
       <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Main Product Layout - Lucendi Style */}
         <div className="flex flex-col lg:flex-row gap-0 max-w-7xl mx-auto">
           
-          {/* Left Column - Two Images Side by Side */}
+          {/* Left Column - All Images Side by Side */}
           <div className="w-full lg:w-[70%] pr-0 lg:pr-8">
-            <div className="flex gap-4">
-              {/* First Image */}
-              <div className="w-1/2">
-                <div 
-                  ref={imgRef}
-                  className="relative overflow-hidden rounded-lg w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
-                  style={{ aspectRatio: '4/5', minHeight: '400px' }}
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={handleMouseLeave}
-                  onClick={() => handleImageClick(mainImage)}
-                >
-                  <img
-                    src={mainImage}
-                    className="max-w-full max-h-full object-contain rounded-lg transition-all duration-300 group-hover:scale-105"
-                    alt="Product Image 1"
-                    style={{ maxHeight: '100%', maxWidth: '100%' }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/placeholder.jpg';
-                    }}
-                  />
-                  
-                  {/* Zoom overlay */}
-                  {Object.keys(zoomStyle).length > 0 && (
+            <div className="space-y-4">
+              {/* Display images in pairs */}
+              {Array.from({ length: Math.ceil(thumbnails.length / 2) }, (_, pairIndex) => (
+                <div key={pairIndex} className="flex gap-4">
+                  {/* First image in pair */}
+                  <div className="w-1/2">
                     <div 
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        ...zoomStyle,
-                        backgroundRepeat: 'no-repeat',
-                        zIndex: 10
-                      }}
-                    />
-                  )}
-                </div>
-              </div>
+                      ref={pairIndex === 0 ? imgRef : null}
+                      className="relative overflow-hidden rounded-lg w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
+                      style={{ aspectRatio: '4/5', minHeight: '400px' }}
+                      onMouseMove={pairIndex === 0 ? handleMouseMove : undefined}
+                      onMouseLeave={pairIndex === 0 ? handleMouseLeave : undefined}
+                      onClick={() => handleImageClick(thumbnails[pairIndex * 2])}
+                    >
+                      <Image
+                        src={thumbnails[pairIndex * 2]}
+                        width={600}
+                        height={400}
+                        className="max-w-full max-h-full object-contain rounded-lg transition-all duration-300 group-hover:scale-105"
+                        alt={`Product Image ${pairIndex * 2 + 1}`}
+                        style={{ maxHeight: '100%', maxWidth: '100%' }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.jpg';
+                        }}
+                      />
+                      
+                      {/* Zoom overlay only for first image */}
+                      {pairIndex === 0 && Object.keys(zoomStyle).length > 0 && (
+                        <div 
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            ...zoomStyle,
+                            backgroundRepeat: 'no-repeat',
+                            zIndex: 10
+                          }}
+                        />
+                      )}
+                    </div>
+                  </div>
 
-              {/* Second Image */}
-              <div className="w-1/2">
-                <div 
-                  ref={imgRef2}
-                  className="relative overflow-hidden rounded-lg w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
-                  style={{ aspectRatio: '4/5', minHeight: '400px' }}
-                  onMouseMove={handleMouseMove2}
-                  onMouseLeave={handleMouseLeave2}
-                  onClick={() => handleImageClick(thumbnails[1] || thumbnails[0] || mainImage)}
-                >
-                  <img
-                    src={thumbnails[1] || thumbnails[0] || mainImage}
-                    className="max-w-full max-h-full object-contain rounded-lg transition-all duration-300 group-hover:scale-105"
-                    alt="Product Image 2"
-                    style={{ maxHeight: '100%', maxWidth: '100%' }}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '/placeholder.jpg';
-                    }}
-                  />
-                  
-                  {/* Zoom overlay */}
-                  {Object.keys(zoomStyle2).length > 0 && (
-                    <div 
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        ...zoomStyle2,
-                        backgroundRepeat: 'no-repeat',
-                        zIndex: 10
-                      }}
-                    />
+                  {/* Second image in pair (if exists) */}
+                  {thumbnails[pairIndex * 2 + 1] && (
+                    <div className="w-1/2">
+                      <div 
+                        className="relative overflow-hidden rounded-lg w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
+                        style={{ aspectRatio: '4/5', minHeight: '400px' }}
+                        onClick={() => handleImageClick(thumbnails[pairIndex * 2 + 1])}
+                      >
+                        <Image
+                          src={thumbnails[pairIndex * 2 + 1]}
+                          width={600}
+                          height={400}
+                          className="max-w-full max-h-full object-contain rounded-lg transition-all duration-300 group-hover:scale-105"
+                          alt={`Product Image ${pairIndex * 2 + 2}`}
+                          style={{ maxHeight: '100%', maxWidth: '100%' }}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/placeholder.jpg';
+                          }}
+                        />
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Right Column - Product Details */}
-          <div className="w-full lg:w-[30%]">
+          {/* Right Column - Product Details - Sticky */}
+          <div className="w-full lg:w-[30%] lg:sticky lg:top-8 lg:self-start lg:max-h-screen lg:overflow-y-auto scrollbar-hide">
             {/* Product Information - Lucendi Style */}
             <div className="mb-8">
               {/* Brand/Category Line */}
@@ -459,7 +480,11 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                     <p className="text-xs text-gray-600 mb-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
                       Usually ready in 2-4 days
                     </p>
-                    <button className="text-xs text-orange-600 hover:text-orange-700 underline" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                    <button 
+                      onClick={() => setIsStoreModalOpen(true)}
+                      className="text-xs text-orange-600 hover:text-orange-700 underline" 
+                      style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
+                    >
                       View store information
                     </button>
                   </div>
@@ -592,7 +617,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                           </div>
 
                           {/* Recent Reviews */}
-                          <div className="space-y-3 max-h-48 overflow-y-auto">
+                          <div className="space-y-3 max-h-48 overflow-y-auto scrollbar-hide">
                             {reviews.slice(0, 3).map((review) => (
                               <div key={review.id} className="bg-white rounded-lg border border-gray-200 p-3">
                                 <div className="flex items-start gap-2">
@@ -691,12 +716,132 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
             >
               <Icon icon="mdi:close" className="text-2xl" />
             </button>
-            <img
+            <Image
               src={selectedImage}
               alt="Product Image"
+              width={800}
+              height={600}
               className="max-w-full max-h-full object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Store Information Modal */}
+      {isStoreModalOpen && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-[9999] flex items-center justify-end p-4" onClick={() => setIsStoreModalOpen(false)}>
+          <div className="bg-white w-full max-w-md h-full max-h-[90vh] rounded-l-lg shadow-2xl animate-slide-in-right overflow-y-auto scrollbar-hide" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                Store Information
+              </h2>
+              <button
+                onClick={() => setIsStoreModalOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <Icon icon="mdi:close" className="text-xl text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-6">
+              {/* Store Logo/Header */}
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
+                  <Image src="/izaj.jpg" alt="IZAJ Logo" width={80} height={80} className="object-cover" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 700 }}>
+                  IZAJ Lighting Centre
+                </h3>
+                <p className="text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                  Premium Lighting Solutions
+                </p>
+              </div>
+
+              {/* Store Details */}
+              <div className="space-y-4">
+                {/* Address */}
+                <div className="flex items-start gap-3">
+                  <Icon icon="mdi:map-marker" className="text-black text-xl mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                      Address
+                    </h4>
+                    <p className="text-gray-700 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                      173 1, San Pablo City<br />
+                      4000 Laguna, Philippines
+                    </p>
+                  </div>
+                </div>
+
+                {/* Contact Information */}
+                <div className="flex items-start gap-3">
+                  <Icon icon="mdi:phone" className="text-black text-xl mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                      Phone
+                    </h4>
+                    <p className="text-gray-700" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                      +63 (49) 123-4567
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Icon icon="mdi:email" className="text-black text-xl mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                      Email
+                    </h4>
+                    <p className="text-gray-700" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                      info@izajlighting.com
+                    </p>
+                  </div>
+                </div>
+
+                {/* Business Hours */}
+                <div className="flex items-start gap-3">
+                  <Icon icon="mdi:clock" className="text-black text-xl mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                      Business Hours
+                    </h4>
+                    <div className="text-gray-700 space-y-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                      <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
+                      <p>Saturday: 9:00 AM - 5:00 PM</p>
+                      <p>Sunday: 10:00 AM - 4:00 PM</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Services */}
+                <div className="flex items-start gap-3">
+                  <Icon icon="mdi:tools" className="text-black text-xl mt-1 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                      Services
+                    </h4>
+                    <ul className="text-gray-700 space-y-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                      <li>• Product Consultation</li>
+                      <li>• Installation Services</li>
+                      <li>• Custom Lighting Design</li>
+                      <li>• Pickup & Delivery</li>
+                      <li>• Warranty Support</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-4 space-y-3">
+                <button className="w-full bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                  Get Directions
+                </button>
+                
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -714,6 +859,19 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
         }
         .animate-scale-in {
           animation: scale-in 0.3s ease-out;
+        }
+        @keyframes slide-in-right {
+          from {
+            opacity: 0;
+            transform: translateX(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        .animate-slide-in-right {
+          animation: slide-in-right 0.3s ease-out;
         }
       `}</style>
       

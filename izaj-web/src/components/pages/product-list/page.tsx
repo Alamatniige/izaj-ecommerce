@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
 import { getAllProducts } from '../../../services/productService';
+import { InternalApiService } from '../../../services/internalApi';
 import { useRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 import ProductListSidebar from './ProductListSidebar';
 import ProductListMain from './ProductListMain';
@@ -20,6 +21,7 @@ type Product = {
   rating: number;
   reviewCount: number;
   image: string;
+  mediaUrls?: string[];
   isNew?: boolean;
   isOnSale?: boolean;
   size?: string;
@@ -197,31 +199,100 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     setDeals(sampleDeals);
   }, []);
 
-  // Fetch products from internal API
+  // Fetch products from internal API (all products)
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const serviceProducts = await getAllProducts();
+        console.log('🔄 ProductList: Starting to fetch all products...');
         
-        // Transform service products to product list products
-        const transformedProducts: Product[] = serviceProducts.map(product => ({
-          id: product.id,
-          name: product.name,
-          description: product.description || '',
-          price: parseFloat(product.price.replace(/[₱,]/g, '')) || 0,
-          rating: 4.5, // Default rating
-          reviewCount: 0, // Default review count
-          image: product.image,
-          colors: product.colors || ["black"],
-          isOnSale: false, // Default
-          isNew: true, // Default
-          category: getCategoryFromName(product.name) // Use real category from product name
-        }));
+        // Fetch all products
+        const allProductsData = await InternalApiService.getAllProducts();
+        
+        console.log('📦 ProductList: Received all products:', allProductsData);
+        console.log('📦 ProductList: Total products count:', allProductsData?.length || 0);
+        
+        // Transform all products and categorize them
+        const transformedProducts = allProductsData.map(product => {
+          const productId = parseInt(product.product_id) || 0;
+          const price = parseFloat(product.price.toString());
+          
+          // Check if product is new (multiple criteria)
+          const ninetyDaysAgo = new Date();
+          ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+          const oneYearAgo = new Date();
+          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+          
+          // Product is new if:
+          // 1. Published within last 90 days, OR
+          // 2. Has "new" in the name, OR  
+          // 3. Has "new" in the category, OR
+          // 4. Published within last year (as fallback)
+          const isNew = (
+            new Date(product.inserted_at) >= ninetyDaysAgo ||
+            product.product_name.toLowerCase().includes('new') ||
+            product.category?.toLowerCase().includes('new') ||
+            new Date(product.inserted_at) >= oneYearAgo
+          );
+          
+          // Use real data only
+          
+          // Check if product is on sale - be more lenient for testing
+          const isOnSale = product.on_sale === true || (product.sale && product.sale.length > 0);
+          
+          // Debug logging for products with badges
+          if (isOnSale || isNew) {
+            console.log(`🏷️ Product ${product.product_name}:`, {
+              isNew: isNew,
+              isOnSale: isOnSale,
+              reason_new: isNew ? 'Has NEW criteria' : 'No NEW criteria',
+              reason_sale: isOnSale ? 'Has SALE criteria' : 'No SALE criteria'
+            });
+          }
+          let finalPrice = price;
+          let originalPrice = price;
+          
+          if (isOnSale) {
+            const saleData = product.sale[0];
+          const discountPercent = saleData?.percentage || 0;
+          const fixedDiscount = saleData?.fixed_amount || 0;
+          
+          // Calculate original price based on discount type
+          if (discountPercent > 0) {
+            originalPrice = Math.round(price / (1 - discountPercent / 100));
+          } else if (fixedDiscount > 0) {
+            originalPrice = price + fixedDiscount;
+          }
+          
+            finalPrice = originalPrice - (discountPercent > 0 ? (originalPrice * discountPercent / 100) : fixedDiscount);
+          }
+          
+          return {
+              id: productId,
+              name: product.product_name,
+              description: product.description || '',
+            price: finalPrice,
+            originalPrice: isOnSale ? originalPrice : undefined,
+              rating: 4.5, // Default rating
+              reviewCount: 0, // Default review count
+              image: product.media_urls?.[0] || "/placeholder.jpg",
+              mediaUrls: product.media_urls || [],
+              colors: ["black"], // Default color
+            isOnSale: isOnSale,
+            isNew: isNew,
+              category: product.category || getCategoryFromName(product.product_name)
+          };
+        });
+        
+        console.log('✅ ProductList: Transformed products:', transformedProducts);
+        console.log('✅ ProductList: Total products after transformation:', transformedProducts.length);
+        console.log('✅ ProductList: New products in final list:', transformedProducts.filter(p => p.isNew).length);
+        console.log('✅ ProductList: Sales products in final list:', transformedProducts.filter(p => p.isOnSale).length);
+        console.log('✅ ProductList: Both new and sales products:', transformedProducts.filter(p => p.isNew && p.isOnSale).length);
         
         setAllProducts(transformedProducts);
         setFilteredProducts(transformedProducts);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('❌ ProductList: Error fetching products:', error);
         setAllProducts([]);
         setFilteredProducts([]);
       } finally {

@@ -23,6 +23,7 @@ type CollectionProduct = {
   rating: number;
   reviewCount: number;
   image: string;
+  mediaUrls?: string[];
   colors?: string[];
   isOnSale?: boolean;
   isNew?: boolean;
@@ -257,6 +258,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           rating: 4.5, // Default rating
           reviewCount: 0, // Default review count
           image: product.image,
+          mediaUrls: product.mediaUrls || [],
           colors: product.colors || ["black"],
           isOnSale: false, // Default
           isNew: true, // Default for fresh drops

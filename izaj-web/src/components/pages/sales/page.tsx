@@ -10,6 +10,7 @@ import SalesRecentlyViewed from './SalesRecentlyViewed';
 import SalesSortModal from './SalesSortModal';
 import SalesFilterDrawer from './SalesFilterDrawer';
 import { getAllProducts } from '../../../services/productService';
+import { InternalApiService } from '../../../services/internalApi';
  
 
 type SalesProduct = {
@@ -21,6 +22,7 @@ type SalesProduct = {
   rating: number;
   reviewCount: number;
   image: string;
+  mediaUrls?: string[];
   isNew?: boolean;
   isOnSale?: boolean;
   size?: string;
@@ -212,37 +214,46 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
     setDeals(sampleDeals);
   }, []);
 
-  // Fetch real products from internal API
+  // Fetch sales products from API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log('🔄 Sales: Starting to fetch products...');
-        const products = await getAllProducts();
-        console.log('📦 Sales: Received products:', products);
+        console.log('🔄 Sales: Starting to fetch sales products...');
+        const salesProductsData = await InternalApiService.getSalesProducts();
+        console.log('📦 Sales: Received sales products:', salesProductsData);
         
         // Transform products to SalesProduct format
-        const salesProducts: SalesProduct[] = products.map((product, index) => {
-          // Convert price from string (₱32,995) to number
-          const priceString = product.price.replace(/[₱,]/g, '');
-          const price = parseFloat(priceString);
+        const salesProducts: SalesProduct[] = salesProductsData.map((product, index) => {
+          // Convert price from number to number
+          const price = parseFloat(product.price.toString());
           
-          // Create a slight discount for sales effect (5-15% off)
-          const discountPercent = 5 + (index % 10); // 5-14% discount
-          const originalPrice = Math.round(price / (1 - discountPercent / 100));
+          // Get discount information from sale data
+          const saleData = product.sale?.[0];
+          const discountPercent = saleData?.percentage || 0;
+          const fixedDiscount = saleData?.fixed_amount || 0;
+          
+          // Calculate original price based on discount type
+          let originalPrice = price;
+          if (discountPercent > 0) {
+            originalPrice = Math.round(price / (1 - discountPercent / 100));
+          } else if (fixedDiscount > 0) {
+            originalPrice = price + fixedDiscount;
+          }
           
           return {
-            id: product.id,
-            name: product.name,
-            description: `High-quality ${product.name.toLowerCase()} perfect for any space.`,
-            price: price,
+            id: parseInt(product.product_id) || 0,
+            name: product.product_name,
+            description: product.description || `High-quality ${product.product_name.toLowerCase()} perfect for any space.`,
+            price: originalPrice - (discountPercent > 0 ? (originalPrice * discountPercent / 100) : fixedDiscount),
             originalPrice: originalPrice,
             rating: 4 + (index % 2), // 4 or 5 stars
             reviewCount: 10 + (index % 20), // 10-29 reviews
-            image: product.image,
-            colors: product.colors || ["black"],
+            image: product.media_urls?.[0] || "/placeholder.jpg",
+            mediaUrls: product.media_urls || [],
+            colors: ["black"], // Default color
             isOnSale: true,
-            isNew: index < 5, // First 5 products are "new"
-            category: getCategoryFromName(product.name)
+            isNew: false, // These are sales products, not new
+            category: product.category
           };
         });
         
@@ -250,7 +261,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         setAllProducts(salesProducts);
         setFilteredProducts(salesProducts);
       } catch (error) {
-        console.error('❌ Sales: Error fetching products:', error);
+        console.error('❌ Sales: Error fetching sales products:', error);
         setAllProducts([]);
         setFilteredProducts([]);
       } finally {

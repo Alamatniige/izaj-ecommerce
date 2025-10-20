@@ -97,6 +97,7 @@ function capitalize(str: string) {
   const [isMobile, setIsMobile] = useState(false);
   const [isClient, setIsClient] = useState(false);
   
+  
     // Compute mobile breakpoint on client only to avoid SSR hydration mismatch
     useEffect(() => {
       setIsClient(true);
@@ -107,6 +108,7 @@ function capitalize(str: string) {
       window.addEventListener('resize', updateIsMobile);
       return () => window.removeEventListener('resize', updateIsMobile);
     }, []);
+
   
     // Scroll effects
     useEffect(() => {
@@ -1124,7 +1126,7 @@ function capitalize(str: string) {
                   <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>HOME</span>
                   
                   {/* Ripple Effects */}
-                  {ripples.map(ripple => (
+                  {isClient && ripples.map(ripple => (
                     <span
                       key={ripple.id}
                       className="absolute rounded-full bg-black opacity-20 animate-ripple"
@@ -1198,7 +1200,7 @@ function capitalize(str: string) {
                   />
                   
                   {/* Ripple Effects */}
-                  {ripples.map(ripple => (
+                  {isClient && ripples.map(ripple => (
                     <span
                       key={ripple.id}
                       className="absolute rounded-full bg-black opacity-20 animate-ripple"
@@ -1488,7 +1490,7 @@ function capitalize(str: string) {
                 )}
               </li>
               
-              {/* NEW NAVIGATION with Badge */}
+              {/* NEW NAVIGATION */}
               <li className="flex items-center h-full relative">
                 {/* Vertical Divider */}
                 <div className="absolute -right-6 top-1/2 transform -translate-y-1/2 h-6 w-px bg-gray-300" />
@@ -1519,13 +1521,8 @@ function capitalize(str: string) {
                   
                   <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>NEW</span>
                   
-                  {/* Number Badge */}
-                  <span className="ml-1 px-1.5 py-0.5 bg-black text-white text-xs rounded-full font-bold" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
-                    5
-                  </span>
-                  
                   {/* Ripple Effects */}
-                  {ripples.map(ripple => (
+                  {isClient && ripples.map(ripple => (
                     <span
                       key={ripple.id}
                       className="absolute rounded-full bg-black opacity-20 animate-ripple"
@@ -1577,7 +1574,7 @@ function capitalize(str: string) {
                   <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>SALES</span>
                   
                   {/* Ripple Effects */}
-                  {ripples.map(ripple => (
+                  {isClient && ripples.map(ripple => (
                     <span
                       key={ripple.id}
                       className="absolute rounded-full bg-black opacity-20 animate-ripple"
@@ -1626,7 +1623,7 @@ function capitalize(str: string) {
                   <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>ABOUT US</span>
                   
                   {/* Ripple Effects */}
-                  {ripples.map(ripple => (
+                  {isClient && ripples.map(ripple => (
                     <span
                       key={ripple.id}
                       className="absolute rounded-full bg-black opacity-20 animate-ripple"

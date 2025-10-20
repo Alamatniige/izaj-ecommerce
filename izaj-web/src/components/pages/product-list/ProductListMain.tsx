@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
 import Link from "next/link";
+import Image from "next/image";
 
 type Product = {
   description: string;
@@ -13,6 +14,7 @@ type Product = {
   rating: number;
   reviewCount: number;
   image: string;
+  mediaUrls?: string[];
   isNew?: boolean;
   isOnSale?: boolean;
   size?: string;
@@ -51,6 +53,75 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
   totalPages,
   handlePageChange,
 }) => {
+  // Image cycling states
+  const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState<{ [key: number]: number }>({});
+  const [isImageTransitioning, setIsImageTransitioning] = useState<{ [key: number]: boolean }>({});
+
+  // Handle hover events for image switching
+  const handleMouseEnter = (productId: number) => {
+    setHoveredProduct(productId);
+    setCurrentImageIndex(prev => ({
+      ...prev,
+      [productId]: 0
+    }));
+  };
+
+  const handleMouseLeave = (productId: number) => {
+    setHoveredProduct(null);
+    setCurrentImageIndex(prev => ({
+      ...prev,
+      [productId]: 0
+    }));
+  };
+
+  // Get current image for a product
+  const getCurrentImage = (product: Product) => {
+    if (!product.mediaUrls || product.mediaUrls.length === 0) {
+      return product.image;
+    }
+    
+    const index = currentImageIndex[product.id] || 0;
+    return product.mediaUrls[index] || product.image;
+  };
+
+  // Image cycling effect when hovering
+  useEffect(() => {
+    if (!hoveredProduct) return;
+
+    const product = filteredProducts.find(p => p.id === hoveredProduct);
+    if (!product || !product.mediaUrls || product.mediaUrls.length <= 1) return;
+
+    const interval = setInterval(() => {
+      // Start fade out
+      setIsImageTransitioning(prev => ({
+        ...prev,
+        [hoveredProduct]: true
+      }));
+
+      // After fade out, change image and fade in
+      setTimeout(() => {
+        setCurrentImageIndex(prev => {
+          const currentIndex = prev[hoveredProduct] || 0;
+          const nextIndex = (currentIndex + 1) % product.mediaUrls!.length;
+          return {
+            ...prev,
+            [hoveredProduct]: nextIndex
+          };
+        });
+
+        // Fade in
+        setTimeout(() => {
+          setIsImageTransitioning(prev => ({
+            ...prev,
+            [hoveredProduct]: false
+          }));
+        }, 50);
+      }, 300); // Half of transition duration
+    }, 1200); // Increased interval to account for fade time
+
+    return () => clearInterval(interval);
+  }, [hoveredProduct, filteredProducts]);
   return (
     <main className="w-full lg:w-5/6 p-0 sm:p-4 md:px-8 lg:px-12 mobile-center-main">
       <div className="mb-4 sm:mb-6">
@@ -161,42 +232,46 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white overflow-hidden relative flex flex-col h-full max-w-sm mx-auto w-full">
-              <div className="relative flex-grow">
-                <img src={product.image} alt={product.name} className="w-full h-56 sm:h-80 object-cover" />
+            <div 
+              key={product.id} 
+              className="bg-white overflow-hidden relative flex flex-col max-w-sm mx-auto w-full rounded-lg shadow-sm"
+              onMouseEnter={() => handleMouseEnter(product.id)}
+              onMouseLeave={() => handleMouseLeave(product.id)}
+            >
+              <div className="relative">
+                <Image 
+                  src={getCurrentImage(product)} 
+                  alt={product.name} 
+                  width={400}
+                  height={320}
+                  className={`w-full h-56 sm:h-80 object-cover transition-all duration-300 hover:scale-110 ${
+                    isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
+                  }`} 
+                />
+                {/* Product Badges */}
+                {/* NEW badge - left side */}
                 {product.isNew && (
-                  <div className="absolute top-3 right-3 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md z-10">
-                    NEW
-                  </div>
+                  <span className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap">NEW</span>
                 )}
+                {/* SALE badge - right side */}
                 {product.isOnSale && (
-                  <div className="absolute top-3 left-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md z-10">
-                    SALE
-                  </div>
+                  <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap">SALE</span>
                 )}
               </div>
-              <div className="p-3 sm:p-4 flex flex-col flex-grow">
-                <h3 className="font-semibold text-gray-800 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
-                <div className="flex items-center space-x-2 mb-2 mt-2">
-                  {product.colors?.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => handleColorSelect(product.id, color)}
-                      className={`w-3 h-3 sm:w-4 sm:h-4 border border-gray-300 transition-all duration-200 ${
-                        selectedColors[product.id] === color ? 'ring-2 ring-black ring-offset-2' : ''
-                      }`}
-                      style={{ backgroundColor: color }}
-                      title={color.charAt(0).toUpperCase() + color.slice(1)}
-                    />
-                  ))}
+              <div className="px-5 pt-4 pb-0 flex flex-col bg-white">
+                <div className="space-y-1.5">
+                  <h3 className="font-bold text-gray-900 text-sm font-lora text-left line-clamp-2 leading-tight">{product.name}</h3>
+                  <p className="font-bold text-gray-900 text-base font-lora">₱{product.price.toLocaleString()}</p>
+                  <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    <span className="w-2 h-2 rounded-full mr-1 bg-green-500"></span>
+                    In Stock
+                  </div>
                 </div>
-                <p className="font-bold text-gray-800 mt-auto text-sm sm:text-base">₱{product.price.toLocaleString()}</p>
-                <p className="text-green-600 text-xs mt-1">● In stock</p>
                 <Link
                   href={`/item-description/${product.id}`}
-                  className="mt-3 sm:mt-4 w-full bg-black text-white py-1.5 sm:py-2 hover:bg-gray-800 transition-colors duration-300 text-xs sm:text-sm text-center block"
+                  className="mt-3 w-full bg-black text-white py-2 px-3 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block font-lora font-semibold rounded-md border border-black"
                 >
-                  Choose options
+                  VIEW
                 </Link>
               </div>
             </div>
@@ -213,9 +288,11 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
                 {/* Image Section */}
                 <div className="relative w-full lg:w-72 xl:w-80 h-80 lg:h-72 flex items-center justify-center p-4 bg-white">
                   <div className="w-full h-full flex items-center justify-center">
-                    <img
+                    <Image
                       src={product.image}
                       alt={product.name}
+                      width={400}
+                      height={300}
                       className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300 transform translate-y-4"
                     />
                   </div>

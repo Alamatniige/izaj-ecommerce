@@ -213,4 +213,61 @@ export class InternalApiService {
       return [];
     }
   }
+
+  static async getNewProducts(): Promise<InternalProduct[]> {
+    try {
+      console.log('🔄 InternalApiService.getNewProducts: Starting...');
+      
+      const response = await fetch('/api/new-products');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ InternalApiService.getNewProducts: Result:', data);
+      return data || [];
+    } catch (error) {
+      console.error('❌ InternalApiService.getNewProducts: Error:', error);
+      return [];
+    }
+  }
+
+  static async getSalesProducts(): Promise<InternalProduct[]> {
+    try {
+      console.log('🔄 InternalApiService.getSalesProducts: Starting...');
+      
+      const response = await fetch('/api/sales-products');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ InternalApiService.getSalesProducts: Result:', data);
+      return data || [];
+    } catch (error) {
+      console.error('❌ InternalApiService.getSalesProducts: Error:', error);
+      return [];
+    }
+  }
+
+  static async getAllProducts(): Promise<InternalProduct[]> {
+    try {
+      console.log('🔄 InternalApiService.getAllProducts: Starting...');
+      
+      const response = await fetch('/api/all-products');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ InternalApiService.getAllProducts: Result:', data);
+      return data || [];
+    } catch (error) {
+      console.error('❌ InternalApiService.getAllProducts: Error:', error);
+      return [];
+    }
+  }
 }
