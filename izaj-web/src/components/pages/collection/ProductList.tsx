@@ -123,150 +123,62 @@ const ProductList: React.FC<ProductListProps> = ({
     return () => clearInterval(interval);
   }, [hoveredProduct, filteredProducts]);
   return (
-    <main className="w-full lg:w-5/6 p-0 sm:p-4 md:px-8 lg:px-12 mobile-center-main">
-      <div className="mb-4 sm:mb-6">
-        <h1 className="text-xl sm:text-2xl font-extrabold text-black mb-2 sm:mb-3 mt-10 sm:mt-0" style={{ fontFamily: 'Avenir Next, sans-serif' }} >Fresh Drops</h1>
-        
-        {/* Banner with overlay text */}
-        {isCarousel ? (
-          <div className="relative mt-4 mb-10 w-full">
-            <img src="/collection.jpg" alt="Banner" className="w-full h-24 object-cover  shadow-sm" />
-            <div className="absolute bottom-0 left-0 w-full flex items-end justify-center pb-8">
-              <h2 className="text-lg font-bold text-white text-center w-full drop-shadow-md" style={{textShadow: '0 2px 8px rgba(0,0,0,0.7)'}}>Fresh Drops</h2>
-            </div>
-          </div>
-        ) : (
-          <div className="relative mb-4 sm:mb-6 mt-16 mb-16">
-            <img src="/collection.jpg" alt="Banner" className="w-full h-32 sm:h-56 object-cover shadow-sm" />
-            <div className="absolute inset-0 bg-black bg-opacity-20 flex flex-col justify-center items-start p-4 sm:p-8 ">
-              <h2 className="text-lg sm:text-3xl font-bold text-white mb-1 sm:mb-2" >Fresh Drops</h2>
-              <p className="text-white text-xs sm:text-lg mb-1 sm:mb-3">Ready to ship fresh new items!</p>
-              <button className="bg-white text-black px-3 sm:px-5 py-1.5 sm:py-2 font-medium hover:bg-black hover:text-white transition-all duration-300 text-xs sm:text-base">
-                Explore Collection
-              </button>
-            </div>
-          </div>
-        )}
-        
-        {/* Filter and Sort Controls - Now Functional */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 p-2 sm:p-4 rounded-md gap-2 sm:gap-0">
-          {/* Left: Product count (desktop only, hidden on md and below) */}
-          <span className="hidden lg:inline text-xs sm:text-sm text-black">{filteredProducts.length} products</span>
-          {/* Mobile: Filter, Sort by, Grid/List view arrangement */}
-          {isCarousel ? (
-            <div className="flex w-full items-center justify-between">
-              {/* Left: Filter button */}
-              <button
-                type="button"
-                className="inline-flex items-center text-xs text-black focus:outline-none"
-                onClick={() => setFilterDrawerOpen(true)}
-              >
-                <Icon icon="mdi:filter-variant" width="18" height="18" className="mr-1" />
-                Filter
-              </button>
-              {/* Center: Sort by button */}
-              <div className="flex-1 flex justify-center">
-                <button
-                  id="sortby-btn"
-                  onClick={() => setSortModalOpen(true)}
-                  className="flex items-center text-xs text-black px-0 py-0 bg-transparent hover:underline focus:outline-none"
-                >
-                  <span className="mr-1">Sort by</span>
-                  <Icon icon="mdi:chevron-down" width="18" height="18" />
-                </button>
-              </div>
-              {/* Right: Grid/List view buttons */}
-              <div className="flex ml-2">
-                <button 
-                  onClick={() => handleViewModeChange('grid')}
-                  className={`p-1 border border-r-0 rounded-l-md ${viewMode === 'grid' ? 'bg-black text-white' : 'bg-white text-black hover:bg-black hover:text-white'}`}
-                  title="Grid view"
-                >
-                  <Icon icon="mdi:grid" width="16" height="16" />
-                </button>
-                <button 
-                  onClick={() => handleViewModeChange('list')}
-                  className={`p-1 border rounded-r-md ${viewMode === 'list' ? 'bg-black text-white' : 'bg-white text-black hover:bg-black hover:text-white'}`}
-                  title="List view"
-                >
-                  <Icon icon="mdi:format-list-bulleted" width="16" height="16" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            // Desktop: unchanged
-            <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-end ml-auto">
-              {/* Desktop: native select for Sort by */}
-              <select
-                value={sortOption}
-                onChange={e => handleSortChange(e.target.value)}
-                className="hidden sm:inline-block text-xs sm:text-sm text-black px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black bg-white mr-2"
-              >
-                <option value="Alphabetical, A-Z">Alphabetical, A-Z</option>
-                <option value="Alphabetical, Z-A">Alphabetical, Z-A</option>
-                <option value="Price, Low to High">Price, Low to High</option>
-                <option value="Price, High to Low">Price, High to Low</option>
-              </select>
-              <div className="flex ml-2">
-                <button 
-                  onClick={() => handleViewModeChange('grid')}
-                  className={`p-1 border border-r-0 rounded-l-md ${viewMode === 'grid' ? 'bg-black text-white' : 'bg-white text-black hover:bg-black hover:text-white'}`}
-                  title="Grid view"
-                >
-                  <Icon icon="mdi:grid" width="16" height="16" />
-                </button>
-                <button 
-                  onClick={() => handleViewModeChange('list')}
-                  className={`p-1 border rounded-r-md ${viewMode === 'list' ? 'bg-black text-white' : 'bg-white text-black hover:bg-black hover:text-white'}`}
-                  title="List view"
-                >
-                  <Icon icon="mdi:format-list-bulleted" width="16" height="16" />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+    <main className="w-full lg:w-5/6 p-0 sm:p-4 md:px-1 lg:px-1 mobile-center-main">
 
       {/* Product Grid/List - Responsive Design */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {filteredProducts.map((product) => (
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {filteredProducts.map((product, index) => (
             <div 
-              key={product.id} 
-              className="bg-white overflow-hidden relative flex flex-col max-w-sm mx-auto w-full rounded-lg shadow-sm"
+              key={`product-${index}`} 
+              className="overflow-hidden relative flex flex-col w-full group"
               onMouseEnter={() => handleMouseEnter(product.id)}
               onMouseLeave={() => handleMouseLeave(product.id)}
             >
-              <div className="relative">
+              <div 
+                className="relative overflow-hidden"
+              >
                 <Image 
                   src={getCurrentImage(product)} 
                   alt={product.name} 
                   width={400}
                   height={320}
-                  className={`w-full h-56 sm:h-80 object-cover transition-all duration-300 hover:scale-110 ${
+                  className={`w-full h-64 sm:h-96 object-cover transition-all duration-300 hover:scale-110 ${
                     isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
                   }`} 
                 />
                 {/* Product Badges */}
-                {/* NEW badge - left side */}
-                {product.isNew && (
-                  <span className="absolute top-3 left-3 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap">NEW</span>
+                {/* NEW badge - only show if product is new and not on sale */}
+                {product.isNew && !product.isOnSale && (
+                  <span className="absolute top-3 left-3 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap" style={{ backgroundColor: '#10B981' }}>NEW</span>
                 )}
-                {/* SALE badge - right side */}
+                {/* SALE badge - only show if product is on sale */}
                 {product.isOnSale && (
-                  <span className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap">SALE</span>
+                  <span className="absolute top-3 left-3 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap" style={{ backgroundColor: '#EF4444' }}>SALE</span>
                 )}
+                
               </div>
-              <div className="px-5 pt-4 pb-0 flex flex-col bg-white">
+              <div className="pt-5 pb-0 flex flex-col">
                 <div className="space-y-1.5">
-                  <h3 className="font-bold text-gray-900 text-sm font-lora text-left line-clamp-2 leading-tight">{product.name}</h3>
-                  <p className="font-bold text-gray-900 text-base font-lora">{formatCurrency(product.price)}</p>
-                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                  {product.category && (
+                    <div className="relative">
+                      <p className="text-gray-500 text-xs text-left group-hover:opacity-0 transition-opacity duration-300" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{product.category}</p>
+                      <Link
+                        href={`/item-description/${product.id}?source=collection`}
+                        className="absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-80 transition-all duration-300 text-sm text-center block rounded-sm border opacity-0 group-hover:opacity-100"
+                        style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: '#423f3f', borderColor: '#423f3f', letterSpacing: '0.1em' }}
+                      >
+                        VIEW
+                      </Link>
+                    </div>
+                  )}
+                  <h3 className="text-gray-900 text-base text-left line-clamp-2 leading-tight" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.name}</h3>
+                  <p className="text-gray-900 text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>₱{product.price.toLocaleString()}</p>
+                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
                     (product.stock || 0) > 5 ? 'bg-green-100 text-green-800' : 
                     (product.stock || 0) > 0 ? 'bg-orange-100 text-orange-800' : 
                     'bg-red-100 text-red-800'
-                  }`}>
+                  }`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                     <span className={`w-2 h-2 rounded-full mr-1 ${
                       (product.stock || 0) > 5 ? 'bg-green-500' : 
                       (product.stock || 0) > 0 ? 'bg-orange-500' : 
@@ -275,18 +187,15 @@ const ProductList: React.FC<ProductListProps> = ({
                     {(product.stock || 0) > 5 ? 'In Stock' : (product.stock || 0) > 0 ? 'Low Stock' : 'Out of Stock'}
                   </div>
                 </div>
-                <Link href={`/item-description/${product.id}?source=new`} className="mt-3 w-full bg-black text-white py-2 px-3 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block font-lora font-semibold rounded-md border border-black">
-                  VIEW
-                </Link>
               </div>
             </div>
           ))}
         </div>
       ) : (
         <div className="space-y-6">
-          {filteredProducts.map((product) => (
+          {filteredProducts.map((product, index) => (
             <div 
-              key={product.id}
+              key={`product-list-${index}`}
               className="group bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-300 overflow-hidden"
             >
               <div className="flex flex-col lg:flex-row">

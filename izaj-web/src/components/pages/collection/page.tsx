@@ -1,18 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from '@iconify/react';
-import { getAllProducts } from '../../../services/productService';
-import type { Product as ServiceProduct } from '../../../services/productService';
+import { InternalApiService } from '../../../services/internalApi';
 import ProductList from '@/components/pages/collection/ProductList';
-import FeaturedProducts from '@/components/pages/collection/FeaturedProducts';
-import ProductSuggestions from '@/components/common/ProductSuggestions';
 import SortModal from '@/components/pages/collection/SortModal';
 import FilterDrawer from '@/components/pages/collection/FilterDrawer';
 import Sidebar from '@/components/pages/collection/Sidebar';
  
 
-// Local product type for New/Collection page
+// Local product type for Collection page
 type CollectionProduct = {
   id: number;
   name: string;
@@ -30,24 +26,15 @@ type CollectionProduct = {
   stock?: number;
 };
 
-// Local sort helper for this page
-function sortProducts(products: CollectionProduct[], option: string): CollectionProduct[] {
-  const sorted = [...products];
-  switch (option) {
-    case 'Alphabetical, A-Z':
-      return sorted.sort((a, b) => a.name.localeCompare(b.name));
-    case 'Alphabetical, Z-A':
-      return sorted.sort((a, b) => b.name.localeCompare(a.name));
-    case 'Price, Low to High':
-      return sorted.sort((a, b) => a.price - b.price);
-    case 'Price, High to Low':
-      return sorted.sort((a, b) => b.price - a.price);
-    default:
-      return products;
-  }
+// Price range type
+interface PriceRange {
+  min: number;
+  max: number;
 }
 
-// moved to shared type: Product
+// Availability filter type - changed to array to match product-list
+type AvailabilityFilter = string[];
+
 
 interface CollectionProps {
   user?: {
@@ -67,19 +54,17 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [currentMainPage, setCurrentMainPage] = useState(1);
   const [productsPerMainPage] = useState(12);
-  const [sidebarDropdownOpen, setSidebarDropdownOpen] = useState(true);
-  const [architecturalDropdownOpen, setArchitecturalDropdownOpen] = useState(false);
-  const [mirrorsDropdownOpen, setMirrorsDropdownOpen] = useState(false);
-  const [fansDropdownOpen, setFansDropdownOpen] = useState(false);
-  const [] = useState(0);
-  const [, setDeals] = useState<{ id: number; title: string; oldPrice: string; newPrice: string; discount: string; image: string }[]>([]);
-  
   const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
   const [isCarousel, setIsCarousel] = useState(false);
   const [sortModalOpen, setSortModalOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-  const [selectCategoryOpen, setSelectCategoryOpen] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  
+  // New filter states
+  const [availabilityFilter, setAvailabilityFilter] = useState<AvailabilityFilter>([]);
+  const [priceRange, setPriceRange] = useState<PriceRange>({ min: 0, max: 0 });
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<number>(0);
 
 
   const handleColorSelect = (productId: number, color: string) => {
@@ -101,99 +86,50 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
 
 
 
-  // Sample deals data
-  useEffect(() => {
-    const sampleDeals = [
-      {
-        id: 1,
-        image: "ceiling.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 2,
-        image: "chadelier.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 3,
-        image: "cluster.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 4,
-        image: "pendant.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 5,
-        image: "floor.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 6,
-        image: "floor.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 7,
-        image: "floor.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 8,
-        image: "floor.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-    ];
-    
-    setDeals(sampleDeals);
-  }, []);
 
   // Fetch products from internal API
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const serviceProducts = await getAllProducts();
+        const serviceProducts = await InternalApiService.getAllProducts();
         
         // Transform service products to collection products
-        const transformedProducts: CollectionProduct[] = serviceProducts.map(product => ({
-          id: product.id,
-          name: product.name,
+        const transformedProducts: CollectionProduct[] = serviceProducts.map((product, index) => ({
+          id: index + 1,
+          name: product.product_name,
           description: product.description || '',
-          price: parseFloat(product.price.replace(/[₱,]/g, '')) || 0,
+          price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
           rating: 4.5, // Default rating
           reviewCount: 0, // Default review count
-          image: product.image,
-          mediaUrls: product.mediaUrls || [],
-          colors: product.colors || ["black"],
+          image: product.image_url || '',
+          mediaUrls: product.media_urls || [],
+          colors: (product as any).colors || ["black"],
           isOnSale: false, // Default
-          isNew: true, // Default for fresh drops
-          category: getCategoryFromName(product.name), // Use real category from product name
-          stock: product.stock || 0 // Include stock from Supabase
+          isNew: (
+            product.product_name.toLowerCase().includes('new') ||
+            product.category?.toLowerCase().includes('new') ||
+            product.description?.toLowerCase().includes('new')
+          ),
+          category: product.category,
+          stock: (() => {
+            // First check if there's a numeric stock field
+            if (typeof (product as any).stock === 'number') {
+              return (product as any).stock;
+            }
+            
+            // Fallback to status field
+            const normalizedStatus = (product as any).status?.toLowerCase() || '';
+            switch (normalizedStatus) {
+              case 'in stock':
+                return 10; // High stock
+              case 'low stock':
+                return 3; // Low stock
+              case 'out of stock':
+                return 0; // Out of stock
+              default:
+                return 10; // Default to in stock
+            }
+          })()
         }));
         
         setAllProducts(transformedProducts);
@@ -210,30 +146,54 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     fetchProducts();
   }, []);
 
+  // Get maximum price from all products
+  const getMaxPrice = () => {
+    if (allProducts.length === 0) return 282000; // fallback
+    return Math.max(...allProducts.map(product => product.price));
+  };
+
+  // Update price range when products are loaded
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      const maxPrice = getMaxPrice();
+      setMaxPrice(maxPrice);
+      setPriceRange(prev => ({
+        min: prev.min,
+        max: maxPrice
+      }));
+    }
+  }, [allProducts]);
+
+  // Get categories with counts
+  const getCategoriesWithCounts = () => {
+    const categoryCounts: { [key: string]: number } = {};
+    allProducts.forEach(product => {
+      if (product.category) {
+        categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
+      }
+    });
+    return categoryCounts;
+  };
+
+  // Handle header category selection
+  const handleHeaderCategorySelect = (category: string) => {
+    if (selectedCategory === category) {
+      setSelectedCategory('');
+    } else {
+      setSelectedCategory(category);
+    }
+  };
+
   // Handle sort change
   const handleSortChange = (option: string) => {
     setSortOption(option);
     setSortModalOpen(false);
-    let sortedProducts = [...filteredProducts];
-    switch(option) {
-      case 'Alphabetical, A-Z':
-        sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'Alphabetical, Z-A':
-        sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case 'Price, Low to High':
-        sortedProducts.sort((a, b) => a.price - b.price);
-        break;
-      case 'Price, High to Low':
-        sortedProducts.sort((a, b) => b.price - a.price);
-        break;
-      default:
-        break;
-    }
-    setFilteredProducts(sortedProducts);
-    setCurrentMainPage(1); // Reset to first page when sorting changes
   };
+
+  // Apply sorting when sortOption changes
+  useEffect(() => {
+    handleSortChange(sortOption);
+  }, [sortOption]);
 
   // Handle view mode change
   const handleViewModeChange = (mode: 'grid' | 'list') => {
@@ -253,41 +213,61 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     });
   };
 
-  // Filter products based on selected categories
+  // Filter and sort products
   useEffect(() => {
-    if (selectedCategories.length === 0) {
-      // If no categories selected, show all products
-      setFilteredProducts(allProducts);
-    } else {
-      // Filter products by selected categories
-      const filtered = allProducts.filter(product => 
-        selectedCategories.includes(product.category)
-      );
-      setFilteredProducts(filtered);
-    }
-    setCurrentMainPage(1); // Reset to first page when filtering changes
-  }, [selectedCategories, allProducts]);
+    let filtered = [...allProducts];
 
-  // Helper function to determine category from product name
-  const getCategoryFromName = (name: string): string => {
-    const nameLower = name.toLowerCase();
-    if (nameLower.includes('chandelier')) return 'Chandelier';
-    if (nameLower.includes('pendant')) return 'Pendant Light';
-    if (nameLower.includes('table') || nameLower.includes('lamp')) return 'Table Lamp';
-    if (nameLower.includes('floor')) return 'Floor Lamp';
-    if (nameLower.includes('wall')) return 'Wall Lamp';
-    if (nameLower.includes('ceiling')) return 'Ceiling Light';
-    if (nameLower.includes('recessed') || nameLower.includes('downlight')) return 'Recessed Lighting';
-    if (nameLower.includes('track')) return 'Track Lighting';
-    if (nameLower.includes('outdoor') || nameLower.includes('garden')) return 'Outdoor Lighting';
-    if (nameLower.includes('bulb')) return 'Bulb';
-    if (nameLower.includes('led') && nameLower.includes('strip')) return 'LED Strip';
-    if (nameLower.includes('spotlight')) return 'Spotlight';
-    if (nameLower.includes('smart')) return 'Smart Lighting';
-    if (nameLower.includes('emergency')) return 'Emergency Light';
-    if (nameLower.includes('lantern')) return 'Lantern';
-    return 'Lighting';
-  };
+    // Filter by availability
+    if (availabilityFilter.includes('in stock')) {
+      filtered = filtered.filter(product => (product.stock || 0) > 0);
+    }
+    if (availabilityFilter.includes('out of stock')) {
+      filtered = filtered.filter(product => (product.stock || 0) === 0);
+    }
+
+    // Filter by price range
+    filtered = filtered.filter(product => 
+      product.price >= priceRange.min && product.price <= priceRange.max
+    );
+
+    // Filter by header category selection (takes priority)
+    if (selectedCategory) {
+      filtered = filtered.filter(product => product.category === selectedCategory);
+    } else if (selectedCategories.length > 0) {
+      // Filter by sidebar categories if no header category selected
+      filtered = filtered.filter(product => 
+        product.category && selectedCategories.includes(product.category)
+      );
+    }
+
+    // Apply sorting
+    switch(sortOption) {
+      case 'Alphabetical, A-Z':
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'Alphabetical, Z-A':
+        filtered.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'Price, Low to High':
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case 'Price, High to Low':
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case 'Date, new to old':
+        // For now, keep original order (can be enhanced with actual date data)
+        break;
+      case 'Date, old to new':
+        // For now, keep original order (can be enhanced with actual date data)
+        break;
+      default:
+        break;
+    }
+
+    setFilteredProducts(filtered);
+    setCurrentMainPage(1); // Reset to first page when filtering changes
+  }, [allProducts, availabilityFilter, priceRange, selectedCategory, selectedCategories, sortOption]);
+
 
 
   // Update displayed products based on current page
@@ -321,6 +301,63 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Header Section - Full Width */}
+      <div className="mb-6 sm:mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-8 sm:mt-12 lg:mt-16" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+        Featured Collection
+        </h1>
+        
+        {/* Horizontal line under title */}
+        <div className="w-24 h-0.5 bg-gray-800 mx-auto mb-8"></div>
+        
+        <div className="max-w-4xl mx-auto">
+          <p className="text-gray-700 text-sm sm:text-base mb-6 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+            Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
+          </p>
+          
+          <div className="mb-6">
+            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+              ✨ <span style={{ fontWeight: 600 }}>Choose By Category:</span> <span className="text-orange-600 underline">
+                {Object.entries(getCategoriesWithCounts()).map(([category, count], index) => (
+                  <span key={category}>
+                    <span 
+                      className="cursor-pointer hover:text-orange-700 transition-colors"
+                      onClick={() => handleHeaderCategorySelect(category)}
+                    >
+                      {category} ({count})
+                    </span>
+                    {index < Object.entries(getCategoriesWithCounts()).length - 1 && ', '}
+                  </span>
+                ))}
+              </span>
+            </p>
+          </div>
+          
+          <div className="space-y-0 text-xs sm:text-sm" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+            <div className="flex items-center justify-center text-gray-600">
+              <span className="text-xs sm:text-sm mr-2">🇵🇭</span>
+              <span>Shipping Nationwide</span>
+            </div>
+            <div className="flex items-center justify-center text-gray-600">
+              <span className="text-xs sm:text-sm mr-2">💸</span>
+              <span>We Accept GCash & Maya Payments</span>
+            </div>
+            <div className="flex items-center justify-center text-gray-600">
+              <span className="text-xs sm:text-sm mr-2">✅</span>
+              <span>2-5 Years Warranty</span>
+            </div>
+            <div className="flex items-center justify-center text-gray-600">
+              <span className="text-xs sm:text-sm mr-2">🛒</span>
+              <span>Simply add to cart and checkout!</span>
+            </div>
+            <div className="flex items-center justify-center text-gray-600">
+              <span className="text-xs sm:text-sm mr-2">⚠️</span>
+              <span>Shop Safely — Always Pay Directly on Our Official Website.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24">
       <style>
         {`
@@ -368,27 +405,17 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           }
         `}
       </style>
-
-      {/* Breadcrumb - hidden on screens below lg (1024px) */}
-      <div className="hidden lg:block text-xs sm:text-sm text-black mb-4 sm:mb-6 pt-4 sm:pt-6">
-        <a href="/" className="hover:underline">Home</a>
-        <Icon icon="mdi:chevron-right" width="16" height="16" className="mx-1 inline-block align-middle" />
-        <span>Collection</span>
-      </div>
       
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <Sidebar
-          sidebarDropdownOpen={sidebarDropdownOpen}
-          setSidebarDropdownOpen={setSidebarDropdownOpen}
-          architecturalDropdownOpen={architecturalDropdownOpen}
-          setArchitecturalDropdownOpen={setArchitecturalDropdownOpen}
-          mirrorsDropdownOpen={mirrorsDropdownOpen}
-          setMirrorsDropdownOpen={setMirrorsDropdownOpen}
-          fansDropdownOpen={fansDropdownOpen}
-          setFansDropdownOpen={setFansDropdownOpen}
-          selectedCategories={selectedCategories}
-          handleCategorySelect={handleCategorySelect}
+          availabilityFilter={availabilityFilter}
+          setAvailabilityFilter={setAvailabilityFilter}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          sortOption={sortOption}
+          setSortOption={setSortOption}
+          maxPrice={maxPrice}
         />
 
         {/* Product List */}
@@ -409,17 +436,6 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         />
       </div>
 
-
-      {/* Featured Products Section */}
-      <FeaturedProducts />
-
-      {/* Product Suggestions */}
-      <ProductSuggestions 
-        title="You May Also Like"
-        maxProducts={5}
-        excludeIds={displayedProducts.map(p => p.id)}
-      />
-
         <SortModal
           isOpen={sortModalOpen}
           sortOption={sortOption}
@@ -430,16 +446,16 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         <FilterDrawer
           isOpen={filterDrawerOpen}
           onClose={() => setFilterDrawerOpen(false)}
-          sidebarDropdownOpen={sidebarDropdownOpen}
-          setSidebarDropdownOpen={setSidebarDropdownOpen}
-          architecturalDropdownOpen={architecturalDropdownOpen}
-          setArchitecturalDropdownOpen={setArchitecturalDropdownOpen}
-          mirrorsDropdownOpen={mirrorsDropdownOpen}
-          setMirrorsDropdownOpen={setMirrorsDropdownOpen}
-          fansDropdownOpen={fansDropdownOpen}
-          setFansDropdownOpen={setFansDropdownOpen}
-          selectCategoryOpen={selectCategoryOpen}
-          setSelectCategoryOpen={setSelectCategoryOpen}
+          sidebarDropdownOpen={true}
+          setSidebarDropdownOpen={() => {}}
+          architecturalDropdownOpen={false}
+          setArchitecturalDropdownOpen={() => {}}
+          mirrorsDropdownOpen={false}
+          setMirrorsDropdownOpen={() => {}}
+          fansDropdownOpen={false}
+          setFansDropdownOpen={() => {}}
+          selectCategoryOpen={true}
+          setSelectCategoryOpen={() => {}}
           selectedCategories={selectedCategories}
           handleCategorySelect={handleCategorySelect}
         />

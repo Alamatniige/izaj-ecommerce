@@ -1,16 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from '@iconify/react';
+import { InternalApiService } from '../../../services/internalApi';
 import SalesSidebar from './SalesSidebar';
 import SalesProductList from './SalesProductList';
-import SalesFeaturedProducts from './SalesFeaturedProducts';
-import ProductSuggestions from '@/components/common/ProductSuggestions';
 import SalesSortModal from './SalesSortModal';
 import SalesFilterDrawer from './SalesFilterDrawer';
-import { getAllProducts } from '../../../services/productService';
-import { InternalApiService } from '../../../services/internalApi';
- 
 
 type SalesProduct = {
   description: string;
@@ -39,35 +34,23 @@ interface SalesProps {
 }
 
 const Sales: React.FC<SalesProps> = ({ user: _user }) => {
-
+  // Filter and sort states
   const [sortOption, setSortOption] = useState<string>('Alphabetical, A-Z');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [allProducts, setAllProducts] = useState<SalesProduct[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<SalesProduct[]>([]);
-  const [displayedProducts, setDisplayedProducts] = useState<SalesProduct[]>([]);
-  const [currentMainPage, setCurrentMainPage] = useState(1);
-  const [productsPerMainPage] = useState(12);
-  const [isLoading, setIsLoading] = useState(true);
-  const [sidebarDropdownOpen, setSidebarDropdownOpen] = useState(true);
-  const [architecturalDropdownOpen, setArchitecturalDropdownOpen] = useState(false);
-  const [mirrorsDropdownOpen, setMirrorsDropdownOpen] = useState(false);
-  const [fansDropdownOpen, setFansDropdownOpen] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [, setDeals] = useState<{ id: number; title: string; oldPrice: string; newPrice: string; discount: string; image: string }[]>([]);
+  const [availabilityFilter, setAvailabilityFilter] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 0 });
+  const [maxPrice, setMaxPrice] = useState<number>(0);
   
+  // View and UI states
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
   const [isCarousel, setIsCarousel] = useState(false);
   const [sortModalOpen, setSortModalOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-  const [selectCategoryOpen, setSelectCategoryOpen] = useState(true);
-
-
-  const handleColorSelect = (productId: number, color: string) => {
-    setSelectedColors(prev => ({
-      ...prev,
-      [productId]: color
-    }));
-  };
+  
+  // Product data states
+  const [allProducts, setAllProducts] = useState<SalesProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<SalesProduct[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check for mobile view
   useEffect(() => {
@@ -79,144 +62,143 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
-
-
-  // Sample deals data
-  useEffect(() => {
-    const sampleDeals = [
-      {
-        id: 1,
-        image: "/ceiling.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 2,
-        image: "/chadelier.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 3,
-        image: "/cluster.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 4,
-        image: "/pendant.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 5,
-        image: "/floor.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 6,
-        image: "/floor.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 7,
-        image: "/floor.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-      {
-        id: 8,
-        image: "/floor.jpg",
-        title: "Aberdeen | Modern LED Chandelier",
-        oldPrice: "₱16,995",
-        newPrice: "₱15,995",
-        discount: "10% off"
-      },
-    ];
-    
-    setDeals(sampleDeals);
-  }, []);
-
-  // Fetch sales products from API
+  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log('🔄 Sales: Starting to fetch sales products...');
-        const salesProductsData = await InternalApiService.getSalesProducts();
-        console.log('📦 Sales: Received sales products:', salesProductsData);
+        console.log('🔄 Sales: Starting to fetch all products...');
         
-        // Transform products to SalesProduct format
-        const salesProducts: SalesProduct[] = salesProductsData.map((product, index) => {
-          // Convert price from number to number
+        // Fetch all products, new products, and sales products
+        const [allProductsData, newProductsData, salesProductsData] = await Promise.all([
+          InternalApiService.getAllProducts(),
+          InternalApiService.getNewProducts(),
+          InternalApiService.getSalesProducts()
+        ]);
+        
+        console.log('📦 Sales: Received all products:', allProductsData);
+        console.log('📦 Sales: New products:', newProductsData);
+        console.log('📦 Sales: Sales products:', salesProductsData);
+        console.log('📦 Sales: Total products count:', allProductsData?.length || 0);
+        
+        // Debug: Log first few products to see the data structure
+        if (allProductsData && allProductsData.length > 0) {
+          console.log('🔍 Sales: Raw product data sample:', allProductsData.slice(0, 3));
+          console.log('🔍 Sales: Sample product stock/status fields:', allProductsData.slice(0, 3).map(p => ({
+            id: p.product_id,
+            name: p.product_name,
+            stock: (p as any).stock,
+            status: (p as any).status
+          })));
+        }
+        
+        // Filter to only show products that are on sale
+        const saleProductIds = salesProductsData.map(saleProduct => saleProduct.product_id);
+        const saleProductsOnly = allProductsData.filter(product => 
+          saleProductIds.includes(product.product_id)
+        );
+
+        // Transform only sale products
+        const transformedProducts = saleProductsOnly.map((product, index) => {
+          const productId = parseInt(product.product_id) || 0;
           const price = parseFloat(product.price.toString());
           
-          // Get discount information from sale data
-          const saleData = product.sale?.[0];
-          const discountPercent = saleData?.percentage || 0;
-          const fixedDiscount = saleData?.fixed_amount || 0;
+          // Check if product is new (multiple criteria)
+          const ninetyDaysAgo = new Date();
+          ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+          const oneYearAgo = new Date();
+          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
           
-          // Calculate original price based on discount type
+          // Product is new if it exists in the newProductsData array
+          const isNew = newProductsData.some(newProduct => 
+            newProduct.product_id === product.product_id
+          );
+          
+          // Use real data only
+          
+          // Product is on sale if it exists in the salesProductsData array
+          const isOnSale = salesProductsData.some(saleProduct => 
+            saleProduct.product_id === product.product_id
+          );
+          
+          // Debug logging for all products to check badge logic
+          console.log(`🔍 Sales Product ${index}: ${product.product_name}`, {
+            productId: product.product_id,
+            name: product.product_name,
+            category: product.category,
+            isNew: isNew,
+            isOnSale: isOnSale,
+            inNewProductsList: newProductsData.some(np => np.product_id === product.product_id),
+            inSalesProductsList: salesProductsData.some(sp => sp.product_id === product.product_id),
+            newProductsCount: newProductsData.length,
+            salesProductsCount: salesProductsData.length
+          });
+          let finalPrice = price;
           let originalPrice = price;
-          if (discountPercent > 0) {
-            originalPrice = Math.round(price / (1 - discountPercent / 100));
-          } else if (fixedDiscount > 0) {
-            originalPrice = price + fixedDiscount;
-          }
+          
+          // Sale logic removed until sale property is available
+          // if (isOnSale) {
+          //   // Apply sale discount (placeholder logic)
+          //   const discountPercentage = 0.1; // 10% discount
+          //   originalPrice = price;
+          //   finalPrice = price * (1 - discountPercentage);
+          // }
           
           return {
-            id: parseInt(product.product_id) || 0,
+            id: (parseInt(product.product_id) || 0) + index, // Ensures unique ID
             name: product.product_name,
-            description: product.description || `High-quality ${product.product_name.toLowerCase()} perfect for any space.`,
-            price: originalPrice - (discountPercent > 0 ? (originalPrice * discountPercent / 100) : fixedDiscount),
-            originalPrice: originalPrice,
-            rating: 4 + (index % 2), // 4 or 5 stars
-            reviewCount: 10 + (index % 20), // 10-29 reviews
-            image: product.media_urls?.[0] || "/placeholder.jpg",
+            description: product.description || '',
+            price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+            rating: 4.5, // Default rating
+            reviewCount: 0, // Default review count
+            image: product.image_url || '', // Ensures image is string
             mediaUrls: product.media_urls || [],
-            colors: ["black"], // Default color
-            isOnSale: true,
-            isNew: false, // These are sales products, not new
+            colors: (product as any).colors || ["black"], // Handles missing colors property
+            isOnSale: isOnSale,
+            isNew: isNew,
             category: product.category,
             stock: (() => {
-              const normalizedStatus = product.status?.toLowerCase() || '';
+              // First check if there's a numeric stock field
+              if (typeof (product as any).stock === 'number') {
+                return (product as any).stock;
+              }
+              
+              // Fallback to status field
+              const normalizedStatus = (product as any).status?.toLowerCase() || '';
               switch (normalizedStatus) {
                 case 'in stock':
                   return 10; // High stock
                 case 'low stock':
+                case 'low-stock': // Added for robustness
                   return 3; // Low stock
                 case 'out of stock':
+                case 'out-of-stock': // Added for robustness
                   return 0; // Out of stock
                 default:
                   return 10; // Default to in stock
               }
-            })()
+            })(),
+            originalPrice: isOnSale ? originalPrice : undefined
           };
         });
+
+        console.log('✅ Sales: Sale products only:', saleProductsOnly.length);
+        console.log('✅ Sales: Transformed products:', transformedProducts);
+        console.log('✅ Sales: Total products after transformation:', transformedProducts.length);
+        console.log('✅ Sales: New products in final list:', transformedProducts.filter(p => p.isNew).length);
+        console.log('✅ Sales: Sales products in final list:', transformedProducts.filter(p => p.isOnSale).length);
+        console.log('✅ Sales: Both new and sales products:', transformedProducts.filter(p => p.isNew && p.isOnSale).length);
+
+        setAllProducts(transformedProducts);
+        setFilteredProducts(transformedProducts);
         
-        console.log('✅ Sales: Transformed products:', salesProducts);
-        setAllProducts(salesProducts);
-        setFilteredProducts(salesProducts);
+        // Calculate max price for price range
+        const maxProductPrice = Math.max(...transformedProducts.map(p => p.price));
+        setMaxPrice(maxProductPrice);
+        setPriceRange({ min: 0, max: maxProductPrice });
+        
+        setIsLoading(false);
       } catch (error) {
-        console.error('❌ Sales: Error fetching sales products:', error);
-        setAllProducts([]);
-        setFilteredProducts([]);
-      } finally {
+        console.error('❌ Sales: Error fetching products:', error);
         setIsLoading(false);
       }
     };
@@ -224,102 +206,96 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
     fetchProducts();
   }, []);
 
-  // Helper function to determine category from product name
-  const getCategoryFromName = (name: string): string => {
-    const nameLower = name.toLowerCase();
-    if (nameLower.includes('chandelier')) return 'Chandelier';
-    if (nameLower.includes('pendant')) return 'Pendant Lights';
-    if (nameLower.includes('table') || nameLower.includes('lamp')) return 'Table Lamps';
-    if (nameLower.includes('floor')) return 'Floor Lamps';
-    if (nameLower.includes('wall')) return 'Wall Lamps';
-    if (nameLower.includes('ceiling')) return 'Ceiling Lights';
-    if (nameLower.includes('recessed') || nameLower.includes('downlight')) return 'Recessed Lights';
-    if (nameLower.includes('track')) return 'Track Lighting';
-    if (nameLower.includes('outdoor') || nameLower.includes('garden')) return 'Outdoor Lighting';
-    if (nameLower.includes('bulb')) return 'Bulbs';
-    if (nameLower.includes('led') && nameLower.includes('strip')) return 'LED Strips';
-    if (nameLower.includes('spotlight')) return 'Spotlights';
-    if (nameLower.includes('smart')) return 'Smart Lighting';
-    if (nameLower.includes('emergency')) return 'Emergency Lighting';
-    if (nameLower.includes('lantern')) return 'Lanterns';
-    return 'Lighting';
-  };
-
-  // Handle category selection
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(category)) {
-        return prev.filter(c => c !== category);
-      } else {
-        return [...prev, category];
-      }
-    });
-  };
-
-  // Filter products based on selected categories
+  // Filter products based on current filters
   useEffect(() => {
-    if (selectedCategories.length === 0) {
-      setFilteredProducts(allProducts);
-    } else {
-      const filtered = allProducts.filter(product => 
-        selectedCategories.includes(product.category || '')
-      );
-      setFilteredProducts(filtered);
-    }
-    setCurrentMainPage(1); // Reset to first page when filtering
-  }, [selectedCategories, allProducts]);
+    let filtered = [...allProducts];
 
-  // Handle sort change
-  const handleSortChange = (option: string) => {
-    setSortOption(option);
-    setSortModalOpen(false);
-    let sortedProducts = [...filteredProducts];
-    switch(option) {
+    // Filter by availability
+    if (availabilityFilter.length > 0) {
+      filtered = filtered.filter(product => {
+        if (availabilityFilter.includes('in-stock') && (product.stock || 0) > 0) {
+          return true;
+        }
+        if (availabilityFilter.includes('out-of-stock') && (product.stock || 0) === 0) {
+          return true;
+        }
+        return false;
+      });
+    }
+
+    // Filter by price range
+    if (priceRange.min > 0 || priceRange.max < maxPrice) {
+      filtered = filtered.filter(product => 
+        product.price >= priceRange.min && product.price <= priceRange.max
+      );
+    }
+
+    // Sort products
+    switch (sortOption) {
       case 'Alphabetical, A-Z':
-        sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
       case 'Alphabetical, Z-A':
-        sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
+        filtered.sort((a, b) => b.name.localeCompare(a.name));
         break;
       case 'Price, Low to High':
-        sortedProducts.sort((a, b) => a.price - b.price);
+        filtered.sort((a, b) => a.price - b.price);
         break;
       case 'Price, High to Low':
-        sortedProducts.sort((a, b) => b.price - a.price);
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case 'Date, New to Old':
+        // Since we don't have date info, sort by ID (newer products have higher IDs)
+        filtered.sort((a, b) => b.id - a.id);
+        break;
+      case 'Date, Old to New':
+        filtered.sort((a, b) => a.id - b.id);
         break;
       default:
         break;
     }
-    setFilteredProducts(sortedProducts);
-    setCurrentMainPage(1); // Reset to first page when sorting
+
+    setFilteredProducts(filtered);
+  }, [allProducts, availabilityFilter, priceRange, sortOption, maxPrice]);
+
+  // Get categories with counts
+  const getCategoriesWithCounts = () => {
+    const categoryCounts: { [key: string]: number } = {};
+    allProducts.forEach(product => {
+      if (product.category) {
+        categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
+      }
+    });
+    return categoryCounts;
   };
 
-  // Handle view mode change
+  // Handle category selection from header
+  const handleHeaderCategorySelect = (category: string) => {
+    // For now, just log the selection - you can implement filtering logic here
+    console.log('Selected category from header:', category);
+  };
+
+  const handleColorSelect = (productId: number, color: string) => {
+    setSelectedColors(prev => ({
+      ...prev,
+      [productId]: color
+    }));
+  };
+
   const handleViewModeChange = (mode: 'grid' | 'list') => {
     setViewMode(mode);
   };
 
-  // Update displayed products for pagination
-  useEffect(() => {
-    const startIndex = (currentMainPage - 1) * productsPerMainPage;
-    const endIndex = startIndex + productsPerMainPage;
-    setDisplayedProducts(filteredProducts.slice(startIndex, endIndex));
-  }, [filteredProducts, currentMainPage, productsPerMainPage]);
-
-  // Calculate total pages for main product list
-  const totalMainPages = Math.ceil(filteredProducts.length / productsPerMainPage);
-
-  // Handle main page change
-  const handleMainPageChange = (page: number) => {
-    setCurrentMainPage(page);
+  const handleSortChange = (option: string) => {
+    setSortOption(option);
+    setSortModalOpen(false);
   };
 
-  // Show loading state while fetching products
   if (isLoading) {
     return (
-      <div className="bg-white min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading products...</p>
         </div>
       </div>
@@ -327,7 +303,69 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
   }
 
   return (
-    <div className="bg-white min-h-screen overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Section */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-6 sm:mb-8 text-center">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-8 sm:mt-12 lg:mt-16" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+            Exclusive Deals
+            </h1>
+            
+            {/* Horizontal line under title */}
+            <div className="w-24 h-0.5 bg-gray-800 mx-auto mb-8"></div>
+            
+            <div className="max-w-4xl mx-auto">
+              <p className="text-gray-700 text-sm sm:text-base mb-6 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
+              </p>
+              
+              <div className="mb-6">
+                <p className="text-gray-600 text-xs sm:text-sm leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                  ✨ <span style={{ fontWeight: 600 }}>Choose By Category:</span> <span className="text-orange-600 underline">
+                    {Object.entries(getCategoriesWithCounts()).map(([category, count], index) => (
+                      <span key={category}>
+                        <span 
+                          className="cursor-pointer hover:text-orange-700 transition-colors"
+                          onClick={() => handleHeaderCategorySelect(category)}
+                        >
+                          {category} ({count})
+                        </span>
+                        {index < Object.entries(getCategoriesWithCounts()).length - 1 && ', '}
+                      </span>
+                    ))}
+                  </span>
+                </p>
+              </div>
+              
+              <div className="space-y-0 text-xs sm:text-sm" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                <div className="flex items-center justify-center text-gray-600">
+                  <span className="text-xs sm:text-sm mr-2">🇵🇭</span>
+                  <span>Shipping Nationwide</span>
+                </div>
+                <div className="flex items-center justify-center text-gray-600">
+                  <span className="text-xs sm:text-sm mr-2">💸</span>
+                  <span>We Accept GCash & Maya Payments</span>
+                </div>
+                <div className="flex items-center justify-center text-gray-600">
+                  <span className="text-xs sm:text-sm mr-2">✅</span>
+                  <span>2-5 Years Warranty</span>
+                </div>
+                <div className="flex items-center justify-center text-gray-600">
+                  <span className="text-xs sm:text-sm mr-2">🛒</span>
+                  <span>Simply add to cart and checkout!</span>
+                </div>
+                <div className="flex items-center justify-center text-gray-600">
+                  <span className="text-xs sm:text-sm mr-2">⚠️</span>
+                  <span>Shop Safely — Always Pay Directly on Our Official Website.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24">
       <style>
         {`
           @media (max-width: 767px) {
@@ -375,31 +413,21 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         `}
       </style>
 
-      <div className="max-w-[94%] mx-auto px-5 sm:px-8">
-      {/* Breadcrumb - hidden on screens below lg (1024px) */}
-      <div className="hidden lg:block text-xs sm:text-sm text-black mb-4 sm:mb-6 pt-4 sm:pt-6">
-        <a href="/" className="hover:underline">Home</a>
-        <Icon icon="mdi:chevron-right" width="16" height="16" className="mx-1 inline-block align-middle" />
-        <span>Sales</span>
-      </div>
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <SalesSidebar
-          sidebarDropdownOpen={sidebarDropdownOpen}
-          setSidebarDropdownOpen={setSidebarDropdownOpen}
-          architecturalDropdownOpen={architecturalDropdownOpen}
-          setArchitecturalDropdownOpen={setArchitecturalDropdownOpen}
-          mirrorsDropdownOpen={mirrorsDropdownOpen}
-          setMirrorsDropdownOpen={setMirrorsDropdownOpen}
-          fansDropdownOpen={fansDropdownOpen}
-          setFansDropdownOpen={setFansDropdownOpen}
-          selectedCategories={selectedCategories}
-          handleCategorySelect={handleCategorySelect}
+          availabilityFilter={availabilityFilter}
+          setAvailabilityFilter={setAvailabilityFilter}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          sortOption={sortOption}
+          setSortOption={setSortOption}
+          maxPrice={maxPrice}
         />
 
         {/* Product List */}
         <SalesProductList
-          filteredProducts={displayedProducts}
+          filteredProducts={filteredProducts}
           viewMode={viewMode}
           selectedColors={selectedColors}
           isCarousel={isCarousel}
@@ -409,45 +437,36 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
           handleSortChange={handleSortChange}
           setSortModalOpen={setSortModalOpen}
           setFilterDrawerOpen={setFilterDrawerOpen}
-          currentPage={currentMainPage}
-          totalPages={totalMainPages}
-          handlePageChange={handleMainPageChange}
+          currentPage={1}
+          totalPages={1}
+          handlePageChange={() => {}}
         />
       </div>
-      </div>
+      </main>
 
-      {/* Featured Products Section */}
-      <SalesFeaturedProducts />
-
-      {/* Product Suggestions */}
-      <ProductSuggestions 
-        title="You May Also Like"
-        maxProducts={5}
-        excludeIds={displayedProducts.map(p => p.id)}
-      />
-
+      {/* Mobile Modals */}
       <SalesSortModal
         isOpen={sortModalOpen}
-        sortOption={sortOption}
         onClose={() => setSortModalOpen(false)}
+        sortOption={sortOption}
         onSortChange={handleSortChange}
       />
 
       <SalesFilterDrawer
         isOpen={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
-        sidebarDropdownOpen={sidebarDropdownOpen}
-        setSidebarDropdownOpen={setSidebarDropdownOpen}
-        architecturalDropdownOpen={architecturalDropdownOpen}
-        setArchitecturalDropdownOpen={setArchitecturalDropdownOpen}
-        mirrorsDropdownOpen={mirrorsDropdownOpen}
-        setMirrorsDropdownOpen={setMirrorsDropdownOpen}
-        fansDropdownOpen={fansDropdownOpen}
-        setFansDropdownOpen={setFansDropdownOpen}
-        selectCategoryOpen={selectCategoryOpen}
-        setSelectCategoryOpen={setSelectCategoryOpen}
-        selectedCategories={selectedCategories}
-        handleCategorySelect={handleCategorySelect}
+        sidebarDropdownOpen={true}
+        setSidebarDropdownOpen={() => {}}
+        architecturalDropdownOpen={false}
+        setArchitecturalDropdownOpen={() => {}}
+        mirrorsDropdownOpen={false}
+        setMirrorsDropdownOpen={() => {}}
+        fansDropdownOpen={false}
+        setFansDropdownOpen={() => {}}
+        selectCategoryOpen={true}
+        setSelectCategoryOpen={() => {}}
+        selectedCategories={[]}
+        handleCategorySelect={() => {}}
       />
     </div>
     );

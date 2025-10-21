@@ -1,13 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from '@iconify/react';
-import { getAllProducts } from '../../../services/productService';
 import { InternalApiService } from '../../../services/internalApi';
 import ProductListSidebar from './ProductListSidebar';
 import ProductListMain from './ProductListMain';
-import ProductListFeatured from './ProductListFeatured';
-import ProductSuggestions from '@/components/common/ProductSuggestions';
 import ProductListSortModal from './ProductListSortModal';
 import ProductListFilterDrawer from './ProductListFilterDrawer';
 
@@ -60,6 +56,11 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectCategoryOpen, setSelectCategoryOpen] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  // New filter states for sidebar
+  const [availabilityFilter, setAvailabilityFilter] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 0 });
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
 
 
@@ -136,14 +137,31 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       try {
         console.log('🔄 ProductList: Starting to fetch all products...');
         
-        // Fetch all products
-        const allProductsData = await InternalApiService.getAllProducts();
+        // Fetch all products, new products, and sales products
+        const [allProductsData, newProductsData, salesProductsData] = await Promise.all([
+          InternalApiService.getAllProducts(),
+          InternalApiService.getNewProducts(),
+          InternalApiService.getSalesProducts()
+        ]);
         
         console.log('📦 ProductList: Received all products:', allProductsData);
+        console.log('📦 ProductList: New products:', newProductsData);
+        console.log('📦 ProductList: Sales products:', salesProductsData);
         console.log('📦 ProductList: Total products count:', allProductsData?.length || 0);
         
+        // Debug: Log first few products to see the data structure
+        if (allProductsData && allProductsData.length > 0) {
+          console.log('🔍 ProductList: Raw product data sample:', allProductsData.slice(0, 3));
+          console.log('🔍 ProductList: Sample product stock/status fields:', allProductsData.slice(0, 3).map(p => ({
+            id: p.product_id,
+            name: p.product_name,
+            stock: (p as any).stock,
+            status: (p as any).status
+          })));
+        }
+        
         // Transform all products and categorize them
-        const transformedProducts = allProductsData.map(product => {
+        const transformedProducts = allProductsData.map((product, index) => {
           const productId = parseInt(product.product_id) || 0;
           const price = parseFloat(product.price.toString());
           
@@ -153,49 +171,37 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
           const oneYearAgo = new Date();
           oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
           
-          // Product is new if:
-          // 1. Published within last 90 days, OR
-          // 2. Has "new" in the name, OR  
-          // 3. Has "new" in the category, OR
-          // 4. Published within last year (as fallback)
-          const isNew = (
-            new Date(product.inserted_at) >= ninetyDaysAgo ||
-            product.product_name.toLowerCase().includes('new') ||
-            product.category?.toLowerCase().includes('new') ||
-            new Date(product.inserted_at) >= oneYearAgo
+          // Product is new if it exists in the newProductsData array
+          const isNew = newProductsData.some(newProduct => 
+            newProduct.product_id === product.product_id
           );
           
           // Use real data only
           
-          // Check if product is on sale - be more lenient for testing
-          const isOnSale = product.on_sale === true || (product.sale && product.sale.length > 0);
+          // Product is on sale if it exists in the salesProductsData array
+          const isOnSale = salesProductsData.some(saleProduct => 
+            saleProduct.product_id === product.product_id
+          );
           
-          // Debug logging for products with badges
-          if (isOnSale || isNew) {
-            console.log(`🏷️ Product ${product.product_name}:`, {
-              isNew: isNew,
-              isOnSale: isOnSale,
-              reason_new: isNew ? 'Has NEW criteria' : 'No NEW criteria',
-              reason_sale: isOnSale ? 'Has SALE criteria' : 'No SALE criteria'
-            });
-          }
+          // Debug logging for all products to check badge logic
+          console.log(`🔍 Product ${index}: ${product.product_name}`, {
+            productId: product.product_id,
+            name: product.product_name,
+            category: product.category,
+            isNew: isNew,
+            isOnSale: isOnSale,
+            inNewProductsList: newProductsData.some(np => np.product_id === product.product_id),
+            inSalesProductsList: salesProductsData.some(sp => sp.product_id === product.product_id),
+            newProductsCount: newProductsData.length,
+            salesProductsCount: salesProductsData.length
+          });
           let finalPrice = price;
           let originalPrice = price;
           
-          if (isOnSale) {
-            const saleData = product.sale[0];
-          const discountPercent = saleData?.percentage || 0;
-          const fixedDiscount = saleData?.fixed_amount || 0;
-          
-          // Calculate original price based on discount type
-          if (discountPercent > 0) {
-            originalPrice = Math.round(price / (1 - discountPercent / 100));
-          } else if (fixedDiscount > 0) {
-            originalPrice = price + fixedDiscount;
-          }
-          
-            finalPrice = originalPrice - (discountPercent > 0 ? (originalPrice * discountPercent / 100) : fixedDiscount);
-          }
+          // Sale logic removed until sale property is available
+          // if (isOnSale) {
+          //   // Sale calculation logic will be added when sale property is available
+          // }
           
           return {
               id: productId,
@@ -212,7 +218,13 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
             isNew: isNew,
               category: product.category || getCategoryFromName(product.product_name),
               stock: (() => {
-                const normalizedStatus = product.status?.toLowerCase() || '';
+                // First check if there's a numeric stock field
+                if (typeof (product as any).stock === 'number') {
+                  return (product as any).stock;
+                }
+                
+                // Fallback to status field
+                const normalizedStatus = (product as any).status?.toLowerCase() || '';
                 switch (normalizedStatus) {
                   case 'in stock':
                     return 10; // High stock
@@ -253,17 +265,33 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     setSortModalOpen(false);
     let sortedProducts = [...filteredProducts];
     switch(option) {
+      case 'Best selling':
+        // Sort by rating and review count (best selling approximation)
+        sortedProducts.sort((a, b) => (b.rating * b.reviewCount) - (a.rating * a.reviewCount));
+        break;
+      case 'Alphabetically, A-Z':
       case 'Alphabetical, A-Z':
         sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
         break;
+      case 'Alphabetically, Z-A':
       case 'Alphabetical, Z-A':
         sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
         break;
+      case 'Price, low to high':
       case 'Price, Low to High':
         sortedProducts.sort((a, b) => a.price - b.price);
         break;
+      case 'Price, high to low':
       case 'Price, High to Low':
         sortedProducts.sort((a, b) => b.price - a.price);
+        break;
+      case 'Date, old to new':
+        // Sort by ID (assuming higher ID = newer)
+        sortedProducts.sort((a, b) => a.id - b.id);
+        break;
+      case 'Date, new to old':
+        // Sort by ID (assuming higher ID = newer)
+        sortedProducts.sort((a, b) => b.id - a.id);
         break;
       default:
         break;
@@ -277,7 +305,44 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     setViewMode(mode);
   };
 
-  // Handle category selection
+  // Get unique categories with counts
+  const getCategoriesWithCounts = () => {
+    const categoryCounts: { [key: string]: number } = {};
+    allProducts.forEach(product => {
+      if (product.category) {
+        categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
+      }
+    });
+    return categoryCounts;
+  };
+
+  // Get maximum price from all products
+  const getMaxPrice = () => {
+    if (allProducts.length === 0) return 282000; // fallback
+    return Math.max(...allProducts.map(product => product.price));
+  };
+
+  // Update price range when products are loaded
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      const maxPrice = getMaxPrice();
+      setPriceRange(prev => ({
+        min: prev.min,
+        max: maxPrice
+      }));
+    }
+  }, [allProducts]);
+
+  // Handle category selection for header
+  const handleHeaderCategorySelect = (category: string) => {
+    if (selectedCategory === category) {
+      setSelectedCategory(''); // Deselect if same category
+    } else {
+      setSelectedCategory(category); // Select new category
+    }
+  };
+
+  // Handle category selection for sidebar
   const handleCategorySelect = (category: string) => {
     setSelectedCategories(prev => {
       if (prev.includes(category)) {
@@ -290,20 +355,48 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     });
   };
 
-  // Filter products based on selected categories
+  // Filter products based on selected categories, availability, and price
   useEffect(() => {
-    if (selectedCategories.length === 0) {
-      // If no categories selected, show all products
-      setFilteredProducts(allProducts);
-    } else {
-      // Filter products by selected categories
-      const filtered = allProducts.filter(product => 
-        selectedCategories.includes(product.category)
+    let filtered = [...allProducts];
+
+    // Filter by header category selection (takes priority)
+    if (selectedCategory) {
+      filtered = filtered.filter(product => product.category === selectedCategory);
+    } else if (selectedCategories.length > 0) {
+      // Filter by sidebar categories if no header category selected
+      filtered = filtered.filter(product => 
+        product.category && selectedCategories.includes(product.category)
       );
-      setFilteredProducts(filtered);
     }
+
+    // Filter by availability
+    if (availabilityFilter.length > 0) {
+      filtered = filtered.filter(product => {
+        const stock = product.stock || 0;
+        const isInStock = stock > 0;
+        const isOutOfStock = stock === 0;
+        
+        if (availabilityFilter.includes('in stock') && isInStock) return true;
+        if (availabilityFilter.includes('out of stock') && isOutOfStock) return true;
+        return false;
+      });
+    }
+
+    // Filter by price range
+    filtered = filtered.filter(product => 
+      product.price >= priceRange.min && product.price <= priceRange.max
+    );
+
+      setFilteredProducts(filtered);
     setCurrentMainPage(1); // Reset to first page when filtering changes
-  }, [selectedCategories, allProducts]);
+  }, [selectedCategory, selectedCategories, availabilityFilter, priceRange, allProducts]);
+
+  // Apply sorting when sort option changes
+  useEffect(() => {
+    if (filteredProducts.length > 0) {
+      handleSortChange(sortOption);
+    }
+  }, [sortOption]);
 
   // Helper function to determine category from product name
   const getCategoryFromName = (name: string): string => {
@@ -404,13 +497,64 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         `}
       </style>
 
-      {/* Breadcrumb - hidden on screens below lg (1024px) */}
-      <div className="hidden lg:block text-xs sm:text-sm text-black mb-4 sm:mb-6 pt-4 sm:pt-6">
-        <a href="/" className="hover:underline">Home</a>
-        <Icon icon="mdi:chevron-right" width="16" height="16" className="mx-1 inline-block align-middle" />
-        <span>Product List</span>
+      {/* Header Section - Full Width */}
+      <div className="mb-6 sm:mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-8 sm:mt-12 lg:mt-16" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+          All Products
+        </h1>
+        
+        {/* Horizontal line under title */}
+        <div className="w-24 h-0.5 bg-gray-800 mx-auto mb-8"></div>
+        
+        <div className="max-w-4xl mx-auto">
+          <p className="text-gray-700 text-sm sm:text-base mb-6 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+            Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
+          </p>
+          
+          <div className="mb-6">
+            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+              ✨ <span style={{ fontWeight: 600 }}>Choose By Category:</span> <span className="text-orange-600 underline">
+                {Object.entries(getCategoriesWithCounts()).map(([category, count], index) => (
+                  <span key={category}>
+                    <span 
+                      className="cursor-pointer hover:text-orange-700 transition-colors"
+                      onClick={() => handleHeaderCategorySelect(category)}
+                    >
+                      {category} ({count})
+                    </span>
+                    {index < Object.entries(getCategoriesWithCounts()).length - 1 && ', '}
+                  </span>
+                ))}
+              </span>
+            </p>
+          </div>
+          
+          <div className="space-y-0 text-xs sm:text-sm" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+            <div className="flex items-center justify-center text-gray-600">
+              <span className="text-xs sm:text-sm mr-2">🇵🇭</span>
+              <span>Shipping Nationwide</span>
+            </div>
+            <div className="flex items-center justify-center text-gray-600">
+              <span className="text-xs sm:text-sm mr-2">💸</span>
+              <span>We Accept GCash & Maya Payments</span>
+            </div>
+            <div className="flex items-center justify-center text-gray-600">
+              <span className="text-xs sm:text-sm mr-2">✅</span>
+              <span>2-5 Years Warranty</span>
+            </div>
+            <div className="flex items-center justify-center text-gray-600">
+              <span className="text-xs sm:text-sm mr-2">🛒</span>
+              <span>Simply add to cart and checkout!</span>
+            </div>
+            <div className="flex items-center justify-center text-gray-600">
+              <span className="text-xs sm:text-sm mr-2">⚠️</span>
+              <span>Shop Safely — Always Pay Directly on Our Official Website.</span>
+            </div>
+          </div>
+        </div>
       </div>
       
+      {/* Product Section with Sidebar */}
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <ProductListSidebar
@@ -424,6 +568,13 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
           setFansDropdownOpen={setFansDropdownOpen}
           selectedCategories={selectedCategories}
           handleCategorySelect={handleCategorySelect}
+          availabilityFilter={availabilityFilter}
+          setAvailabilityFilter={setAvailabilityFilter}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          sortOption={sortOption}
+          setSortOption={setSortOption}
+          maxPrice={getMaxPrice()}
         />
 
         {/* Product List */}
@@ -444,15 +595,6 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         />
       </div>
 
-      {/* Featured Products Section */}
-      <ProductListFeatured />
-
-      {/* Product Suggestions */}
-      <ProductSuggestions 
-        title="You May Also Like"
-        maxProducts={5}
-        excludeIds={displayedProducts.map(p => p.id)}
-      />
 
       <ProductListSortModal
         isOpen={sortModalOpen}
