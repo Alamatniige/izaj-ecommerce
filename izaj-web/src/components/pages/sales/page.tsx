@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
-import { useRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 import SalesSidebar from './SalesSidebar';
 import SalesProductList from './SalesProductList';
 import SalesFeaturedProducts from './SalesFeaturedProducts';
-import SalesRecentlyViewed from './SalesRecentlyViewed';
+import ProductSuggestions from '@/components/common/ProductSuggestions';
 import SalesSortModal from './SalesSortModal';
 import SalesFilterDrawer from './SalesFilterDrawer';
 import { getAllProducts } from '../../../services/productService';
@@ -28,6 +27,7 @@ type SalesProduct = {
   size?: string;
   colors?: string[];
   category?: string;
+  stock?: number;
 };
 
 interface SalesProps {
@@ -39,7 +39,6 @@ interface SalesProps {
 }
 
 const Sales: React.FC<SalesProps> = ({ user: _user }) => {
-  const { recentlyViewed } = useRecentlyViewed();
 
   const [sortOption, setSortOption] = useState<string>('Alphabetical, A-Z');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -56,46 +55,12 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [, setDeals] = useState<{ id: number; title: string; oldPrice: string; newPrice: string; discount: string; image: string }[]>([]);
   
-  // New state variables for Recently Viewed section
-  const [isCarousel, setIsCarousel] = useState(false);
-  const [productsPerPage, setProductsPerPage] = useState(5);
-  const [currentPage, setCurrentPage] = useState(0);
   const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [isHoveringProducts, setIsHoveringProducts] = useState(false);
+  const [isCarousel, setIsCarousel] = useState(false);
   const [sortModalOpen, setSortModalOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectCategoryOpen, setSelectCategoryOpen] = useState(true);
 
-  // Minimum swipe distance (in px)
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && currentPage < totalPages - 1) {
-      setSlideDirection('left');
-      setCurrentPage(prev => prev + 1);
-    }
-    if (isRightSwipe && currentPage > 0) {
-      setSlideDirection('right');
-      setCurrentPage(prev => prev - 1);
-    }
-  };
 
   const handleColorSelect = (productId: number, color: string) => {
     setSelectedColors(prev => ({
@@ -104,43 +69,17 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
     }));
   };
 
-  const handlePrevPage = () => {
-    if (currentPage > 0) {
-      setSlideDirection('right');
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setSlideDirection('left');
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
   // Check for mobile view
   useEffect(() => {
     const checkDevice = () => {
       setIsCarousel(window.innerWidth <= 1024);
-      if (window.innerWidth <= 640) {
-        setProductsPerPage(2);
-      } else if (window.innerWidth <= 1024) {
-        setProductsPerPage(3);
-      } else {
-        setProductsPerPage(5);
-      }
     };
     checkDevice();
     window.addEventListener('resize', checkDevice);
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
-  // Use actual recently viewed products
-  const totalPages = Math.ceil(recentlyViewed.length / productsPerPage);
-  const currentProducts = recentlyViewed.slice(
-    currentPage * productsPerPage,
-    (currentPage + 1) * productsPerPage
-  );
+
 
   // Sample deals data
   useEffect(() => {
@@ -253,7 +192,20 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
             colors: ["black"], // Default color
             isOnSale: true,
             isNew: false, // These are sales products, not new
-            category: product.category
+            category: product.category,
+            stock: (() => {
+              const normalizedStatus = product.status?.toLowerCase() || '';
+              switch (normalizedStatus) {
+                case 'in stock':
+                  return 10; // High stock
+                case 'low stock':
+                  return 3; // Low stock
+                case 'out of stock':
+                  return 0; // Out of stock
+                default:
+                  return 10; // Default to in stock
+              }
+            })()
           };
         });
         
@@ -467,23 +419,11 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
       {/* Featured Products Section */}
       <SalesFeaturedProducts />
 
-      {/* Recently Viewed */}
-      <SalesRecentlyViewed
-        isCarousel={isCarousel}
-        currentPage={currentPage}
-        selectedColors={selectedColors}
-        totalPages={totalPages}
-        currentProducts={currentProducts}
-        allProducts={recentlyViewed}
-        isHoveringProducts={isHoveringProducts}
-        setIsHoveringProducts={setIsHoveringProducts}
-        handleColorSelect={handleColorSelect}
-        handlePrevPage={handlePrevPage}
-        handleNextPage={handleNextPage}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        slideDirection={slideDirection}
+      {/* Product Suggestions */}
+      <ProductSuggestions 
+        title="You May Also Like"
+        maxProducts={5}
+        excludeIds={displayedProducts.map(p => p.id)}
       />
 
       <SalesSortModal

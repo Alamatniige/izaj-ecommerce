@@ -6,6 +6,7 @@ export interface RecentlyViewedProduct {
   price: string;
   image: string;
   colors?: string[];
+  stock?: number;
 }
 
 const STORAGE_KEY = 'izaj_recently_viewed';

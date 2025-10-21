@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
 import Link from "next/link";
 import Image from "next/image";
+import { formatCurrency, getStockStatusFromStatus } from '../../../utils/helpers';
 
 type Product = {
   description: string;
@@ -20,6 +21,7 @@ type Product = {
   size?: string;
   colors?: string[];
   category?: string;
+  stock?: number;
 };
 
 interface ProductListMainProps {
@@ -262,9 +264,17 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
                 <div className="space-y-1.5">
                   <h3 className="font-bold text-gray-900 text-sm font-lora text-left line-clamp-2 leading-tight">{product.name}</h3>
                   <p className="font-bold text-gray-900 text-base font-lora">₱{product.price.toLocaleString()}</p>
-                  <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <span className="w-2 h-2 rounded-full mr-1 bg-green-500"></span>
-                    In Stock
+                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    (product.stock || 0) > 5 ? 'bg-green-100 text-green-800' : 
+                    (product.stock || 0) > 0 ? 'bg-orange-100 text-orange-800' : 
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full mr-1 ${
+                      (product.stock || 0) > 5 ? 'bg-green-500' : 
+                      (product.stock || 0) > 0 ? 'bg-orange-500' : 
+                      'bg-red-500'
+                    }`}></span>
+                    {(product.stock || 0) > 5 ? 'In Stock' : (product.stock || 0) > 0 ? 'Low Stock' : 'Out of Stock'}
                   </div>
                 </div>
                 <Link
@@ -317,8 +327,18 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
                          <p className="text-sm text-gray-500 line-through">₱{product.originalPrice.toLocaleString()}</p>
                        )}
                        <div className="flex items-center justify-end space-x-2 mt-2">
-                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                         <span className="text-sm font-medium text-green-600">In Stock</span>
+                         <div className={`w-3 h-3 rounded-full ${
+                           (product.stock || 0) > 5 ? 'bg-green-500' : 
+                           (product.stock || 0) > 0 ? 'bg-orange-500' : 
+                           'bg-red-500'
+                         }`}></div>
+                         <span className={`text-sm font-medium ${
+                           (product.stock || 0) > 5 ? 'text-green-600' : 
+                           (product.stock || 0) > 0 ? 'text-orange-600' : 
+                           'text-red-600'
+                         }`}>
+                           {(product.stock || 0) > 5 ? 'In Stock' : (product.stock || 0) > 0 ? 'Low Stock' : 'Out of Stock'}
+                         </span>
                        </div>
                        <div className="flex items-center justify-end space-x-2 mt-2">
                          {product.isOnSale && (

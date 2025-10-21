@@ -59,3 +59,58 @@ export const formatPhoneNumber = (phone: string): string => {
   
   return phone; // Return original if format doesn't match
 };
+
+/**
+ * Convert Supabase status to stock level for display
+ */
+export const getStockStatusFromStatus = (status: string | undefined): {
+  level: 'in-stock' | 'low-stock' | 'out-of-stock';
+  label: string;
+  bgColor: string;
+  textColor: string;
+  dotColor: string;
+} => {
+  const normalizedStatus = status?.toLowerCase() || '';
+  
+  switch (normalizedStatus) {
+    case 'in stock':
+    case 'available':
+    case 'active':
+      return {
+        level: 'in-stock',
+        label: 'In Stock',
+        bgColor: 'bg-green-100',
+        textColor: 'text-green-800',
+        dotColor: 'bg-green-500'
+      };
+    case 'low stock':
+    case 'limited':
+      return {
+        level: 'low-stock',
+        label: 'Low Stock',
+        bgColor: 'bg-orange-100',
+        textColor: 'text-orange-800',
+        dotColor: 'bg-orange-500'
+      };
+    case 'out of stock':
+    case 'unavailable':
+    case 'inactive':
+    case 'discontinued':
+      return {
+        level: 'out-of-stock',
+        label: 'Out of Stock',
+        bgColor: 'bg-red-100',
+        textColor: 'text-red-800',
+        dotColor: 'bg-red-500'
+      };
+    default:
+      // Default to in stock for unknown statuses
+      return {
+        level: 'in-stock',
+        label: 'In Stock',
+        bgColor: 'bg-green-100',
+        textColor: 'text-green-800',
+        dotColor: 'bg-green-500'
+      };
+  }
+};

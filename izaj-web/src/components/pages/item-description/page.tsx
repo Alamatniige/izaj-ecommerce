@@ -81,7 +81,8 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
             name: found.name,
             price: found.price,
             image: found.image,
-            colors: found.colors
+            colors: found.colors,
+            stock: found.stock || 0
           });
           
           // Handle all uploaded images

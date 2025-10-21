@@ -4,11 +4,10 @@ import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
 import { getAllProducts } from '../../../services/productService';
 import { InternalApiService } from '../../../services/internalApi';
-import { useRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 import ProductListSidebar from './ProductListSidebar';
 import ProductListMain from './ProductListMain';
 import ProductListFeatured from './ProductListFeatured';
-import ProductListRecentlyViewed from './ProductListRecentlyViewed';
+import ProductSuggestions from '@/components/common/ProductSuggestions';
 import ProductListSortModal from './ProductListSortModal';
 import ProductListFilterDrawer from './ProductListFilterDrawer';
 
@@ -27,6 +26,7 @@ type Product = {
   size?: string;
   colors?: string[];
   category?: string;
+  stock?: number;
 };
 
 interface ProductListProps {
@@ -38,7 +38,6 @@ interface ProductListProps {
 }
 
 const ProductList: React.FC<ProductListProps> = ({ user }) => {
-  const { recentlyViewed } = useRecentlyViewed();
 
   const [sortOption, setSortOption] = useState<string>('Alphabetical, A-Z');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -55,83 +54,20 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [] = useState(0);
   const [, setDeals] = useState<{ id: number; title: string; oldPrice: string; newPrice: string; discount: string; image: string }[]>([]);
   
-  // New state variables for Recently Viewed section
-  const [isCarousel, setIsCarousel] = useState(false);
-  const [productsPerPage, setProductsPerPage] = useState(5);
-  const [currentPage, setCurrentPage] = useState(0);
   const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [isHoveringProducts, setIsHoveringProducts] = useState(false);
+  const [isCarousel, setIsCarousel] = useState(false);
   const [sortModalOpen, setSortModalOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectCategoryOpen, setSelectCategoryOpen] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // Minimum swipe distance (in px)
-  const minSwipeDistance = 50;
 
-  // Responsive products per page for Recently Viewed
-  useEffect(() => {
-    const updateProductsPerPage = () => {
-      if (window.innerWidth <= 640) {
-        setProductsPerPage(2);
-      } else if (window.innerWidth <= 1024) {
-        setProductsPerPage(3);
-      } else {
-        setProductsPerPage(5);
-      }
-    };
-    updateProductsPerPage();
-    window.addEventListener('resize', updateProductsPerPage);
-    return () => window.removeEventListener('resize', updateProductsPerPage);
-  }, []);
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && currentPage < totalPages - 1) {
-      setSlideDirection('left');
-      setCurrentPage(prev => prev + 1);
-    }
-    if (isRightSwipe && currentPage > 0) {
-      setSlideDirection('right');
-      setCurrentPage(prev => prev - 1);
-    }
-  };
 
   const handleColorSelect = (productId: number, color: string) => {
     setSelectedColors(prev => ({
       ...prev,
       [productId]: color
     }));
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 0) {
-      setSlideDirection('right');
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setSlideDirection('left');
-      setCurrentPage(currentPage + 1);
-    }
   };
 
   // Check for mobile view
@@ -144,12 +80,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
-  // Use actual recently viewed products
-  const totalPages = Math.ceil(recentlyViewed.length / productsPerPage);
-  const currentProducts = recentlyViewed.slice(
-    currentPage * productsPerPage,
-    (currentPage + 1) * productsPerPage
-  );
+
 
   // Sample deals data
   useEffect(() => {
@@ -279,7 +210,20 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
               colors: ["black"], // Default color
             isOnSale: isOnSale,
             isNew: isNew,
-              category: product.category || getCategoryFromName(product.product_name)
+              category: product.category || getCategoryFromName(product.product_name),
+              stock: (() => {
+                const normalizedStatus = product.status?.toLowerCase() || '';
+                switch (normalizedStatus) {
+                  case 'in stock':
+                    return 10; // High stock
+                  case 'low stock':
+                    return 3; // Low stock
+                  case 'out of stock':
+                    return 0; // Out of stock
+                  default:
+                    return 10; // Default to in stock
+                }
+              })()
           };
         });
         
@@ -503,23 +447,11 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       {/* Featured Products Section */}
       <ProductListFeatured />
 
-      {/* Recently Viewed */}
-      <ProductListRecentlyViewed
-        isCarousel={isCarousel}
-        currentPage={currentPage}
-        selectedColors={selectedColors}
-        totalPages={totalPages}
-        currentProducts={currentProducts}
-        allProducts={recentlyViewed}
-        isHoveringProducts={isHoveringProducts}
-        slideDirection={slideDirection}
-        setIsHoveringProducts={setIsHoveringProducts}
-        handleColorSelect={handleColorSelect}
-        handlePrevPage={handlePrevPage}
-        handleNextPage={handleNextPage}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
+      {/* Product Suggestions */}
+      <ProductSuggestions 
+        title="You May Also Like"
+        maxProducts={5}
+        excludeIds={displayedProducts.map(p => p.id)}
       />
 
       <ProductListSortModal

@@ -60,11 +60,7 @@ export async function GET(request: NextRequest) {
         description,
         image_url,
         media_urls,
-        publish_status,
-        product_stock (
-          display_quantity,
-          last_sync_at
-        )
+        publish_status
       `, { count: 'exact' })
       .eq('publish_status', true)
       .order('inserted_at', { ascending: false });
@@ -101,7 +97,11 @@ export async function GET(request: NextRequest) {
 
     // Transform products to match expected format
     const transformedProducts = (products || []).map((product: any) => {
-      const stock = product.product_stock || {};
+      console.log('🔍 API: Raw product from Supabase:', {
+        id: product.id,
+        product_name: product.product_name,
+        status: product.status
+      });
       
       // Parse media URLs if they exist
       let mediaUrls: string[] = [];
@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
       // Use first media URL as image_url if available, otherwise fallback to existing image_url
       const primaryImageUrl = mediaUrls.length > 0 ? mediaUrls[0] : (product.image_url || '');
       
-      return {
+      const transformedProduct = {
         id: product.id.toString(),
         product_id: product.product_id,
         product_name: product.product_name,
@@ -137,9 +137,17 @@ export async function GET(request: NextRequest) {
         image_url: primaryImageUrl,
         media_urls: mediaUrls,
         publish_status: product.publish_status,
-        display_quantity: stock.display_quantity ?? 0,
-        last_sync_at: stock.last_sync_at || product.inserted_at || new Date().toISOString(),
+        display_quantity: 0, // We'll use status instead
+        last_sync_at: product.inserted_at || new Date().toISOString(),
       };
+      
+      console.log('🔍 API: Transformed product:', {
+        id: transformedProduct.id,
+        product_name: transformedProduct.product_name,
+        status: transformedProduct.status
+      });
+      
+      return transformedProduct;
     });
 
     const total = count || 0;

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
 import Link from "next/link";
 import Image from "next/image";
-import { formatCurrency } from '../../../utils/helpers';
+import { formatCurrency, getStockStatusFromStatus } from '../../../utils/helpers';
 
 // Local product type for New/Collection page
 type CollectionProduct = {
@@ -19,6 +19,7 @@ type CollectionProduct = {
   colors?: string[];
   isOnSale?: boolean;
   isNew?: boolean;
+  stock?: number;
 };
 
 interface ProductListProps {
@@ -261,9 +262,17 @@ const ProductList: React.FC<ProductListProps> = ({
                 <div className="space-y-1.5">
                   <h3 className="font-bold text-gray-900 text-sm font-lora text-left line-clamp-2 leading-tight">{product.name}</h3>
                   <p className="font-bold text-gray-900 text-base font-lora">{formatCurrency(product.price)}</p>
-                  <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    <span className="w-2 h-2 rounded-full mr-1 bg-green-500"></span>
-                    In Stock
+                  <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    (product.stock || 0) > 5 ? 'bg-green-100 text-green-800' : 
+                    (product.stock || 0) > 0 ? 'bg-orange-100 text-orange-800' : 
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full mr-1 ${
+                      (product.stock || 0) > 5 ? 'bg-green-500' : 
+                      (product.stock || 0) > 0 ? 'bg-orange-500' : 
+                      'bg-red-500'
+                    }`}></span>
+                    {(product.stock || 0) > 5 ? 'In Stock' : (product.stock || 0) > 0 ? 'Low Stock' : 'Out of Stock'}
                   </div>
                 </div>
                 <Link href={`/item-description/${product.id}?source=new`} className="mt-3 w-full bg-black text-white py-2 px-3 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block font-lora font-semibold rounded-md border border-black">
@@ -310,8 +319,18 @@ const ProductList: React.FC<ProductListProps> = ({
                      <div className="text-right flex-shrink-0">
                        <p className="text-2xl lg:text-3xl font-bold text-gray-900">{formatCurrency(product.price)}</p>
                        <div className="flex items-center justify-end space-x-2 mt-2">
-                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                         <span className="text-sm font-medium text-green-600">In Stock</span>
+                         <div className={`w-3 h-3 rounded-full ${
+                           (product.stock || 0) > 5 ? 'bg-green-500' : 
+                           (product.stock || 0) > 0 ? 'bg-orange-500' : 
+                           'bg-red-500'
+                         }`}></div>
+                         <span className={`text-sm font-medium ${
+                           (product.stock || 0) > 5 ? 'text-green-600' : 
+                           (product.stock || 0) > 0 ? 'text-orange-600' : 
+                           'text-red-600'
+                         }`}>
+                           {(product.stock || 0) > 5 ? 'In Stock' : (product.stock || 0) > 0 ? 'Low Stock' : 'Out of Stock'}
+                         </span>
                        </div>
                        <div className="flex items-center justify-end space-x-2 mt-2">
                          {product.isNew && (

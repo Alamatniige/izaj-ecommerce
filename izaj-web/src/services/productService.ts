@@ -15,6 +15,13 @@ import { InternalApiService, InternalProduct } from './internalApi';
 
 // Transform internal product to legacy product format
 const transformToLegacyProduct = (internalProduct: InternalProduct): Product => {
+  console.log('🔍 productService: Transforming product:', {
+    id: internalProduct.id,
+    product_id: internalProduct.product_id,
+    product_name: internalProduct.product_name,
+    status: internalProduct.status
+  });
+  
   // Use product_id as the numeric ID, fallback to hash of UUID
   let numericId = parseInt(internalProduct.product_id);
   if (isNaN(numericId)) {
@@ -27,7 +34,22 @@ const transformToLegacyProduct = (internalProduct: InternalProduct): Product => 
     ? internalProduct.media_urls[0] 
     : (internalProduct.image_url || "/placeholder.jpg");
   
-  return {
+  // Convert status to stock number for display logic
+  const getStockFromStatus = (status: string): number => {
+    const normalizedStatus = status?.toLowerCase() || '';
+    switch (normalizedStatus) {
+      case 'in stock':
+        return 10; // High stock
+      case 'low stock':
+        return 3; // Low stock
+      case 'out of stock':
+        return 0; // Out of stock
+      default:
+        return 10; // Default to in stock
+    }
+  };
+  
+  const transformedProduct = {
     id: numericId,
     name: internalProduct.product_name,
     price: `₱${parseFloat(internalProduct.price.toString()).toLocaleString()}`,
@@ -36,9 +58,18 @@ const transformToLegacyProduct = (internalProduct: InternalProduct): Product => 
     colors: ["black"], // Default color
     description: internalProduct.description,
     category: internalProduct.category,
-    stock: internalProduct.display_quantity || 0,
+    stock: getStockFromStatus(internalProduct.status),
     status: internalProduct.status || 'In Stock'
   };
+  
+  console.log('🔍 productService: Transformed product:', {
+    id: transformedProduct.id,
+    name: transformedProduct.name,
+    stock: transformedProduct.stock,
+    status: transformedProduct.status
+  });
+  
+  return transformedProduct;
 };
 
 export const getAllProducts = async (): Promise<Product[]> => {

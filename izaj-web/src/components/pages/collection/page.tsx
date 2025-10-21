@@ -4,10 +4,9 @@ import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
 import { getAllProducts } from '../../../services/productService';
 import type { Product as ServiceProduct } from '../../../services/productService';
-import { useRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 import ProductList from '@/components/pages/collection/ProductList';
 import FeaturedProducts from '@/components/pages/collection/FeaturedProducts';
-import RecentlyViewed from '@/components/pages/collection/RecentlyViewed';
+import ProductSuggestions from '@/components/common/ProductSuggestions';
 import SortModal from '@/components/pages/collection/SortModal';
 import FilterDrawer from '@/components/pages/collection/FilterDrawer';
 import Sidebar from '@/components/pages/collection/Sidebar';
@@ -28,6 +27,7 @@ type CollectionProduct = {
   isOnSale?: boolean;
   isNew?: boolean;
   category?: string;
+  stock?: number;
 };
 
 // Local sort helper for this page
@@ -58,7 +58,6 @@ interface CollectionProps {
 }
 
 const Collection: React.FC<CollectionProps> = ({ }) => {
-  const { recentlyViewed } = useRecentlyViewed();
 
   const [sortOption, setSortOption] = useState<string>('Alphabetical, A-Z');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -75,47 +74,13 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   const [] = useState(0);
   const [, setDeals] = useState<{ id: number; title: string; oldPrice: string; newPrice: string; discount: string; image: string }[]>([]);
   
-  // New state variables for Recently Viewed section
-  const [isCarousel, setIsCarousel] = useState(false);
-  const [productsPerPage, setProductsPerPage] = useState(5);
-  const [currentPage, setCurrentPage] = useState(0);
   const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [isHoveringProducts, setIsHoveringProducts] = useState(false);
+  const [isCarousel, setIsCarousel] = useState(false);
   const [sortModalOpen, setSortModalOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectCategoryOpen, setSelectCategoryOpen] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // Minimum swipe distance (in px)
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe && currentPage < totalPages - 1) {
-      setSlideDirection('left');
-      setCurrentPage(prev => prev + 1);
-    }
-    if (isRightSwipe && currentPage > 0) {
-      setSlideDirection('right');
-      setCurrentPage(prev => prev - 1);
-    }
-  };
 
   const handleColorSelect = (productId: number, color: string) => {
     setSelectedColors(prev => ({
@@ -123,36 +88,6 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
       [productId]: color
     }));
   };
-
-  const handlePrevPage = () => {
-    if (currentPage > 0) {
-      setSlideDirection('right');
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setSlideDirection('left');
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  // Responsive products per page for Recently Viewed
-  useEffect(() => {
-    const updateProductsPerPage = () => {
-      if (window.innerWidth <= 640) {
-        setProductsPerPage(2);
-      } else if (window.innerWidth <= 1024) {
-        setProductsPerPage(3);
-      } else {
-        setProductsPerPage(5);
-      }
-    };
-    updateProductsPerPage();
-    window.addEventListener('resize', updateProductsPerPage);
-    return () => window.removeEventListener('resize', updateProductsPerPage);
-  }, []);
 
   // Check for mobile view
   useEffect(() => {
@@ -164,12 +99,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
-  // Use actual recently viewed products
-  const totalPages = Math.ceil(recentlyViewed.length / productsPerPage);
-  const currentProducts = recentlyViewed.slice(
-    currentPage * productsPerPage,
-    (currentPage + 1) * productsPerPage
-  );
+
 
   // Sample deals data
   useEffect(() => {
@@ -262,7 +192,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           colors: product.colors || ["black"],
           isOnSale: false, // Default
           isNew: true, // Default for fresh drops
-          category: getCategoryFromName(product.name) // Use real category from product name
+          category: getCategoryFromName(product.name), // Use real category from product name
+          stock: product.stock || 0 // Include stock from Supabase
         }));
         
         setAllProducts(transformedProducts);
@@ -482,23 +413,11 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
       {/* Featured Products Section */}
       <FeaturedProducts />
 
-      {/* Recently Viewed */}
-      <RecentlyViewed
-        isCarousel={isCarousel}
-        currentPage={currentPage}
-        selectedColors={selectedColors}
-        totalPages={totalPages}
-        currentProducts={currentProducts}
-        allProducts={recentlyViewed}
-        isHoveringProducts={isHoveringProducts}
-        slideDirection={slideDirection}
-        setIsHoveringProducts={setIsHoveringProducts}
-        handleColorSelect={handleColorSelect}
-        handlePrevPage={handlePrevPage}
-        handleNextPage={handleNextPage}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
+      {/* Product Suggestions */}
+      <ProductSuggestions 
+        title="You May Also Like"
+        maxProducts={5}
+        excludeIds={displayedProducts.map(p => p.id)}
       />
 
         <SortModal
