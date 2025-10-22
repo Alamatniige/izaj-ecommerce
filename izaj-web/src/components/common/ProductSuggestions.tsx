@@ -203,7 +203,7 @@ const ProductSuggestions: React.FC<ProductSuggestionsProps> = ({
                 </div>
               </div>
               <Link href={`/item-description/${product.id}`} className="mt-3 w-full bg-black text-white py-2 px-3 hover:bg-gray-800 transition-colors duration-300 text-xs text-center block font-lora font-semibold rounded-md border border-black">
-                VIEW
+                VIEW DETAILS
               </Link>
             </div>
           </div>

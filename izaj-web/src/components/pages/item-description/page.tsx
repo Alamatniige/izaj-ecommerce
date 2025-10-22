@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
 
 import CompactChat from '../../common/CompactChat';
 import { getProductById } from '../../../services/productService';
@@ -138,8 +139,11 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
       size: '120cm', // Default size since it's not in the product data
     });
 
-    // Show success feedback
-    alert(`${product.name} has been added to your cart!`);
+    // Show success toast notification
+    toast.success(`${product.name} added to cart!`, {
+      icon: '🛒',
+      duration: 3000,
+    });
   };
 
   const handleToggleFavorite = () => {

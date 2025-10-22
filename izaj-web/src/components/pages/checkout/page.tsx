@@ -9,6 +9,7 @@ import { createOrder } from '@/services/orderService';
 import { addressService, Address } from '@/services/addressService';
 import Link from 'next/link';
 import RequireAuth from '../../common/RequireAuth';
+import toast from 'react-hot-toast';
 
 const Checkout = () => {
   const router = useRouter();
@@ -209,6 +210,12 @@ const Checkout = () => {
       console.log('🔵 Order result:', result);
 
       if (result.success && result.data) {
+        // Show success toast
+        toast.success(`Order placed successfully!`, {
+          icon: '✅',
+          duration: 4000,
+        });
+        
         // Clear cart
         clearCart();
         
@@ -220,6 +227,12 @@ const Checkout = () => {
     } catch (err) {
       console.error('Order creation error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to create order. Please try again.';
+      
+      // Show error toast
+      toast.error(errorMessage, {
+        icon: '❌',
+        duration: 5000,
+      });
       
       // Show helpful error messages
       if (errorMessage.includes('relation') || errorMessage.includes('does not exist')) {
@@ -285,7 +298,7 @@ const Checkout = () => {
         <form onSubmit={handleSubmit} className="p-4 md:p-8 max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left - Form */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-6 sticky top-4">
             {/* Contact */}
             <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-6">

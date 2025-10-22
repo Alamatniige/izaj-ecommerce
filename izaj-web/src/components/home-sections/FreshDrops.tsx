@@ -355,7 +355,7 @@ export default function FreshDrops() {
                           className="absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-80 transition-all duration-300 text-sm text-center block rounded-sm border opacity-0 group-hover:opacity-100"
                           style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: '#423f3f', borderColor: '#423f3f', letterSpacing: '0.1em' }}
                         >
-                          VIEW
+                          VIEW DETAILS
                         </Link>
                       </div>
                       <h3 className="text-gray-900 text-base text-left line-clamp-2 leading-tight" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.name}</h3>
@@ -409,7 +409,7 @@ export default function FreshDrops() {
                           className="absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-80 transition-all duration-300 text-sm text-center block rounded-sm border opacity-0 group-hover:opacity-100"
                           style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: '#423f3f', borderColor: '#423f3f', letterSpacing: '0.1em' }}
                         >
-                          VIEW
+                          VIEW DETAILS
                         </Link>
                       </div>
                       <h3 className="text-gray-900 text-base text-left line-clamp-2 leading-tight" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.name}</h3>

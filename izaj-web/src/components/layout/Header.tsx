@@ -37,15 +37,6 @@ function capitalize(str: string) {
     setUser?: React.Dispatch<React.SetStateAction<User | null>>;
   }
 
-  // Mock product data for search suggestions
-  const mockProducts = [
-    { id: 1, name: "Modern Ceiling Light", category: "Ceiling Lights", image: "/ceiling.jpg" },
-    { id: 2, name: "Crystal Chandelier", category: "Chandeliers", image: "/chadelier.jpg" },
-    { id: 3, name: "Pendant Light Fixture", category: "Pendant Lights", image: "/pendant.jpg" },
-    { id: 4, name: "LED Floor Lamp", category: "Floor Lamps", image: "/floor.jpg" },
-    { id: 5, name: "Wall Sconce Light", category: "Wall Lights", image: "/aber.webp" },
-  ];
-
   // Promotional banners
   const promoBanners = [
     { id: 1, text: "Monthly Sale is here! → Enjoy 10% OFF items for the month of June", color: "bg-black" },
@@ -60,6 +51,9 @@ function capitalize(str: string) {
     handleLogout: propHandleLogout,
     setUser: propSetUser
   }) => {
+    // Search functionality
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
     // Use UserContext as primary source, props as fallback
     const { user: contextUser, logout: contextLogout } = useUserContext();
     const { cart } = useCartContext();
@@ -207,13 +201,54 @@ function capitalize(str: string) {
       };
     }, [isAccountDropdownOpen, isMobile]);
 
-    // Filter search suggestions
-    const searchSuggestions = searchQuery.trim()
-      ? mockProducts.filter(product =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.category.toLowerCase().includes(searchQuery.toLowerCase())
-        ).slice(0, 5)
-      : [];
+    // Search function
+    const handleSearch = async (query: string) => {
+      if (!query.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        // Search products from your API
+        const response = await fetch(`/api/products/search?q=${encodeURIComponent(query)}&limit=5`);
+        if (response.ok) {
+          const data = await response.json();
+          setSearchResults(data.products || []);
+        } else {
+          console.error('Search API failed:', response.status);
+          setSearchResults([]);
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    // Debounced search
+    useEffect(() => {
+      const timeoutId = setTimeout(() => {
+        if (searchQuery.trim()) {
+          handleSearch(searchQuery);
+        } else {
+          setSearchResults([]);
+        }
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
+    }, [searchQuery]);
+
+    // Handle search form submission
+    const handleSearchSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (searchQuery.trim()) {
+        router.push(`/product-list?search=${encodeURIComponent(searchQuery)}`);
+        setSearchQuery('');
+        setShowSearchSuggestions(false);
+      }
+    };
   
     const handleLogoutClick = () => {
       // Clear auth token but keep user data
@@ -376,82 +411,117 @@ function capitalize(str: string) {
               <div className={`hidden lg:block absolute left-1/2 transform -translate-x-1/2 w-full max-w-xl transition-all duration-300 ${
                 scrolled ? 'max-w-md' : 'max-w-xl'
               }`} ref={searchRef}>
-                <input
-                  type="text"
-                  placeholder="Search products, categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setShowSearchSuggestions(true)}
-                  className={`w-full border border-gray-300 pl-10 pr-4 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-full transition-all duration-300 font-lora ${
-                    scrolled ? 'py-2' : 'py-3'
-                  }`}
-                  style={{ letterSpacing: '0.015em', lineHeight: '1.6' }}
-                />
-                <Icon 
-                  icon="ic:outline-search" 
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                  width="20"
-                  height="20"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                  >
-                    <Icon icon="mdi:close-circle" width="18" height="18" />
-                  </button>
-                )}
+                <form onSubmit={handleSearchSubmit}>
+                  <input
+                    type="text"
+                    placeholder="Search products, categories..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => setShowSearchSuggestions(true)}
+                    className={`w-full border border-gray-300 pl-10 pr-4 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-full transition-all duration-300 font-lora ${
+                      scrolled ? 'py-2' : 'py-3'
+                    }`}
+                    style={{ letterSpacing: '0.015em', lineHeight: '1.6' }}
+                  />
+                  <Icon 
+                    icon="ic:outline-search" 
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    width="20"
+                    height="20"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSearchResults([]);
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                    >
+                      <Icon icon="mdi:close-circle" width="18" height="18" />
+                    </button>
+                  )}
+                </form>
 
                 {/* Search Suggestions Dropdown */}
-                {showSearchSuggestions && searchSuggestions.length > 0 && (
+                {showSearchSuggestions && (searchResults.length > 0 || isSearching) && (
                   <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[9997] animate-slide-down">
                     <div className="py-2">
-                      {searchSuggestions.map((product) => (
-                        <Link
-                          key={product.id}
-                          href={`/item-description/${product.id}`}
-                          className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors duration-200 group"
+                      {isSearching ? (
+                        <div className="flex items-center justify-center px-4 py-8">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
+                          <span className="ml-3 text-sm text-gray-600" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                            Searching...
+                          </span>
+                        </div>
+                      ) : searchResults.length > 0 ? (
+                        <>
+                          {searchResults.map((product) => (
+                            <Link
+                              key={product.id}
+                              href={`/item-description/${product.id}`}
+                              className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors duration-200 group"
+                              onClick={() => {
+                                setShowSearchSuggestions(false);
+                                setSearchQuery('');
+                              }}
+                            >
+                              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-gray-200 group-hover:ring-gray-400 transition-all duration-200">
+                                <img 
+                                  src={product.image} 
+                                  alt={product.name}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                />
+                              </div>
+                              <div className="ml-3 flex-1">
+                                <p className="text-sm font-medium text-gray-800 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
+                                  {product.name}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                  <p className="text-xs text-gray-500 capitalize" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>
+                                    {product.category}
+                                  </p>
+                                  {product.price && (
+                                    <p className="text-xs font-semibold text-black" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                                      ₱{product.price.toLocaleString()}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <Icon 
+                                icon="mdi:arrow-right" 
+                                className="text-gray-400 group-hover:text-black group-hover:translate-x-1 transition-all duration-200"
+                                width="20"
+                                height="20"
+                              />
+                            </Link>
+                          ))}
+                        </>
+                      ) : searchQuery.trim() && (
+                        <div className="flex items-center justify-center px-4 py-8">
+                          <p className="text-sm text-gray-500" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                            No products found for "{searchQuery}"
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    {searchResults.length > 0 && (
+                      <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+                        <button
+                          type="button"
                           onClick={() => {
+                            router.push(`/product-list?search=${encodeURIComponent(searchQuery)}`);
                             setShowSearchSuggestions(false);
                             setSearchQuery('');
                           }}
+                          className="w-full text-sm text-black hover:text-gray-600 font-medium flex items-center justify-center gap-2 transition-colors duration-200"
+                          style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.6' }}
                         >
-                          <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-gray-200 group-hover:ring-gray-400 transition-all duration-200">
-                            <img 
-                              src={product.image} 
-                              alt={product.name}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            />
-                          </div>
-                          <div className="ml-3 flex-1">
-                            <p className="text-sm font-medium text-gray-800 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
-                              {product.name}
-                            </p>
-                            <p className="text-xs text-gray-500" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{product.category}</p>
-                          </div>
-                          <Icon 
-                            icon="mdi:arrow-right" 
-                            className="text-gray-400 group-hover:text-black group-hover:translate-x-1 transition-all duration-200"
-                            width="20"
-                            height="20"
-                          />
-                        </Link>
-                      ))}
-                    </div>
-                    <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
-                      <Link
-                        href={`/product-list?search=${searchQuery}`}
-                        className="text-sm text-black hover:text-gray-600 font-medium flex items-center justify-center gap-2 transition-colors duration-200"
-                        style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.6' }}
-                        onClick={() => {
-                          setShowSearchSuggestions(false);
-                          setSearchQuery('');
-                        }}
-                      >
-                        <Icon icon="mdi:magnify" width="18" height="18" />
-                        View all results for "{searchQuery}"
-                      </Link>
-                    </div>
+                          <Icon icon="mdi:magnify" width="18" height="18" />
+                          View all results for "{searchQuery}"
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -808,64 +878,112 @@ function capitalize(str: string) {
           {/* Mobile Search Bar - Only visible when search icon is clicked */}
           {isMobileSearchOpen && (
             <div className="lg:hidden mt-4 relative animate-slide-down" ref={searchRef}>
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setShowSearchSuggestions(true)}
-                className="w-full border border-gray-300 pl-10 pr-10 py-2 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black rounded-full font-lora"
-                style={{ letterSpacing: '0.015em', lineHeight: '1.6' }}
-                autoFocus
-              />
-              <Icon 
-                icon="ic:outline-search" 
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                width="20"
-                height="20"
-              />
-              <button 
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                onClick={() => {
-                  setIsMobileSearchOpen(false);
-                  setSearchQuery('');
-                  setShowSearchSuggestions(false);
-                }}
-              >
-                <Icon icon="mdi:close" width="20" height="20" />
-              </button>
+              <form onSubmit={handleSearchSubmit}>
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setShowSearchSuggestions(true)}
+                  className="w-full border border-gray-300 pl-10 pr-10 py-2 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black rounded-full font-lora"
+                  style={{ letterSpacing: '0.015em', lineHeight: '1.6' }}
+                  autoFocus
+                />
+                <Icon 
+                  icon="ic:outline-search" 
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  width="20"
+                  height="20"
+                />
+                <button 
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => {
+                    setIsMobileSearchOpen(false);
+                    setSearchQuery('');
+                    setShowSearchSuggestions(false);
+                    setSearchResults([]);
+                  }}
+                >
+                  <Icon icon="mdi:close" width="20" height="20" />
+                </button>
+              </form>
 
               {/* Mobile Search Suggestions */}
-              {showSearchSuggestions && searchSuggestions.length > 0 && (
+              {showSearchSuggestions && (searchResults.length > 0 || isSearching) && (
                 <div className="absolute top-full mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-[9997] animate-slide-down">
                   <div className="py-2">
-                    {searchSuggestions.map((product) => (
-                      <Link
-                        key={product.id}
-                        href={`/item-description/${product.id}`}
-                        className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors duration-200"
+                    {isSearching ? (
+                      <div className="flex items-center justify-center px-4 py-8">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
+                        <span className="ml-3 text-sm text-gray-600" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                          Searching...
+                        </span>
+                      </div>
+                    ) : searchResults.length > 0 ? (
+                      <>
+                        {searchResults.map((product) => (
+                          <Link
+                            key={product.id}
+                            href={`/item-description/${product.id}`}
+                            className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors duration-200"
+                            onClick={() => {
+                              setShowSearchSuggestions(false);
+                              setSearchQuery('');
+                              setIsMobileSearchOpen(false);
+                            }}
+                          >
+                            <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                              <img 
+                                src={product.image} 
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="ml-3 flex-1">
+                              <p className="text-sm font-medium text-gray-800" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
+                                {product.name}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs text-gray-500 capitalize" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>
+                                  {product.category}
+                                </p>
+                                {product.price && (
+                                  <p className="text-xs font-semibold text-black" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                                    ₱{product.price.toLocaleString()}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </>
+                    ) : searchQuery.trim() && (
+                      <div className="flex items-center justify-center px-4 py-8">
+                        <p className="text-sm text-gray-500" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                          No products found for "{searchQuery}"
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {searchResults.length > 0 && (
+                    <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+                      <button
+                        type="button"
                         onClick={() => {
+                          router.push(`/product-list?search=${encodeURIComponent(searchQuery)}`);
                           setShowSearchSuggestions(false);
                           setSearchQuery('');
                           setIsMobileSearchOpen(false);
                         }}
+                        className="w-full text-sm text-black hover:text-gray-600 font-medium flex items-center justify-center gap-2 transition-colors duration-200"
+                        style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.6' }}
                       >
-                        <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
-                          <img 
-                            src={product.image} 
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="ml-3 flex-1">
-                          <p className="text-sm font-medium text-gray-800" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
-                            {product.name}
-                          </p>
-                          <p className="text-xs text-gray-500" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{product.category}</p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
+                        <Icon icon="mdi:magnify" width="18" height="18" />
+                        View all results for "{searchQuery}"
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1094,12 +1212,14 @@ function capitalize(str: string) {
               {/* HOME NAVIGATION */}
               <li className="flex items-center h-full relative">
                 {/* Vertical Divider */}
-                <div className="absolute -right-6 top-1/2 transform -translate-y-1/2 h-6 w-px bg-gray-300" />
+                <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 h-4 w-px bg-gray-200" />
                 
                 <a
                   href="#home"
-                  className={`px-4 py-2 flex items-center gap-2 relative overflow-hidden rounded-lg transition-all duration-300 group ${
-                    isLinkActive('/') ? 'font-bold bg-gray-100' : 'font-medium hover:bg-gray-100'
+                  className={`px-8 py-4 flex items-center gap-4 relative transition-all duration-500 group ${
+                    isLinkActive('/') 
+                      ? 'text-black' 
+                      : 'text-gray-600 hover:text-black'
                   }`}
                   onClick={(e) => {
                     createRipple(e);
@@ -1108,52 +1228,41 @@ function capitalize(str: string) {
                   onMouseEnter={() => setHoveredNav('home')}
                   onMouseLeave={() => setHoveredNav(null)}
                   style={{
-                    letterSpacing: isLinkActive('/') ? '0.08em' : hoveredNav === 'home' ? '0.06em' : '0.04em',
-                    transition: 'all 0.3s ease',
-                    fontWeight: isLinkActive('/') ? '600' : '500'
+                    letterSpacing: '0.15em',
+                    transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    fontWeight: '700',
+                    fontSize: '0.85rem'
                   }}
                 >
-                  {/* Animated Icon */}
-                  {(hoveredNav === 'home' || isLinkActive('/')) && (
-                    <Icon 
-                      icon="mdi:home" 
-                      className="transition-all duration-300"
-                      width="18" 
-                      height="18" 
-                    />
-                  )}
+                  <span className={`relative z-10 font-bold transition-all duration-500 ${
+                    isLinkActive('/') 
+                      ? 'text-black' 
+                      : 'text-gray-600 group-hover:text-black'
+                  }`} style={{ 
+                    fontSize: '0.85rem', 
+                    lineHeight: '1.2',
+                    fontFamily: "'Poppins', sans-serif"
+                  }}>
+                    HOME
+                  </span>
                   
-                  <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>HOME</span>
-                  
-                  {/* Ripple Effects */}
-                  {isClient && ripples.map(ripple => (
-                    <span
-                      key={ripple.id}
-                      className="absolute rounded-full bg-black opacity-20 animate-ripple"
-                      style={{
-                        left: ripple.x,
-                        top: ripple.y,
-                        width: 0,
-                        height: 0,
-                      }}
-                    />
-                  ))}
-                  
-                  {/* Gradient Underline */}
-                  <span className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-black via-gray-600 to-gray-400 transition-all duration-300 ${
+                  {/* Minimal Underline */}
+                  <span className={`absolute bottom-0 left-0 h-px bg-black transition-all duration-700 ${
                     hoveredNav === 'home' || isLinkActive('/') ? 'w-full' : 'w-0'
                   }`}></span>
                 </a>
               </li>
   
-              {/* Products Dropdown Menu - Enhanced */}
-              <li className="relative group flex items-center h-full" ref={productsDropdownRef}>
+              {/* Products Navigation with Dropdown */}
+              <li className="flex items-center h-full relative group" ref={productsDropdownRef}>
                 {/* Vertical Divider */}
-                <div className="absolute -right-6 top-1/2 transform -translate-y-1/2 h-6 w-px bg-gray-300" />
+                <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 h-4 w-px bg-gray-200" />
                 
                 <div
-                  className={`px-4 py-2 flex items-center gap-2 cursor-pointer relative overflow-hidden rounded-lg transition-all duration-300 ${
-                    isLinkActive('/product-list') ? 'font-bold bg-gray-100' : 'font-medium hover:bg-gray-100'
+                  className={`px-8 py-4 flex items-center gap-4 relative transition-all duration-500 cursor-pointer ${
+                    isLinkActive('/product-list') 
+                      ? 'text-black' 
+                      : 'text-gray-600 hover:text-black'
                   }`}
                   onClick={(e) => {
                     createRipple(e);
@@ -1174,61 +1283,40 @@ function capitalize(str: string) {
                     }, 200);
                   }}
                   style={{
-                    letterSpacing: isLinkActive('/product-list') ? '0.08em' : hoveredNav === 'products' ? '0.06em' : '0.04em',
-                    transition: 'all 0.3s ease',
-                    fontWeight: isLinkActive('/product-list') ? '600' : '500'
+                    letterSpacing: '0.15em',
+                    transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    fontWeight: '700',
+                    fontSize: '0.85rem'
                   }}
                 >
-                  {/* Animated Icon */}
-                  {(hoveredNav === 'products' || isLinkActive('/product-list')) && (
-                    <Icon 
-                      icon="mdi:lightbulb" 
-                      className="transition-all duration-300"
-                      width="18" 
-                      height="18" 
-                    />
-                  )}
+                  <span className={`relative z-10 font-bold transition-all duration-500 ${
+                    isLinkActive('/product-list') 
+                      ? 'text-black' 
+                      : 'text-gray-600 group-hover:text-black'
+                  }`} style={{ 
+                    fontSize: '0.85rem', 
+                    lineHeight: '1.2',
+                    fontFamily: "'Poppins', sans-serif"
+                  }}>
+                    PRODUCTS
+                  </span>
                   
-                  <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>PRODUCTS</span>
-                  
-                  <Icon 
-                    icon="mdi:chevron-down" 
-                    className="ml-1 transition-transform duration-300" 
-                    style={{ transform: isDropdownOpen ? "rotate(180deg)" : "rotate(0deg)" }} 
-                    width="18" 
-                    height="18" 
-                  />
-                  
-                  {/* Ripple Effects */}
-                  {isClient && ripples.map(ripple => (
-                    <span
-                      key={ripple.id}
-                      className="absolute rounded-full bg-black opacity-20 animate-ripple"
-                      style={{
-                        left: ripple.x,
-                        top: ripple.y,
-                        width: 0,
-                        height: 0,
-                      }}
-                    />
-                  ))}
-                  
-                  {/* Gradient Underline */}
-                  <span className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-black via-gray-600 to-gray-400 transition-all duration-300 ${
+                  {/* Minimal Underline */}
+                  <span className={`absolute bottom-0 left-0 h-px bg-black transition-all duration-700 ${
                     hoveredNav === 'products' || isLinkActive('/product-list') ? 'w-full' : 'w-0'
                   }`}></span>
                 </div>
-  
+
+                {/* Full Width Luxury Dropdown */}
                 {isDropdownOpen && (
                   <div 
                     ref={productsDropdownContentRef}
-                    className="fixed top-0 left-0 right-0 bg-white text-black shadow-2xl border-t-4 border-black dropdown-content animate-slide-down"
+                    className="fixed top-0 left-0 right-0 bg-white shadow-2xl border-t border-gray-100 transition-all duration-500"
                     style={{ 
                       zIndex: 9999,
-                      width: '100vw',
-                      maxHeight: '80vh',
-                      overflowY: 'auto',
-                      top: '200px'
+                      top: '200px',
+                      opacity: isDropdownOpen ? 1 : 0,
+                      transform: isDropdownOpen ? 'translateY(0)' : 'translateY(-20px)'
                     }}
                     onMouseEnter={() => {
                       if (dropdownCloseTimer.current) {
@@ -1245,244 +1333,238 @@ function capitalize(str: string) {
                       }, 200);
                     }}
                   >
-                    <div className="max-w-6xl mx-auto px-6 py-8">
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="max-w-7xl mx-auto px-8 py-12">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {/* Featured Categories */}
-                        <div className="space-y-4">
-                          <div className="border-b border-gray-200 pb-3">
-                            <h3 className="text-sm font-bold text-black font-poppins uppercase tracking-wider" style={{ letterSpacing: '0.1em' }}>
-                              Shop by Category
+                        <div className="space-y-6">
+                          <div className="border-b border-gray-200 pb-4">
+                            <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
+                              fontFamily: "'Poppins', sans-serif",
+                              letterSpacing: '0.2em'
+                            }}>
+                              Categories
                             </h3>
                           </div>
-                          <ul className="space-y-1">
-                            <li>
-                              <Link 
-                                href="/product-list" 
-                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
-                                onClick={() => setIsDropdownOpen(false)}
-                              >
-                                <Icon icon="mdi:lightbulb-group" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
-                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>All Lighting Fixtures</span>
-                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
-                              </Link>
-                            </li>
-                            <li>
-                              <Link 
-                                href="/product-list?category=ceiling-lights" 
-                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
-                                onClick={() => setIsDropdownOpen(false)}
-                              >
-                                <Icon icon="mdi:ceiling-light" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
-                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Ceiling Lights</span>
-                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
-                              </Link>
-                            </li>
-                            <li>
-                              <Link 
-                                href="/product-list?category=chandeliers" 
-                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
-                                onClick={() => setIsDropdownOpen(false)}
-                              >
-                                <Icon icon="mdi:crystal-ball" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
-                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Chandeliers</span>
-                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
-                              </Link>
-                            </li>
-                            <li>
-                              <Link 
-                                href="/product-list?category=pendant-lights" 
-                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
-                                onClick={() => setIsDropdownOpen(false)}
-                              >
-                                <Icon icon="mdi:lightbulb-on" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
-                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Pendant Lights</span>
-                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
-                              </Link>
-                            </li>
-                            <li>
-                              <Link 
-                                href="/product-list?category=floor-lamps" 
-                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
-                                onClick={() => setIsDropdownOpen(false)}
-                              >
-                                <Icon icon="mdi:floor-lamp" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
-                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Floor Lamps</span>
-                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
-                              </Link>
-                            </li>
-                            <li>
-                              <Link 
-                                href="/product-list?category=wall-lights" 
-                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
-                                onClick={() => setIsDropdownOpen(false)}
-                              >
-                                <Icon icon="mdi:wall-sconce" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
-                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Wall Lights</span>
-                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
-                              </Link>
-                            </li>
-                            <li>
-                              <Link 
-                                href="/product-list?category=table-lamps" 
-                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
-                                onClick={() => setIsDropdownOpen(false)}
-                              >
-                                <Icon icon="mdi:lamp" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
-                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Table Lamps</span>
-                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
-                              </Link>
-                            </li>
-                            <li>
-                              <Link 
-                                href="/product-list?category=outdoor-lights" 
-                                className="flex items-center group hover:bg-gray-50 rounded-lg px-3 py-2.5 transition-all duration-200 hover:shadow-sm"
-                                onClick={() => setIsDropdownOpen(false)}
-                              >
-                                <Icon icon="mdi:outdoor-lamp" className="w-5 h-5 mr-4 text-gray-500 group-hover:text-black transition-colors duration-200 flex-shrink-0" />
-                                <span className="font-medium text-sm text-gray-700 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500' }}>Outdoor Lighting</span>
-                                <Icon icon="mdi:chevron-right" className="w-4 h-4 ml-auto text-gray-400 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" />
-                              </Link>
-                            </li>
-                          </ul>
-                        </div>
-
-                        {/* Quick Links & Services */}
-                        <div className="space-y-4">
-                          <div className="border-b border-gray-200 pb-3">
-                            <h3 className="text-sm font-bold text-black font-poppins uppercase tracking-wider" style={{ letterSpacing: '0.1em' }}>
-                              Quick Links
-                            </h3>
-                          </div>
-                          
-                          {/* Design Consultation */}
-                          <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200">
-                            <div className="flex items-center mb-2">
-                              <Icon icon="mdi:palette" className="w-5 h-5 text-black mr-3 flex-shrink-0" />
-                              <span className="text-sm font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
-                                Free Design Consultation
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
-                              Get expert lighting design advice for your space
-                            </p>
-                            <Link 
-                              href="/static/aboutus" 
-                              className="inline-flex items-center text-xs font-medium text-black hover:text-gray-600 transition-colors duration-200"
+                          <div className="space-y-2">
+                            <Link
+                              href="/product-list"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Book Consultation <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                              All Products
                             </Link>
-                          </div>
-
-                          {/* Installation Services */}
-                          <div className="bg-white border-2 border-gray-300 rounded-lg p-4 hover:border-black transition-all duration-200">
-                            <div className="flex items-center mb-2">
-                              <Icon icon="mdi:tools" className="w-5 h-5 text-black mr-3 flex-shrink-0" />
-                              <span className="text-sm font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
-                                Professional Installation
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
-                              Expert installation services available
-                            </p>
-                            <Link 
-                              href="/static/aboutus" 
-                              className="inline-flex items-center text-xs font-medium text-black hover:text-gray-600 transition-colors duration-200"
+                            <Link
+                              href="/product-list?category=ceiling"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Learn More <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                              Ceiling Lights
                             </Link>
-                          </div>
-
-                          {/* Customer Support */}
-                          <div className="bg-black text-white rounded-lg p-4 hover:bg-gray-800 transition-colors duration-200">
-                            <div className="flex items-center mb-2">
-                              <Icon icon="mdi:headset" className="w-5 h-5 text-white mr-3 flex-shrink-0" />
-                              <span className="text-sm font-bold text-white" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
-                                24/7 Customer Support
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-200 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
-                              We're here to help with any questions
-                            </p>
-                            <Link 
-                              href="/static/aboutus" 
-                              className="inline-flex items-center text-xs font-medium text-white hover:text-gray-200 transition-colors duration-200"
+                            <Link
+                              href="/product-list?category=chandelier"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Contact Us <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                              Chandeliers
+                            </Link>
+                            <Link
+                              href="/product-list?category=pendant"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Pendant Lights
                             </Link>
                           </div>
                         </div>
 
-                        {/* Special Offers & Quick Links */}
-                        <div className="space-y-4">
-                          <div className="border-b border-gray-200 pb-3">
-                            <h3 className="text-sm font-bold text-black font-poppins uppercase tracking-wider" style={{ letterSpacing: '0.1em' }}>
+                        {/* Additional Categories */}
+                        <div className="space-y-6">
+                          <div className="border-b border-gray-200 pb-4">
+                            <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
+                              fontFamily: "'Poppins', sans-serif",
+                              letterSpacing: '0.2em'
+                            }}>
+                              Lighting Types
+                            </h3>
+                          </div>
+                          <div className="space-y-2">
+                            <Link
+                              href="/product-list?category=floor"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Floor Lamps
+                            </Link>
+                            <Link
+                              href="/product-list?category=wall"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Wall Lights
+                            </Link>
+                            <Link
+                              href="/product-list?category=table"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Table Lamps
+                            </Link>
+                            <Link
+                              href="/product-list?category=outdoor"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Outdoor Lighting
+                            </Link>
+                          </div>
+                        </div>
+
+                        {/* Special Collections */}
+                        <div className="space-y-6">
+                          <div className="border-b border-gray-200 pb-4">
+                            <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
+                              fontFamily: "'Poppins', sans-serif",
+                              letterSpacing: '0.2em'
+                            }}>
+                              Collections
+                            </h3>
+                          </div>
+                          <div className="space-y-2">
+                            <Link
+                              href="/collection"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              New Arrivals
+                            </Link>
+                            <Link
+                              href="/sales"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
                               Special Offers
+                            </Link>
+                            <Link
+                              href="/product-list?sort=featured"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Featured Items
+                            </Link>
+                            <Link
+                              href="/product-list?sort=popular"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Popular Items
+                            </Link>
+                          </div>
+                        </div>
+
+                        {/* Services */}
+                        <div className="space-y-6">
+                          <div className="border-b border-gray-200 pb-4">
+                            <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
+                              fontFamily: "'Poppins', sans-serif",
+                              letterSpacing: '0.2em'
+                            }}>
+                              Services
                             </h3>
                           </div>
-                          
-                          {/* Monthly Sale Banner */}
-                          <div className="bg-black text-white rounded-lg p-4 mb-4 hover:bg-gray-800 transition-colors duration-200">
-                            <div className="flex items-center mb-2">
-                              <Icon icon="mdi:tag" className="w-5 h-5 text-white mr-3 flex-shrink-0" />
-                              <span className="text-sm font-bold text-white" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
-                                Monthly Sale
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-200 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
-                              Up to 25% off on selected items
-                            </p>
-                            <Link 
-                              href="/sales" 
-                              className="inline-flex items-center text-xs font-medium text-white hover:text-gray-200 transition-colors duration-200"
+                          <div className="space-y-2">
+                            <Link
+                              href="/static/consultation"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Shop Sale <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                              Design Consultation
                             </Link>
-                          </div>
-
-                          {/* New Arrivals */}
-                          <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 mb-4 hover:bg-gray-50 transition-colors duration-200">
-                            <div className="flex items-center mb-2">
-                              <Icon icon="mdi:star" className="w-5 h-5 text-black mr-3 flex-shrink-0" />
-                              <span className="text-sm font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
-                                New Arrivals
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
-                              Latest lighting fixtures just arrived
-                            </p>
-                            <Link 
-                              href="/collection" 
-                              className="inline-flex items-center text-xs font-medium text-black hover:text-gray-600 transition-colors duration-200"
+                            <Link
+                              href="/static/installation"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              View New Items <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                              Installation Services
                             </Link>
-                          </div>
-
-                          {/* Free Installation */}
-                          <div className="bg-white border-2 border-black rounded-lg p-4 mb-4 hover:bg-gray-50 transition-colors duration-200">
-                            <div className="flex items-center mb-2">
-                              <Icon icon="mdi:tools" className="w-5 h-5 text-black mr-3 flex-shrink-0" />
-                              <span className="text-sm font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '700' }}>
-                                Free Installation
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-600 mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
-                              Free installation on orders above ₱10,000
-                            </p>
-                            <Link 
-                              href="/static/aboutus" 
-                              className="inline-flex items-center text-xs font-medium text-black hover:text-gray-600 transition-colors duration-200"
+                            <Link
+                              href="/static/support"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Learn More <Icon icon="mdi:arrow-right" className="w-3 h-3 ml-1" />
+                              Customer Support
+                            </Link>
+                            <Link
+                              href="/static/contact"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: "'Poppins', sans-serif",
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Contact Us
                             </Link>
                           </div>
-
                         </div>
                       </div>
                     </div>
@@ -1493,50 +1575,39 @@ function capitalize(str: string) {
               {/* NEW NAVIGATION */}
               <li className="flex items-center h-full relative">
                 {/* Vertical Divider */}
-                <div className="absolute -right-6 top-1/2 transform -translate-y-1/2 h-6 w-px bg-gray-300" />
+                <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 h-4 w-px bg-gray-200" />
                 
                 <Link 
                   href="/collection" 
-                  className={`px-4 py-2 flex items-center gap-2 relative overflow-hidden rounded-lg transition-all duration-300 group ${
-                    isLinkActive('/collection') ? 'font-bold bg-gray-100' : 'font-medium hover:bg-gray-100'
+                  className={`px-8 py-4 flex items-center gap-4 relative transition-all duration-500 group ${
+                    isLinkActive('/collection') 
+                      ? 'text-black' 
+                      : 'text-gray-600 hover:text-black'
                   }`}
                   onClick={(e) => createRipple(e)}
                   onMouseEnter={() => setHoveredNav('new')}
                   onMouseLeave={() => setHoveredNav(null)}
                   style={{
-                    letterSpacing: isLinkActive('/collection') ? '0.08em' : hoveredNav === 'new' ? '0.06em' : '0.04em',
-                    transition: 'all 0.3s ease',
-                    fontWeight: isLinkActive('/collection') ? '600' : '500'
+                    letterSpacing: '0.15em',
+                    transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    fontWeight: '700',
+                    fontSize: '0.85rem'
                   }}
                 >
-                  {/* Animated Icon */}
-                  {(hoveredNav === 'new' || isLinkActive('/collection')) && (
-                    <Icon 
-                      icon="mdi:star-circle" 
-                      className="transition-all duration-300"
-                      width="18" 
-                      height="18" 
-                    />
-                  )}
+                  <span className={`relative z-10 font-bold transition-all duration-500 ${
+                    isLinkActive('/collection') 
+                      ? 'text-black' 
+                      : 'text-gray-600 group-hover:text-black'
+                  }`} style={{ 
+                    fontSize: '0.85rem', 
+                    lineHeight: '1.2',
+                    fontFamily: "'Poppins', sans-serif"
+                  }}>
+                    NEW
+                  </span>
                   
-                  <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>NEW</span>
-                  
-                  {/* Ripple Effects */}
-                  {isClient && ripples.map(ripple => (
-                    <span
-                      key={ripple.id}
-                      className="absolute rounded-full bg-black opacity-20 animate-ripple"
-                      style={{
-                        left: ripple.x,
-                        top: ripple.y,
-                        width: 0,
-                        height: 0,
-                      }}
-                    />
-                  ))}
-                  
-                  {/* Gradient Underline */}
-                  <span className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-black via-gray-600 to-gray-400 transition-all duration-300 ${
+                  {/* Minimal Underline */}
+                  <span className={`absolute bottom-0 left-0 h-px bg-black transition-all duration-700 ${
                     hoveredNav === 'new' || isLinkActive('/collection') ? 'w-full' : 'w-0'
                   }`}></span>
                 </Link>
@@ -1545,50 +1616,39 @@ function capitalize(str: string) {
               {/* SALES NAVIGATION */}
               <li className="flex items-center h-full relative">
                 {/* Vertical Divider */}
-                <div className="absolute -right-6 top-1/2 transform -translate-y-1/2 h-6 w-px bg-gray-300" />
+                <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 h-4 w-px bg-gray-200" />
                 
                 <Link 
                   href="/sales" 
-                  className={`px-4 py-2 flex items-center gap-2 relative overflow-hidden rounded-lg transition-all duration-300 group ${
-                    isLinkActive('/sales') ? 'font-bold bg-gray-100' : 'font-medium hover:bg-gray-100'
+                  className={`px-8 py-4 flex items-center gap-4 relative transition-all duration-500 group ${
+                    isLinkActive('/sales') 
+                      ? 'text-black' 
+                      : 'text-gray-600 hover:text-black'
                   }`}
                   onClick={(e) => createRipple(e)}
                   onMouseEnter={() => setHoveredNav('sales')}
                   onMouseLeave={() => setHoveredNav(null)}
                   style={{
-                    letterSpacing: isLinkActive('/sales') ? '0.08em' : hoveredNav === 'sales' ? '0.06em' : '0.04em',
-                    transition: 'all 0.3s ease',
-                    fontWeight: isLinkActive('/sales') ? '600' : '500'
+                    letterSpacing: '0.15em',
+                    transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    fontWeight: '700',
+                    fontSize: '0.85rem'
                   }}
                 >
-                  {/* Animated Icon */}
-                  {(hoveredNav === 'sales' || isLinkActive('/sales')) && (
-                    <Icon 
-                      icon="mdi:tag-multiple" 
-                      className="transition-all duration-300"
-                      width="18" 
-                      height="18" 
-                    />
-                  )}
+                  <span className={`relative z-10 font-bold transition-all duration-500 ${
+                    isLinkActive('/sales') 
+                      ? 'text-black' 
+                      : 'text-gray-600 group-hover:text-black'
+                  }`} style={{ 
+                    fontSize: '0.85rem', 
+                    lineHeight: '1.2',
+                    fontFamily: "'Poppins', sans-serif"
+                  }}>
+                    SALES
+                  </span>
                   
-                  <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>SALES</span>
-                  
-                  {/* Ripple Effects */}
-                  {isClient && ripples.map(ripple => (
-                    <span
-                      key={ripple.id}
-                      className="absolute rounded-full bg-black opacity-20 animate-ripple"
-                      style={{
-                        left: ripple.x,
-                        top: ripple.y,
-                        width: 0,
-                        height: 0,
-                      }}
-                    />
-                  ))}
-                  
-                  {/* Gradient Underline */}
-                  <span className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-black via-gray-600 to-gray-400 transition-all duration-300 ${
+                  {/* Minimal Underline */}
+                  <span className={`absolute bottom-0 left-0 h-px bg-black transition-all duration-700 ${
                     hoveredNav === 'sales' || isLinkActive('/sales') ? 'w-full' : 'w-0'
                   }`}></span>
                 </Link>
@@ -1598,47 +1658,36 @@ function capitalize(str: string) {
               <li className="flex items-center h-full relative">
                 <Link 
                   href="/static/aboutus" 
-                  className={`px-4 py-2 flex items-center gap-2 relative overflow-hidden rounded-lg transition-all duration-300 group ${
-                    isLinkActive('/static/aboutus') ? 'font-bold bg-gray-100' : 'font-medium hover:bg-gray-100'
+                  className={`px-8 py-4 flex items-center gap-4 relative transition-all duration-500 group ${
+                    isLinkActive('/static/aboutus') 
+                      ? 'text-black' 
+                      : 'text-gray-600 hover:text-black'
                   }`}
                   onClick={(e) => createRipple(e)}
                   onMouseEnter={() => setHoveredNav('about')}
                   onMouseLeave={() => setHoveredNav(null)}
                   style={{
-                    letterSpacing: isLinkActive('/static/aboutus') ? '0.08em' : hoveredNav === 'about' ? '0.06em' : '0.04em',
-                    transition: 'all 0.3s ease',
-                    fontWeight: isLinkActive('/static/aboutus') ? '600' : '500'
+                    letterSpacing: '0.15em',
+                    transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                    fontWeight: '700',
+                    fontSize: '0.85rem'
                   }}
                 >
-                  {/* Animated Icon */}
-                  {(hoveredNav === 'about' || isLinkActive('/static/aboutus')) && (
-                    <Icon 
-                      icon="mdi:information" 
-                      className="transition-all duration-300"
-                      width="18" 
-                      height="18" 
-                    />
-                  )}
+                  <span className={`relative z-10 font-bold transition-all duration-500 ${
+                    isLinkActive('/static/aboutus') 
+                      ? 'text-black' 
+                      : 'text-gray-600 group-hover:text-black'
+                  }`} style={{ 
+                    fontSize: '0.85rem', 
+                    lineHeight: '1.2',
+                    fontFamily: "'Poppins', sans-serif"
+                  }}>
+                    ABOUT US
+                  </span>
                   
-                  <span className="relative z-10 font-poppins font-semibold" style={{ fontSize: '0.875rem', lineHeight: '1.5' }}>ABOUT US</span>
-                  
-                  {/* Ripple Effects */}
-                  {isClient && ripples.map(ripple => (
-                    <span
-                      key={ripple.id}
-                      className="absolute rounded-full bg-black opacity-20 animate-ripple"
-                      style={{
-                        left: ripple.x,
-                        top: ripple.y,
-                        width: 0,
-                        height: 0,
-                      }}
-                    />
-                  ))}
-                  
-                  {/* Gradient Underline */}
-                  <span className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-black via-gray-600 to-gray-400 transition-all duration-300 ${
-                    hoveredNav === 'about' || isLinkActive('/aboutus') ? 'w-full' : 'w-0'
+                  {/* Minimal Underline */}
+                  <span className={`absolute bottom-0 left-0 h-px bg-black transition-all duration-700 ${
+                    hoveredNav === 'about' || isLinkActive('/static/aboutus') ? 'w-full' : 'w-0'
                   }`}></span>
                 </Link>
               </li>

@@ -82,6 +82,9 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ [API] Reviews created successfully:', data);
 
+    // Note: Order should already be complete before review can be submitted
+    // No need to update order status here
+
     return NextResponse.json({
       success: true,
       message: 'Reviews submitted successfully',

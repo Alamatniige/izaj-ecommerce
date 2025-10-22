@@ -263,8 +263,7 @@ export function getOrderProgress(status: OrderStatus): number {
   const progressMap: Record<OrderStatus, number> = {
     pending: 0,
     approved: 25,
-    delivering: 50,
-    delivered: 75,
+    in_transit: 50,
     complete: 100,
     cancelled: 0
   };
