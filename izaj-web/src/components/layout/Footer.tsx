@@ -3,10 +3,6 @@
 import React, { useState } from 'react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
-import Slider from 'react-slick';
-import type { Settings } from 'react-slick';
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 
 
 const Footer: React.FC = () => {
@@ -76,107 +72,52 @@ const Footer: React.FC = () => {
     handleCloseCookieModal();
   };
 
-  const sliderSettings: Settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    arrows: false,
-    autoplay: true,
-    autoplaySpeed: 3000,
-  };
 
   return (
     <>
-      {/* Featured Section */}
-      <div className="bg-white py-8 md:py-12 mt-8 md:mt-12 border-b border-gray-200">
+      {/* Get Socials Section */}
+      <div className="bg-gray-50 pt-8 md:pt-12 pb-2 md:pb-4 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Mobile Slider */}
-          <div className="block md:hidden">
-            {/* @ts-ignore */}
-            <Slider {...sliderSettings}>
-              {/* Free Delivery & Installation */}
-              <div className="px-2">
-                <Link href="/delivery" className="flex flex-col items-center text-center">
-                  <Icon icon="mdi:truck-delivery-outline" width="28" height="28" className="text-black mb-3" />
-                  <div>
-                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Free delivery & installation</h3>
-                    <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>For orders P10,000.00 and above within Metro Manila.</p>
-                  </div>
-                </Link>
-              </div>
-          
-              {/* Phone Contact */}
-              <div className="px-2">
-                <div className="flex flex-col items-center text-center">
-                  <Icon icon="mdi:phone-outline" width="28" height="28" className="text-black mb-3" />
-                  <div>
-                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Phone Contact</h3>
-                    <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Monday to Sunday 9:00am - 5:00pm</p>
-                  </div>
-                </div>
-              </div>
-          
-              {/* Top-notch support */}
-              <div className="px-2">
-                <div className="flex flex-col items-center text-center">
-                  <Icon icon="mdi:headset" width="28" height="28" className="text-black mb-3" />
-                  <div>
-                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Top-notch support</h3>
-                    <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Any question? Our team is just one click away!</p>
-                  </div>
-                </div>
-              </div>
-          
-              {/* Secure payments */}
-              <div className="px-2">
-                <div className="flex flex-col items-center text-center">
-                  <Icon icon="mdi:lock-outline" width="28" height="28" className="text-black mb-3" />
-                  <div>
-                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Secure payments</h3>
-                    <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Your payment information is processed securely</p>
-                  </div>
-                </div>
-              </div>
-            </Slider>
-          </div>
-
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {/* Free Delivery & Installation */}
-            <Link href="/delivery" className="flex items-start">
-              <Icon icon="mdi:truck-delivery-outline" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Free delivery & installation</h3>
-                <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>For orders P10,000.00 and above within Metro Manila.</p>
-              </div>
-            </Link>
-        
-            {/* Phone Contact */}
-            <div className="flex items-start">
-              <Icon icon="mdi:phone-outline" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Phone Contact</h3>
-                <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Monday to Sunday 8:00am - 7:00pm</p>
-              </div>
+          <div className="text-center">
+            <h2 className="text-2xl md:text-3xl font-bold mb-2 md:mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>Get Socials</h2>
+            <p className="text-gray-600 text-sm md:text-base mb-3 md:mb-4 max-w-2xl mx-auto" style={{ fontFamily: 'Jost, sans-serif' }}>
+              Follow us on social media for the latest updates, lighting inspiration, and exclusive offers!
+            </p>
+            
+            {/* Social Media Icons */}
+            <div className="flex justify-center gap-4 md:gap-6">
+              <a href="https://facebook.com/izajlighting" target="_blank" rel="noopener noreferrer" 
+                 className="bg-[#1877F3] text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center hover:bg-[#166FE5] transition-colors">
+                <Icon icon="mdi:facebook" width="24" height="24" className="md:w-7 md:h-7" />
+              </a>
+              <a href="#" target="_blank" rel="noopener noreferrer" 
+                 className="bg-[#E4405F] text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center hover:bg-[#D62976] transition-colors">
+                <Icon icon="mdi:instagram" width="24" height="24" className="md:w-7 md:h-7" />
+              </a>
+              <a href="#" target="_blank" rel="noopener noreferrer" 
+                 className="bg-[#FF0000] text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center hover:bg-[#E60000] transition-colors">
+                <Icon icon="mdi:youtube" width="24" height="24" className="md:w-7 md:h-7" />
+              </a>
+              <a href="#" target="_blank" rel="noopener noreferrer" 
+                 className="bg-[#BD081C] text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center hover:bg-[#A3081A] transition-colors">
+                <Icon icon="mdi:pinterest" width="24" height="24" className="md:w-7 md:h-7" />
+              </a>
+              <a href="#" target="_blank" rel="noopener noreferrer" 
+                 className="bg-black text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center hover:bg-gray-800 transition-colors">
+                <Icon icon="ri:tiktok-fill" width="24" height="24" className="md:w-7 md:h-7" />
+              </a>
             </div>
-        
-            {/* Top-notch support */}
-            <div className="flex items-start">
-              <Icon icon="mdi:headset" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Top-notch support</h3>
-                <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Any question? Our team is just one click away!</p>
-              </div>
-            </div>
-        
-            {/* Secure payments */}
-            <div className="flex items-start">
-              <Icon icon="mdi:lock-outline" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Secure payments</h3>
-                <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Your payment information is processed securely</p>
+            
+            {/* Call to Action */}
+            <div className="mt-3 md:mt-4">
+              <p className="text-gray-700 text-sm md:text-base mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
+                Tag us in your lighting photos for a chance to be featured!
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+                <span className="text-gray-600 text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>Use hashtag:</span>
+                <span className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  #IzajLighting
+                </span>
               </div>
             </div>
           </div>
@@ -184,12 +125,12 @@ const Footer: React.FC = () => {
       </div>
     
       {/* Footer */}
-      <footer className="bg-gray-50 text-black py-12 md:py-20">
+      <footer className="bg-gray-50 text-black py-8 md:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12 lg:gap-24">
             {/* IZAJ Family */}
             <div className="lg:col-span-1">
-              <h3 className="text-xl md:text-2xl mb-3 md:mb-4 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }} style={{ fontFamily: 'Jost, sans-serif' }}>IZAJ Family</h3>
+              <h3 className="text-xl md:text-2xl mb-3 md:mb-4 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>IZAJ Family</h3>
               <p className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 max-w-xs style={{ fontFamily: 'Jost, sans-serif' }}">Unlock exclusive deals and special offers just for you! Subscribe now and be the first to know about flash sales, discounts, and new arrivals!</p>
               <Link href="/subscribe" className="bg-black text-white text-sm md:text-base font-semibold rounded-full px-6 md:px-8 py-2 md:py-3 hover:bg-gray-800 transition-colors inline-block style={{ fontFamily: 'Jost, sans-serif' }}">Join for free</Link>
             </div>
@@ -276,11 +217,6 @@ const Footer: React.FC = () => {
                   <Icon icon="mdi:phone" width="18" height="18" /> (049) 123 4567
                   </a>
                 </li>
-                <li>
-                  <a href="https://facebook.com/izajlighting" target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2 style={{ fontFamily: 'Jost, sans-serif' }}">
-                  <Icon icon="mdi:facebook" width="18" height="18" className="text-[#1877F3]" /> Izaj Lighting Centre
-                  </a>
-                </li>
                 </ul>
             </div>
 
@@ -347,24 +283,7 @@ const Footer: React.FC = () => {
           {/* Social and Payment Icons Bar */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0 mt-12 md:mt-16">
             <div className="flex flex-col md:flex-row items-center gap-6">
-              {/* Social Icons */}
-              <div className="flex gap-3 md:gap-4">
-                <a href="#" className="rounded-full border border-gray-200 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                  <Icon icon="mdi:facebook" width="20" height="20" className="md:w-6 md:h-6 text-gray-700" />
-                </a>
-                <a href="#" className="rounded-full border border-gray-200 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                  <Icon icon="mdi:youtube" width="20" height="20" className="md:w-6 md:h-6 text-gray-700" />
-                </a>
-                <a href="#" className="rounded-full border border-gray-200 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                  <Icon icon="mdi:instagram" width="20" height="20" className="md:w-6 md:h-6 text-gray-700" />
-                </a>
-                <a href="#" className="rounded-full border border-gray-200 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                  <Icon icon="mdi:pinterest" width="20" height="20" className="md:w-6 md:h-6 text-gray-700" />
-                </a>
-                <a href="#" className="rounded-full border border-gray-200 w-10 h-10 md:w-12 md:h-12 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                  <Icon icon="ri:tiktok-fill" width="20" height="20" className="md:w-6 md:h-6 text-gray-700" />
-                </a>
-              </div>
+              
 
               {/* Payment Icons */}
               <div className="flex gap-3 md:gap-4">
@@ -448,7 +367,7 @@ const Footer: React.FC = () => {
             </button>
 
             <div className="p-4 md:p-6 mt-6">
-              <h2 className="text-xl md:text-2xl mb-3 md:mb-4 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }} style={{ fontFamily: 'Jost, sans-serif' }}>Cookie Preferences</h2>
+              <h2 className="text-xl md:text-2xl mb-3 md:mb-4 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Cookie Preferences</h2>
               <p className="text-gray-600 text-xs md:text-sm mb-4 md:mb-6 style={{ fontFamily: 'Jost, sans-serif' }}">
                 When you visit any website, it may store or retrieve information
                 on your browser, mostly in the form of cookies. This information

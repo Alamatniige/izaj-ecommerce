@@ -31,7 +31,7 @@ export default function MoreToExplore() {
   ];
 
   return (
-    <section className="w-full bg-white py-16 sm:py-20 md:py-24">
+    <section className="w-full bg-white py-2 sm:py-3 md:py-4">
       <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16">
         {/* Section Header */}
         <div className="text-center mb-12 sm:mb-16">

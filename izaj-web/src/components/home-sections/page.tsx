@@ -11,6 +11,7 @@ import FreshDrops from './FreshDrops';
 import FeaturedProducts from './FeaturedProducts';
 import FreeDesignConsultation from './FreeDesignConsultation';
 import MoreToExplore from './MoreToExplore';
+import SaleItem from './SaleItem';
 import Link from 'next/link';
 
 export default function Home() {
@@ -29,19 +30,7 @@ export default function Home() {
         <FreshDrops />
         <FeaturedProducts />
         <FreeDesignConsultation />
-        
-        {/* Inserted Image Section */}
-        <div className="w-full">
-          <Link href="/product-list">
-            <img
-              src="/banner.png"
-              alt="Testimonials"
-              className="w-full object-cover"
-            />
-              </Link>
-              </div>
-              
-        {/* More To Explore Section */}
+        <SaleItem />
         <MoreToExplore />
               
         {/* Slide Animation Styles */}
