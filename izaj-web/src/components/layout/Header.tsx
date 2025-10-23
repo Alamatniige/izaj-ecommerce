@@ -16,7 +16,7 @@ function capitalize(str: string) {
   import Link from 'next/link';
   import { useRouter, usePathname } from 'next/navigation';
   import { Icon } from '@iconify/react';
-  import FavoritesDropdown from '../common/FavoritesDropdown';
+ 
   import NotificationDropdown from '../common/NotificationDropdown';
   import LoginModal from '../common/LoginModal';
   import { useUserContext } from '../../context/UserContext';
@@ -336,7 +336,7 @@ function capitalize(str: string) {
             className={`${promoBanners[currentBannerIndex].color} text-white text-center py-2 md:py-3 flex items-center justify-center w-full relative transition-all duration-500 z-50`}
             style={{ minHeight: '40px' }}
           >
-            <p className="text-xs md:text-sm px-2 md:px-12 truncate whitespace-nowrap overflow-x-auto w-full animate-fade-in font-lora font-medium" style={{ letterSpacing: '0.025em', lineHeight: '1.6' }}>
+            <p className="text-xs md:text-sm px-2 md:px-12 truncate whitespace-nowrap overflow-x-auto w-full animate-fade-in font-medium" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.025em', lineHeight: '1.6' }}>
               {promoBanners[currentBannerIndex].text}
             </p>
             <button
@@ -418,10 +418,10 @@ function capitalize(str: string) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onFocus={() => setShowSearchSuggestions(true)}
-                    className={`w-full border border-gray-300 pl-10 pr-4 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-full transition-all duration-300 font-lora ${
+                    className={`w-full border border-gray-300 pl-10 pr-4 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent rounded-full transition-all duration-300  ${
                       scrolled ? 'py-2' : 'py-3'
                     }`}
-                    style={{ letterSpacing: '0.015em', lineHeight: '1.6' }}
+                    style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.015em', lineHeight: '1.6' }}
                   />
                   <Icon 
                     icon="ic:outline-search" 
@@ -450,7 +450,7 @@ function capitalize(str: string) {
                       {isSearching ? (
                         <div className="flex items-center justify-center px-4 py-8">
                           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
-                          <span className="ml-3 text-sm text-gray-600" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                          <span className="ml-3 text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>
                             Searching...
                           </span>
                         </div>
@@ -474,15 +474,15 @@ function capitalize(str: string) {
                                 />
                               </div>
                               <div className="ml-3 flex-1">
-                                <p className="text-sm font-medium text-gray-800 group-hover:text-black transition-colors duration-200" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
+                                <p className="text-sm font-medium text-gray-800 group-hover:text-black transition-colors duration-200" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
                                   {product.name}
                                 </p>
                                 <div className="flex items-center gap-2">
-                                  <p className="text-xs text-gray-500 capitalize" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>
+                                  <p className="text-xs text-gray-500 capitalize" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>
                                     {product.category}
                                   </p>
                                   {product.price && (
-                                    <p className="text-xs font-semibold text-black" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                                    <p className="text-xs font-semibold text-black" style={{ fontFamily: 'Jost, sans-serif' }}>
                                       ₱{product.price.toLocaleString()}
                                     </p>
                                   )}
@@ -499,7 +499,7 @@ function capitalize(str: string) {
                         </>
                       ) : searchQuery.trim() && (
                         <div className="flex items-center justify-center px-4 py-8">
-                          <p className="text-sm text-gray-500" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                          <p className="text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif' }}>
                             No products found for "{searchQuery}"
                           </p>
                         </div>
@@ -515,7 +515,7 @@ function capitalize(str: string) {
                             setSearchQuery('');
                           }}
                           className="w-full text-sm text-black hover:text-gray-600 font-medium flex items-center justify-center gap-2 transition-colors duration-200"
-                          style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.6' }}
+                          style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.6' }}
                         >
                           <Icon icon="mdi:magnify" width="18" height="18" />
                           View all results for "{searchQuery}"
@@ -535,7 +535,7 @@ function capitalize(str: string) {
               </button>
   
               {/* Login/Signup Section with Icons */}
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-6 items-center">
                 {/* User Icon or Account Dropdown */}
                 {!isClient ? (
                   // Server-side rendering: always show the login button to avoid hydration mismatch
@@ -545,8 +545,10 @@ function capitalize(str: string) {
                       className="flex items-center space-x-2 text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                       aria-label="Login"
                     >
-                      <Icon icon="lucide:user" width="28" height="28" />
-                      <span className="hidden md:inline-block text-sm font-medium text-gray-700 opacity-0 max-w-0 overflow-hidden group-hover:opacity-100 group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-lora" style={{ letterSpacing: '0.025em', lineHeight: '1.5' }}>
+                      <div className="w-7 h-7 flex items-center justify-center">
+                        <Icon icon="lucide:user" width="28" height="28" />
+                      </div>
+                      <span className="hidden md:inline-block text-sm font-medium text-gray-700 opacity-0 max-w-0 overflow-hidden group-hover:opacity-100 group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.025em', lineHeight: '1.5' }}>
                       Hello! Log in
                       </span>
                     </button>
@@ -566,6 +568,7 @@ function capitalize(str: string) {
                         className="text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                       aria-label="User"
                     >
+                      <div className="w-7 h-7 flex items-center justify-center">
                         {user && user.profilePicture ? (
                           <img 
                             src={user.profilePicture} 
@@ -577,8 +580,9 @@ function capitalize(str: string) {
                             {getInitials(user.firstName, user.lastName)}
                           </div>
                         ) : (
-                      <Icon icon="lucide:user" width="28" height="28" />
+                          <Icon icon="lucide:user" width="28" height="28" />
                         )}
+                      </div>
                     </button>
                     </div>
                   ) : (
@@ -589,8 +593,10 @@ function capitalize(str: string) {
                           className="flex items-center space-x-2 text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                           aria-label="Login"
                         >
-                        <Icon icon="lucide:user" width="28" height="28" />
-                        <span className="hidden md:inline-block text-sm font-medium text-gray-700 opacity-0 max-w-0 overflow-hidden group-hover:opacity-100 group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-lora" style={{ letterSpacing: '0.025em', lineHeight: '1.5' }}>
+                        <div className="w-7 h-7 flex items-center justify-center">
+                          <Icon icon="lucide:user" width="28" height="28" />
+                        </div>
+                        <span className="hidden md:inline-block text-sm font-medium text-gray-700 opacity-0 max-w-0 overflow-hidden group-hover:opacity-100 group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.025em', lineHeight: '1.5' }}>
                         Hello! Log in
                         </span>
                         </button>
@@ -603,28 +609,30 @@ function capitalize(str: string) {
                           aria-haspopup="true"
                           aria-expanded={isAccountDropdownOpen}
                         >
-                          {user.profilePicture ? (
-                            <img 
-                              src={user.profilePicture} 
-                              alt="Profile" 
-                              className="w-7 h-7 rounded-full object-cover ring-2 ring-gray-200 hover:ring-gray-400 transition-all duration-200"
-                            />
-                          ) : (
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-xs font-bold hover:shadow-lg transition-all duration-200">
-                              {getInitials(user.firstName, user.lastName)}
-                            </div>
-                          )}
+                          <div className="w-7 h-7 flex items-center justify-center">
+                            {user.profilePicture ? (
+                              <img 
+                                src={user.profilePicture} 
+                                alt="Profile" 
+                                className="w-7 h-7 rounded-full object-cover ring-2 ring-gray-200 hover:ring-gray-400 transition-all duration-200"
+                              />
+                            ) : (
+                              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-xs font-bold hover:shadow-lg transition-all duration-200">
+                                {getInitials(user.firstName, user.lastName)}
+                              </div>
+                            )}
+                          </div>
                           <div className="hidden md:flex flex-col ml-2 text-left">
                             <span
-                              className="font-normal text-xs text-gray-500 leading-none font-lora"
-                              style={{ letterSpacing: "0.02em" }}
+                              className="font-normal text-xs text-gray-500 leading-none "
+                              style={{ fontFamily: 'Jost, sans-serif', letterSpacing: "0.02em" }}
                             >
                               Hello, {user ? `${capitalize((user.firstName || '').split(' ')[0])}` : 'Guest'}
                             </span>
                             <div className="flex items-center text-black">
                               <span
-                                className="font-semibold text-base font-poppins"
-                                style={{ letterSpacing: "0.01em" }}
+                                className="font-semibold text-base "
+                                style={{ fontFamily: 'Jost, sans-serif', letterSpacing: "0.01em" }}
                               >
                                 My Account
                               </span>
@@ -665,10 +673,10 @@ function capitalize(str: string) {
                                   </div>
                                 )}
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-gray-800 truncate" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
+                                  <p className="text-sm font-semibold text-gray-800 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
                                     {capitalize(user.firstName)} {capitalize(user.lastName)}
                                   </p>
-                                  <p className="text-xs text-gray-600 truncate" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{user.email}</p>
+                                  <p className="text-xs text-gray-600 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{user.email}</p>
                                 </div>
                               </div>
                             </div>
@@ -677,7 +685,7 @@ function capitalize(str: string) {
                               <Link
                                 href="/account"
                                 className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-all duration-200 group"
-                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5' }}
+                                style={{ fontFamily: 'Jost, sans-serif', fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5' }}
                                 onClick={() => setIsAccountDropdownOpen(false)}
                               >
                                 <Icon icon="mdi:account-circle-outline" className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
@@ -687,7 +695,7 @@ function capitalize(str: string) {
                               <Link
                                 href="/orders"
                                 className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-all duration-200 group"
-                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5' }}
+                                style={{ fontFamily: 'Jost, sans-serif', fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5' }}
                                 onClick={() => setIsAccountDropdownOpen(false)}
                               >
                                 <Icon icon="mdi:package-variant" className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
@@ -697,7 +705,7 @@ function capitalize(str: string) {
                               <Link
                                 href="/favorites"
                                 className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-black transition-all duration-200 group"
-                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5' }}
+                                style={{ fontFamily: 'Jost, sans-serif', fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5' }}
                                 onClick={() => setIsAccountDropdownOpen(false)}
                               >
                                 <Icon icon="mdi:heart-outline" className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
@@ -708,7 +716,7 @@ function capitalize(str: string) {
                               <button
                                 onClick={handleLogoutClick}
                                 className="flex items-center w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-all duration-200 group"
-                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.02em', lineHeight: '1.5' }}
+                                style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.02em', lineHeight: '1.5' }}
                               >
                                 <Icon icon="mdi:logout" className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200" />
                                 Logout
@@ -767,10 +775,12 @@ function capitalize(str: string) {
 
                 {/* Notification Icon with Tooltip */}
                 <div className="flex items-center justify-center relative group">
-                  <NotificationDropdown 
-                    user={!isClient ? null : user} 
-                    onOpenAuthModal={() => setIsLoginModalOpen(true)}
-                  />
+                  <div className="w-7 h-7 flex items-center justify-center">
+                    <NotificationDropdown 
+                      user={!isClient ? null : user} 
+                      onOpenAuthModal={() => setIsLoginModalOpen(true)}
+                    />
+                  </div>
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full mt-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-50">
                     Notifications
                   </div>
@@ -784,11 +794,13 @@ function capitalize(str: string) {
                       onClick={() => setIsLoginModalOpen(true)}
                         className="text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                     >
-                      <Icon
-                        icon="mdi:cart-outline"
-                        width="28"
-                        height="28"
-                      />
+                      <div className="w-7 h-7 flex items-center justify-center">
+                        <Icon
+                          icon="mdi:cart-outline"
+                          width="28"
+                          height="28"
+                        />
+                      </div>
                     </button>
                       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full mt-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-50">
                         Shopping Cart
@@ -804,11 +816,13 @@ function capitalize(str: string) {
                           id="cart-icon"
                           onMouseEnter={() => !isMobile && setIsCartPreviewOpen(true)}
                         >
-                        <Icon
-                          icon="mdi:cart-outline"
-                          width="28"
-                          height="28"
-                        />
+                        <div className="w-7 h-7 flex items-center justify-center">
+                          <Icon
+                            icon="mdi:cart-outline"
+                            width="28"
+                            height="28"
+                          />
+                        </div>
                         {cart.totalItems > 0 && (
                             <span className={`absolute -top-1 -right-1 bg-gradient-to-r from-gray-800 to-black text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg ${
                               cartBadgePulse ? 'animate-bounce' : ''
@@ -825,25 +839,66 @@ function capitalize(str: string) {
                         {isCartPreviewOpen && cart.totalItems > 0 && !isMobile && (
                           <div 
                             ref={cartPreviewRef}
-                            className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl z-[9998] overflow-hidden border border-gray-100 top-full animate-scale-in"
+                            className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl z-[9998] overflow-hidden border border-gray-200 top-full animate-scale-in"
                             onMouseLeave={() => setIsCartPreviewOpen(false)}
                           >
-                            <div className="py-3 px-5 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
-                              <h3 className="font-semibold text-gray-800 flex items-center gap-2" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.5' }}>
-                                <Icon icon="mdi:cart-outline" className="w-5 h-5 text-black" />
+                            <div className="py-4 px-6 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200">
+                              <h3 className="font-bold text-gray-900 flex items-center gap-3 text-lg" style={{ fontFamily: 'Jost, sans-serif' }}>
+                                <Icon icon="mdi:cart-outline" className="w-6 h-6 text-black" />
                                 Shopping Cart
                               </h3>
                             </div>
-                            <div className="max-h-64 overflow-y-auto p-4">
-                              <p className="text-sm text-gray-600 text-center py-8" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '0.015em', lineHeight: '1.6' }}>
-                                {cart.totalItems} {cart.totalItems === 1 ? 'item' : 'items'} in cart
-                              </p>
+                            <div className="max-h-80 overflow-y-auto p-6">
+                              {cart.items.length > 0 ? (
+                                <div className="space-y-4">
+                                  {cart.items.slice(0, 3).map((item) => (
+                                    <div key={item.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                                      <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center border border-gray-200">
+                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain rounded-lg" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <h4 className="font-semibold text-gray-900 text-sm truncate" style={{ fontFamily: 'Jost, sans-serif' }}>
+                                          {item.name}
+                                        </h4>
+                                        <p className="text-gray-600 text-xs" style={{ fontFamily: 'Jost, sans-serif' }}>
+                                          Qty: {item.quantity}
+                                        </p>
+                                        <p className="font-bold text-black text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
+                                          ₱{(item.price * item.quantity).toLocaleString()}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {cart.items.length > 3 && (
+                                    <div className="text-center py-2">
+                                      <p className="text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif' }}>
+                                        +{cart.items.length - 3} more items
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-center py-8">
+                                  <Icon icon="mdi:cart-outline" className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                                  <p className="text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>
+                                    Your cart is empty
+                                  </p>
+                                </div>
+                              )}
                             </div>
-                            <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+                            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                              <div className="flex items-center justify-between mb-4">
+                                <span className="font-semibold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>
+                                  Total ({cart.totalItems} items):
+                                </span>
+                                <span className="font-bold text-black text-lg" style={{ fontFamily: 'Jost, sans-serif' }}>
+                                  ₱{cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}
+                                </span>
+                              </div>
                               <Link
                                 href="/cart"
-                                className="block w-full text-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-300 font-medium text-sm"
-                                style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.06em', lineHeight: '1.5' }}
+                                className="block w-full text-center px-4 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-300 font-semibold text-sm"
+                                style={{ fontFamily: 'Jost, sans-serif' }}
                                 onClick={() => setIsCartPreviewOpen(false)}
                               >
                                 View Cart
@@ -858,11 +913,13 @@ function capitalize(str: string) {
                         onClick={() => setIsLoginModalOpen(true)}
                           className="text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                       >
-                        <Icon
-                          icon="mdi:cart-outline"
-                          width="28"
-                          height="28"
-                        />
+                        <div className="w-7 h-7 flex items-center justify-center">
+                          <Icon
+                            icon="mdi:cart-outline"
+                            width="28"
+                            height="28"
+                          />
+                        </div>
                       </button>
                         <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full mt-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-50">
                           Shopping Cart
@@ -885,7 +942,7 @@ function capitalize(str: string) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setShowSearchSuggestions(true)}
-                  className="w-full border border-gray-300 pl-10 pr-10 py-2 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black rounded-full font-lora"
+                  className="w-full border border-gray-300 pl-10 pr-10 py-2 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black rounded-full "
                   style={{ letterSpacing: '0.015em', lineHeight: '1.6' }}
                   autoFocus
                 />
@@ -916,7 +973,7 @@ function capitalize(str: string) {
                     {isSearching ? (
                       <div className="flex items-center justify-center px-4 py-8">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-black"></div>
-                        <span className="ml-3 text-sm text-gray-600" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                        <span className="ml-3 text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>
                           Searching...
                         </span>
                       </div>
@@ -941,15 +998,15 @@ function capitalize(str: string) {
                               />
                             </div>
                             <div className="ml-3 flex-1">
-                              <p className="text-sm font-medium text-gray-800" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
+                              <p className="text-sm font-medium text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
                                 {product.name}
                               </p>
                               <div className="flex items-center gap-2">
-                                <p className="text-xs text-gray-500 capitalize" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>
+                                <p className="text-xs text-gray-500 capitalize" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>
                                   {product.category}
                                 </p>
                                 {product.price && (
-                                  <p className="text-xs font-semibold text-black" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                                  <p className="text-xs font-semibold text-black" style={{ fontFamily: 'Jost, sans-serif' }}>
                                     ₱{product.price.toLocaleString()}
                                   </p>
                                 )}
@@ -960,7 +1017,7 @@ function capitalize(str: string) {
                       </>
                     ) : searchQuery.trim() && (
                       <div className="flex items-center justify-center px-4 py-8">
-                        <p className="text-sm text-gray-500" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                        <p className="text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif' }}>
                           No products found for "{searchQuery}"
                         </p>
                       </div>
@@ -977,7 +1034,7 @@ function capitalize(str: string) {
                           setIsMobileSearchOpen(false);
                         }}
                         className="w-full text-sm text-black hover:text-gray-600 font-medium flex items-center justify-center gap-2 transition-colors duration-200"
-                        style={{ fontFamily: "'Poppins', sans-serif", fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.6' }}
+                        style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.6' }}
                       >
                         <Icon icon="mdi:magnify" width="18" height="18" />
                         View all results for "{searchQuery}"
@@ -1024,18 +1081,18 @@ function capitalize(str: string) {
                   </button>
                 </div>
                 {/* Navigation Menu - Scrollable */}
-                <div className="h-auto" style={{ fontFamily: "'Inter', sans-serif" }}>
+                <div className="h-auto" style={{ fontFamily: 'Jost, sans-serif' }}>
                   <nav className="px-4 py-6">
                     <ul className="space-y-1">
                       <li>
                         <Link
                           href="/"
-                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200 font-poppins font-semibold ${
+                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200  font-semibold ${
                             isLinkActive('/') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
-                          style={{ letterSpacing: '0.03em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em', lineHeight: '1.5' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <Icon icon="mdi:home-outline" className="mr-3 text-gray-600" width="24" height="24" />
@@ -1044,10 +1101,10 @@ function capitalize(str: string) {
                       </li>
                       <li>
                         <button
-                          className={`w-full flex items-center justify-between px-4 py-3 text-base rounded-lg transition-all duration-200 focus:outline-none font-poppins font-semibold ${
+                          className={`w-full flex items-center justify-between px-4 py-3 text-base rounded-lg transition-all duration-200 focus:outline-none  font-semibold ${
                             isDropdownOpen ? 'bg-gray-50' : 'hover:bg-gray-50'
                           }`}
-                          style={{ letterSpacing: '0.03em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em', lineHeight: '1.5' }}
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                           aria-expanded={isDropdownOpen}
                           aria-controls="mobile-products-dropdown"
@@ -1072,8 +1129,8 @@ function capitalize(str: string) {
                             <li>
                               <Link
                                 href="/product-list"
-                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200 font-poppins font-semibold"
-                                style={{ letterSpacing: '0.02em', lineHeight: '1.6' }}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200  font-semibold"
+                                style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em', lineHeight: '1.6' }}
                                 onClick={() => setIsMobileMenuOpen(false)}
                               >
                                 All Lighting Fixtures
@@ -1082,8 +1139,8 @@ function capitalize(str: string) {
                             <li>
                               <Link
                                 href="/collection"
-                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200 font-poppins font-semibold"
-                                style={{ letterSpacing: '0.02em', lineHeight: '1.6' }}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200  font-semibold"
+                                style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em', lineHeight: '1.6' }}
                                 onClick={() => setIsMobileMenuOpen(false)}
                               >
                                 New Arrivals
@@ -1092,8 +1149,8 @@ function capitalize(str: string) {
                             <li>
                               <Link
                                 href="/sales"
-                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200 font-poppins font-semibold"
-                                style={{ letterSpacing: '0.02em', lineHeight: '1.6' }}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200  font-semibold"
+                                style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em', lineHeight: '1.6' }}
                                 onClick={() => setIsMobileMenuOpen(false)}
                               >
                                 Special Offers
@@ -1105,12 +1162,12 @@ function capitalize(str: string) {
                       <li>
                         <Link
                           href="/collection"
-                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200 font-poppins font-semibold ${
+                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200  font-semibold ${
                             isLinkActive('/collection') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
-                          style={{ letterSpacing: '0.03em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em', lineHeight: '1.5' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <Icon icon="mdi:star-outline" className="mr-3 text-gray-600" width="24" height="24" />
@@ -1120,12 +1177,12 @@ function capitalize(str: string) {
                       <li>
                         <Link
                           href="/sales"
-                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200 font-poppins font-semibold ${
+                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200  font-semibold ${
                             isLinkActive('/sales') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
-                          style={{ letterSpacing: '0.03em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em', lineHeight: '1.5' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <Icon icon="mdi:tag-outline" className="mr-3 text-gray-600" width="24" height="24" />
@@ -1135,12 +1192,12 @@ function capitalize(str: string) {
                       <li>
                         <Link
                           href="/static/aboutus"
-                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200 font-poppins font-semibold ${
+                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200  font-semibold ${
                             isLinkActive('/static/aboutus') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
-                          style={{ letterSpacing: '0.03em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em', lineHeight: '1.5' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
                           <Icon icon="mdi:information-outline" className="mr-3 text-gray-600" width="24" height="24" />
@@ -1166,10 +1223,10 @@ function capitalize(str: string) {
                             </div>
                           )}
                           <div className="ml-3">
-                            <p className="text-sm font-semibold text-gray-800" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
+                            <p className="text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
                               {capitalize(user.firstName)} {capitalize(user.lastName)}
                             </p>
-                            <p className="text-xs text-gray-600" style={{ fontFamily: "'Inter', sans-serif", fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{user.email}</p>
+                            <p className="text-xs text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{user.email}</p>
                           </div>
                         </div>
                         <button
@@ -1178,7 +1235,7 @@ function capitalize(str: string) {
                             setIsMobileMenuOpen(false);
                           }}
                           className="w-full flex items-center px-4 py-3 text-base font-medium text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
-                          style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.5' }}
                         >
                           <Icon icon="mdi:logout" className="mr-3" width="24" height="24" />
                           Logout
@@ -1191,7 +1248,7 @@ function capitalize(str: string) {
                           setIsMobileMenuOpen(false);
                         }}
                         className="w-full flex items-center justify-center px-4 py-3 text-base font-medium text-white bg-gradient-to-r from-gray-800 to-black hover:from-gray-900 hover:to-gray-800 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                        style={{ fontFamily: "'Inter', sans-serif", fontWeight: '600', letterSpacing: '0.06em', lineHeight: '1.5' }}
+                        style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.06em', lineHeight: '1.5' }}
                       >
                         <Icon icon="mdi:login" className="mr-2" width="24" height="24" />
                         Login / Sign Up
@@ -1207,7 +1264,7 @@ function capitalize(str: string) {
         {/* Desktop Navbar - Hidden on mobile with enhanced animations - NOT STICKY */}
         <nav className={`hidden lg:block bg-white px-4 lg:px-10 transition-all duration-300 border-t border-gray-100 ${
           scrolled ? 'py-3' : 'py-4'
-        }`} style={{ fontFamily: "'Inter', sans-serif", position: 'relative', zIndex: 1 }}>
+        }`} style={{ fontFamily: 'Jost, sans-serif', position: 'relative', zIndex: 1 }}>
             <ul className="flex justify-center items-center text-sm font-semibold relative" style={{gap: '3rem'}}>
               {/* HOME NAVIGATION */}
               <li className="flex items-center h-full relative">
@@ -1241,7 +1298,7 @@ function capitalize(str: string) {
                   }`} style={{ 
                     fontSize: '0.85rem', 
                     lineHeight: '1.2',
-                    fontFamily: "'Poppins', sans-serif"
+                    fontFamily: 'Jost, sans-serif'
                   }}>
                     HOME
                   </span>
@@ -1296,7 +1353,7 @@ function capitalize(str: string) {
                   }`} style={{ 
                     fontSize: '0.85rem', 
                     lineHeight: '1.2',
-                    fontFamily: "'Poppins', sans-serif"
+                    fontFamily: 'Jost, sans-serif'
                   }}>
                     PRODUCTS
                   </span>
@@ -1339,7 +1396,7 @@ function capitalize(str: string) {
                         <div className="space-y-6">
                           <div className="border-b border-gray-200 pb-4">
                             <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
-                              fontFamily: "'Poppins', sans-serif",
+                              fontFamily: 'Jost, sans-serif',
                               letterSpacing: '0.2em'
                             }}>
                               Categories
@@ -1350,7 +1407,7 @@ function capitalize(str: string) {
                               href="/product-list"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1361,7 +1418,7 @@ function capitalize(str: string) {
                               href="/product-list?category=ceiling"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1372,7 +1429,7 @@ function capitalize(str: string) {
                               href="/product-list?category=chandelier"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1383,7 +1440,7 @@ function capitalize(str: string) {
                               href="/product-list?category=pendant"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1397,7 +1454,7 @@ function capitalize(str: string) {
                         <div className="space-y-6">
                           <div className="border-b border-gray-200 pb-4">
                             <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
-                              fontFamily: "'Poppins', sans-serif",
+                              fontFamily: 'Jost, sans-serif',
                               letterSpacing: '0.2em'
                             }}>
                               Lighting Types
@@ -1408,7 +1465,7 @@ function capitalize(str: string) {
                               href="/product-list?category=floor"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1419,7 +1476,7 @@ function capitalize(str: string) {
                               href="/product-list?category=wall"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1430,7 +1487,7 @@ function capitalize(str: string) {
                               href="/product-list?category=table"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1441,7 +1498,7 @@ function capitalize(str: string) {
                               href="/product-list?category=outdoor"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1455,7 +1512,7 @@ function capitalize(str: string) {
                         <div className="space-y-6">
                           <div className="border-b border-gray-200 pb-4">
                             <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
-                              fontFamily: "'Poppins', sans-serif",
+                              fontFamily: 'Jost, sans-serif',
                               letterSpacing: '0.2em'
                             }}>
                               Collections
@@ -1466,7 +1523,7 @@ function capitalize(str: string) {
                               href="/collection"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1477,7 +1534,7 @@ function capitalize(str: string) {
                               href="/sales"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1488,7 +1545,7 @@ function capitalize(str: string) {
                               href="/product-list?sort=featured"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1499,7 +1556,7 @@ function capitalize(str: string) {
                               href="/product-list?sort=popular"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1513,7 +1570,7 @@ function capitalize(str: string) {
                         <div className="space-y-6">
                           <div className="border-b border-gray-200 pb-4">
                             <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
-                              fontFamily: "'Poppins', sans-serif",
+                              fontFamily: 'Jost, sans-serif',
                               letterSpacing: '0.2em'
                             }}>
                               Services
@@ -1524,7 +1581,7 @@ function capitalize(str: string) {
                               href="/static/consultation"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1535,7 +1592,7 @@ function capitalize(str: string) {
                               href="/static/installation"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1546,7 +1603,7 @@ function capitalize(str: string) {
                               href="/static/support"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1557,7 +1614,7 @@ function capitalize(str: string) {
                               href="/static/contact"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
-                                fontFamily: "'Poppins', sans-serif",
+                                fontFamily: 'Jost, sans-serif',
                                 letterSpacing: '0.05em'
                               }}
                               onClick={() => setIsDropdownOpen(false)}
@@ -1601,7 +1658,7 @@ function capitalize(str: string) {
                   }`} style={{ 
                     fontSize: '0.85rem', 
                     lineHeight: '1.2',
-                    fontFamily: "'Poppins', sans-serif"
+                    fontFamily: 'Jost, sans-serif'
                   }}>
                     NEW
                   </span>
@@ -1642,7 +1699,7 @@ function capitalize(str: string) {
                   }`} style={{ 
                     fontSize: '0.85rem', 
                     lineHeight: '1.2',
-                    fontFamily: "'Poppins', sans-serif"
+                    fontFamily: 'Jost, sans-serif'
                   }}>
                     SALES
                   </span>
@@ -1680,7 +1737,7 @@ function capitalize(str: string) {
                   }`} style={{ 
                     fontSize: '0.85rem', 
                     lineHeight: '1.2',
-                    fontFamily: "'Poppins', sans-serif"
+                    fontFamily: 'Jost, sans-serif'
                   }}>
                     ABOUT US
                   </span>
@@ -1707,7 +1764,7 @@ function capitalize(str: string) {
                 }`}
               >
                 <Icon icon="mdi:home" width="24" height="24" />
-                <span className="text-xs mt-1 font-poppins font-semibold" style={{ letterSpacing: '0.02em' }}>Home</span>
+                <span className="text-xs mt-1 font-semibold" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em' }}>Home</span>
               </Link>
               
               <Link
@@ -1719,7 +1776,7 @@ function capitalize(str: string) {
                 }`}
               >
                 <Icon icon="mdi:lightbulb" width="24" height="24" />
-                <span className="text-xs mt-1 font-poppins font-semibold" style={{ letterSpacing: '0.02em' }}>Products</span>
+                <span className="text-xs mt-1 font-semibold" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em' }}>Products</span>
               </Link>
               
               <Link
@@ -1731,7 +1788,7 @@ function capitalize(str: string) {
                 }`}
               >
                 <Icon icon="mdi:cart" width="24" height="24" />
-                <span className="text-xs mt-1 font-poppins font-semibold" style={{ letterSpacing: '0.02em' }}>Cart</span>
+                <span className="text-xs mt-1 font-semibold" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em' }}>Cart</span>
                 {cart.totalItems > 0 && (
                   <span className="absolute top-0 right-4 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                     {cart.totalItems}
@@ -1748,7 +1805,7 @@ function capitalize(str: string) {
                 }`}
               >
                 <Icon icon="mdi:heart" width="24" height="24" />
-                <span className="text-xs mt-1 font-poppins font-semibold" style={{ letterSpacing: '0.02em' }}>Favorites</span>
+                <span className="text-xs mt-1 font-semibold" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em' }}>Favorites</span>
               </Link>
               
               <Link
@@ -1766,7 +1823,7 @@ function capitalize(str: string) {
                 }`}
               >
                 <Icon icon="mdi:account" width="24" height="24" />
-                <span className="text-xs mt-1 font-poppins font-semibold" style={{ letterSpacing: '0.02em' }}>Account</span>
+                <span className="text-xs mt-1 font-semibold" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em' }}>Account</span>
               </Link>
             </div>
           </div>

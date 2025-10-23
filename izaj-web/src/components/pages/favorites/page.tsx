@@ -26,19 +26,14 @@ const MyFavorites: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24">
-        {/* Breadcrumb - hidden on screens below lg (1024px) */}
-        <div className="hidden lg:block text-xs sm:text-sm text-black mb-4 sm:mb-6 pt-4 sm:pt-6">
-          <a href="/" className="hover:underline">Home</a>
-          <Icon icon="mdi:chevron-right" width="16" height="16" className="mx-1 inline-block align-middle" />
-          <span>My Favorites</span>
-        </div>
 
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold tracking-wider text-black">My Favorites</h1>
+          <h1 className="text-3xl font-bold tracking-wider text-black" style={{ fontFamily: 'Jost, sans-serif' }}>My Favorites</h1>
           {favorites.length > 0 && (
             <button
               onClick={handleClearAll}
               className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+              style={{ fontFamily: 'Jost, sans-serif' }}
             >
               <Icon icon="mdi:delete-outline" className="w-4 h-4" />
               Clear All
@@ -46,7 +41,7 @@ const MyFavorites: React.FC = () => {
           )}
         </div>
         
-        <div className="mb-2 text-gray-600 text-sm">
+        <div className="mb-2 text-gray-600 text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
           {favorites.length === 0 
             ? 'No items saved yet' 
             : `${favorites.length} ${favorites.length === 1 ? 'item' : 'items'} saved`
@@ -68,10 +63,10 @@ const MyFavorites: React.FC = () => {
               </div>
               
               <div className="text-center max-w-md">
-                <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-4 font-playfair">
+                <h3 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>
                   Your favorites list is empty
                 </h3>
-                <p className="text-gray-600 text-base lg:text-lg mb-8 leading-relaxed">
+                <p className="text-gray-600 text-base lg:text-lg mb-8 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
                   Looks like you haven't added any items to your favorites yet. Start browsing to discover amazing lighting fixtures!
                 </p>
                 
@@ -79,6 +74,7 @@ const MyFavorites: React.FC = () => {
                   <button 
                     onClick={() => window.location.href = '/product-list'}
                     className="w-full bg-black text-white px-8 py-4 rounded-xl font-semibold hover:bg-orange-500 transition-all duration-300 transform hover:scale-105 flex items-center justify-center text-base lg:text-lg shadow-lg"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
                   >
                     <Icon icon="mdi:lightbulb-on" className="mr-3" width="20" height="20" />
                     Browse Products
@@ -87,6 +83,7 @@ const MyFavorites: React.FC = () => {
                   <button 
                     onClick={() => window.location.href = '/collection'}
                     className="w-full bg-gray-100 text-gray-700 px-8 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center justify-center text-sm lg:text-base"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
                   >
                     <Icon icon="mdi:star" className="mr-2" width="18" height="18" />
                     View New Arrivals
@@ -94,11 +91,11 @@ const MyFavorites: React.FC = () => {
                 </div>
                 
                 <div className="mt-8 pt-6 border-t border-gray-200">
-                  <p className="text-sm text-gray-500 mb-3">How to save favorites:</p>
+                  <p className="text-sm text-gray-500 mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>How to save favorites:</p>
                   <div className="flex flex-wrap gap-2 justify-center">
-                    <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">Click heart icon</span>
-                    <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">Save items you love</span>
-                    <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">Compare & purchase</span>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs" style={{ fontFamily: 'Jost, sans-serif' }}>Click heart icon</span>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs" style={{ fontFamily: 'Jost, sans-serif' }}>Save items you love</span>
+                    <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs" style={{ fontFamily: 'Jost, sans-serif' }}>Compare & purchase</span>
                   </div>
                 </div>
               </div>
@@ -140,6 +137,7 @@ const MyFavorites: React.FC = () => {
                     <Link
                       href={`/item-description/${item.productId}`}
                       className="bg-white text-black px-6 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors duration-200 transform translate-y-2 group-hover:translate-y-0"
+                      style={{ fontFamily: 'Jost, sans-serif' }}
                     >
                       Quick View
                     </Link>
@@ -148,17 +146,17 @@ const MyFavorites: React.FC = () => {
                 
                 {/* Product Info */}
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 text-lg mb-2 line-clamp-2 group-hover:text-black transition-colors duration-200">
+                  <h3 className="font-semibold text-gray-900 text-lg mb-2 line-clamp-2 group-hover:text-black transition-colors duration-200" style={{ fontFamily: 'Jost, sans-serif' }}>
                     {item.name}
                   </h3>
                   
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-2xl font-bold text-gray-900">
+                    <span className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>
                       ₱{item.price.toLocaleString()}
                     </span>
                     <div className="flex items-center gap-1 text-yellow-500">
                       <Icon icon="mdi:star" className="w-4 h-4 fill-current" />
-                      <span className="text-sm text-gray-600">4.8</span>
+                      <span className="text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>4.8</span>
                     </div>
                   </div>
                   
@@ -167,6 +165,7 @@ const MyFavorites: React.FC = () => {
                     <Link
                       href={`/item-description/${item.productId}`}
                       className="flex-1 bg-black text-white text-center py-2.5 px-4 rounded-xl hover:bg-gray-800 transition-all duration-200 font-medium text-sm"
+                      style={{ fontFamily: 'Jost, sans-serif' }}
                     >
                       View Details
                     </Link>
@@ -181,7 +180,7 @@ const MyFavorites: React.FC = () => {
                   
                   {/* Added Date */}
                   {item.addedAt && (
-                    <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100">
+                    <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100" style={{ fontFamily: 'Jost, sans-serif' }}>
                       Added {new Date(item.addedAt).toLocaleDateString()}
                     </p>
                   )}

@@ -10,6 +10,7 @@ import NewCollectionBanner from './NewCollectionBanner';
 import FreshDrops from './FreshDrops';
 import FeaturedProducts from './FeaturedProducts';
 import FreeDesignConsultation from './FreeDesignConsultation';
+import MoreToExplore from './MoreToExplore';
 import Link from 'next/link';
 
 export default function Home() {
@@ -39,6 +40,9 @@ export default function Home() {
             />
               </Link>
               </div>
+              
+        {/* More To Explore Section */}
+        <MoreToExplore />
               
         {/* Slide Animation Styles */}
         <style>{`

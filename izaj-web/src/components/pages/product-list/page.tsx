@@ -41,8 +41,6 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentMainPage, setCurrentMainPage] = useState(1);
-  const [productsPerMainPage] = useState(12);
   const [sidebarDropdownOpen, setSidebarDropdownOpen] = useState(true);
   const [architecturalDropdownOpen, setArchitecturalDropdownOpen] = useState(false);
   const [mirrorsDropdownOpen, setMirrorsDropdownOpen] = useState(false);
@@ -297,7 +295,6 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         break;
     }
     setFilteredProducts(sortedProducts);
-    setCurrentMainPage(1); // Reset to first page when sorting changes
   };
 
   // Handle view mode change
@@ -388,7 +385,6 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     );
 
       setFilteredProducts(filtered);
-    setCurrentMainPage(1); // Reset to first page when filtering changes
   }, [selectedCategory, selectedCategories, availabilityFilter, priceRange, allProducts]);
 
   // Apply sorting when sort option changes
@@ -419,21 +415,11 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     return 'Lighting';
   };
 
-  // Update displayed products based on current page
+  // Update displayed products - show all products since pagination is removed
   useEffect(() => {
-    const startIndex = (currentMainPage - 1) * productsPerMainPage;
-    const endIndex = startIndex + productsPerMainPage;
-    setDisplayedProducts(filteredProducts.slice(startIndex, endIndex));
-  }, [filteredProducts, currentMainPage, productsPerMainPage]);
+    setDisplayedProducts(filteredProducts);
+  }, [filteredProducts]);
 
-  // Calculate total pages
-  const totalMainPages = Math.ceil(filteredProducts.length / productsPerMainPage);
-
-  // Handle page change
-  const handleMainPageChange = (page: number) => {
-    setCurrentMainPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   if (isLoading) {
     return (
@@ -498,7 +484,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       </style>
 
       {/* Header Section - Full Width */}
-      <div className="mb-6 sm:mb-8 text-center">
+      <div className="mb-8 sm:mb-12 text-center">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-8 sm:mt-12 lg:mt-16" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
           All Products
         </h1>
@@ -506,51 +492,31 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         {/* Horizontal line under title */}
         <div className="w-24 h-0.5 bg-gray-800 mx-auto mb-8"></div>
         
-        <div className="max-w-4xl mx-auto">
-          <p className="text-gray-700 text-sm sm:text-base mb-6 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+        <div className="max-w-5xl mx-auto">
+          <p className="text-gray-700 text-base sm:text-lg mb-8 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
             Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
           </p>
           
-          <div className="mb-6">
-            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-              ✨ <span style={{ fontWeight: 600 }}>Choose By Category:</span> <span className="text-orange-600 underline">
-                {Object.entries(getCategoriesWithCounts()).map(([category, count], index) => (
-                  <span key={category}>
-                    <span 
-                      className="cursor-pointer hover:text-orange-700 transition-colors"
-                      onClick={() => handleHeaderCategorySelect(category)}
-                    >
-                      {category} ({count})
-                    </span>
-                    {index < Object.entries(getCategoriesWithCounts()).length - 1 && ', '}
-                  </span>
-                ))}
-              </span>
-            </p>
+          {/* Category Selection */}
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-4 py-2 mb-4">
+
+              <span className="text-gray-700 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Choose By Categories:</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+              {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
+                <button
+                  key={category}
+                  onClick={() => handleHeaderCategorySelect(category)}
+                  className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                  style={{ fontFamily: 'Jost, sans-serif' }}
+                >
+                  {category} <span className="text-gray-500">({count})</span>
+                </button>
+              ))}
+            </div>
           </div>
           
-          <div className="space-y-0 text-xs sm:text-sm" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-            <div className="flex items-center justify-center text-gray-600">
-              <span className="text-xs sm:text-sm mr-2">🇵🇭</span>
-              <span>Shipping Nationwide</span>
-            </div>
-            <div className="flex items-center justify-center text-gray-600">
-              <span className="text-xs sm:text-sm mr-2">💸</span>
-              <span>We Accept GCash & Maya Payments</span>
-            </div>
-            <div className="flex items-center justify-center text-gray-600">
-              <span className="text-xs sm:text-sm mr-2">✅</span>
-              <span>2-5 Years Warranty</span>
-            </div>
-            <div className="flex items-center justify-center text-gray-600">
-              <span className="text-xs sm:text-sm mr-2">🛒</span>
-              <span>Simply add to cart and checkout!</span>
-            </div>
-            <div className="flex items-center justify-center text-gray-600">
-              <span className="text-xs sm:text-sm mr-2">⚠️</span>
-              <span>Shop Safely — Always Pay Directly on Our Official Website.</span>
-            </div>
-          </div>
         </div>
       </div>
       
@@ -589,9 +555,6 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
           handleSortChange={handleSortChange}
           setSortModalOpen={setSortModalOpen}
           setFilterDrawerOpen={setFilterDrawerOpen}
-          currentPage={currentMainPage}
-          totalPages={totalMainPages}
-          handlePageChange={handleMainPageChange}
         />
       </div>
 

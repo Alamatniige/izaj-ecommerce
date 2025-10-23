@@ -98,11 +98,11 @@ const Footer: React.FC = () => {
             <Slider {...sliderSettings}>
               {/* Free Delivery & Installation */}
               <div className="px-2">
-                <Link href="/delivery" className="flex flex-col items-center text-center hover:text-orange-500">
+                <Link href="/delivery" className="flex flex-col items-center text-center">
                   <Icon icon="mdi:truck-delivery-outline" width="28" height="28" className="text-black mb-3" />
                   <div>
-                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-poppins font-semibold">Free delivery & installation</h3>
-                    <p className="text-sm md:text-base text-gray-600 font-lora">For orders P10,000.00 and above within Metro Manila.</p>
+                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Free delivery & installation</h3>
+                    <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>For orders P10,000.00 and above within Metro Manila.</p>
                   </div>
                 </Link>
               </div>
@@ -112,8 +112,8 @@ const Footer: React.FC = () => {
                 <div className="flex flex-col items-center text-center">
                   <Icon icon="mdi:phone-outline" width="28" height="28" className="text-black mb-3" />
                   <div>
-                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-poppins font-semibold">Phone Contact</h3>
-                    <p className="text-sm md:text-base text-gray-600 font-lora">Monday to Sunday 9:00am - 5:00pm</p>
+                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Phone Contact</h3>
+                    <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Monday to Sunday 9:00am - 5:00pm</p>
                   </div>
                 </div>
               </div>
@@ -123,8 +123,8 @@ const Footer: React.FC = () => {
                 <div className="flex flex-col items-center text-center">
                   <Icon icon="mdi:headset" width="28" height="28" className="text-black mb-3" />
                   <div>
-                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-poppins font-semibold">Top-notch support</h3>
-                    <p className="text-sm md:text-base text-gray-600 font-lora">Any question? Our team is just one click away!</p>
+                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Top-notch support</h3>
+                    <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Any question? Our team is just one click away!</p>
                   </div>
                 </div>
               </div>
@@ -134,8 +134,8 @@ const Footer: React.FC = () => {
                 <div className="flex flex-col items-center text-center">
                   <Icon icon="mdi:lock-outline" width="28" height="28" className="text-black mb-3" />
                   <div>
-                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-poppins font-semibold">Secure payments</h3>
-                    <p className="text-sm md:text-base text-gray-600 font-lora">Your payment information is processed securely</p>
+                    <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Secure payments</h3>
+                    <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Your payment information is processed securely</p>
                   </div>
                 </div>
               </div>
@@ -145,11 +145,11 @@ const Footer: React.FC = () => {
           {/* Desktop Grid */}
           <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {/* Free Delivery & Installation */}
-            <Link href="/delivery" className="flex items-start hover:text-orange-500">
+            <Link href="/delivery" className="flex items-start">
               <Icon icon="mdi:truck-delivery-outline" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
               <div>
-                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-poppins font-semibold">Free delivery & installation</h3>
-                <p className="text-sm md:text-base text-gray-600 font-lora">For orders P10,000.00 and above within Metro Manila.</p>
+                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Free delivery & installation</h3>
+                <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>For orders P10,000.00 and above within Metro Manila.</p>
               </div>
             </Link>
         
@@ -157,8 +157,8 @@ const Footer: React.FC = () => {
             <div className="flex items-start">
               <Icon icon="mdi:phone-outline" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
               <div>
-                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-poppins font-semibold">Phone Contact</h3>
-                <p className="text-sm md:text-base text-gray-600 font-lora">Monday to Sunday 8:00am - 7:00pm</p>
+                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Phone Contact</h3>
+                <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Monday to Sunday 8:00am - 7:00pm</p>
               </div>
             </div>
         
@@ -166,8 +166,8 @@ const Footer: React.FC = () => {
             <div className="flex items-start">
               <Icon icon="mdi:headset" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
               <div>
-                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-poppins font-semibold">Top-notch support</h3>
-                <p className="text-sm md:text-base text-gray-600 font-lora">Any question? Our team is just one click away!</p>
+                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Top-notch support</h3>
+                <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Any question? Our team is just one click away!</p>
               </div>
             </div>
         
@@ -175,8 +175,8 @@ const Footer: React.FC = () => {
             <div className="flex items-start">
               <Icon icon="mdi:lock-outline" width="28" height="28" className="text-black mr-3 md:mr-4 mt-1 flex-shrink-0" />
               <div>
-                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-poppins font-semibold">Secure payments</h3>
-                <p className="text-sm md:text-base text-gray-600 font-lora">Your payment information is processed securely</p>
+                <h3 className="text-base md:text-lg mb-1 md:mb-2 text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Secure payments</h3>
+                <p className="text-sm md:text-base text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Your payment information is processed securely</p>
               </div>
             </div>
           </div>
@@ -189,9 +189,9 @@ const Footer: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12 lg:gap-24">
             {/* IZAJ Family */}
             <div className="lg:col-span-1">
-              <h3 className="text-xl md:text-2xl mb-3 md:mb-4 font-poppins font-semibold">IZAJ Family</h3>
-              <p className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 max-w-xs font-lora">Unlock exclusive deals and special offers just for you! Subscribe now and be the first to know about flash sales, discounts, and new arrivals!</p>
-              <Link href="/subscribe" className="bg-black text-white text-sm md:text-base font-semibold rounded-full px-6 md:px-8 py-2 md:py-3 hover:bg-gray-800 transition-colors inline-block font-lora">Join for free</Link>
+              <h3 className="text-xl md:text-2xl mb-3 md:mb-4 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }} style={{ fontFamily: 'Jost, sans-serif' }}>IZAJ Family</h3>
+              <p className="text-sm md:text-base text-gray-700 mb-4 md:mb-6 max-w-xs style={{ fontFamily: 'Jost, sans-serif' }}">Unlock exclusive deals and special offers just for you! Subscribe now and be the first to know about flash sales, discounts, and new arrivals!</p>
+              <Link href="/subscribe" className="bg-black text-white text-sm md:text-base font-semibold rounded-full px-6 md:px-8 py-2 md:py-3 hover:bg-gray-800 transition-colors inline-block style={{ fontFamily: 'Jost, sans-serif' }}">Join for free</Link>
             </div>
 
             {/* Our Company - Mobile Dropdown */}
@@ -200,7 +200,7 @@ const Footer: React.FC = () => {
                 onClick={() => setIsCompanyOpen(!isCompanyOpen)}
                 className="flex items-center justify-between w-full md:hidden"
               >
-                <h3 className="text-lg md:text-xl tracking-tight font-poppins font-semibold">OUR COMPANY</h3>
+                <h3 className="text-lg md:text-xl tracking-tight font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>OUR COMPANY</h3>
                 <Icon 
                   icon={isCompanyOpen ? "mdi:chevron-up" : "mdi:chevron-down"} 
                   width="24" 
@@ -208,11 +208,11 @@ const Footer: React.FC = () => {
                   className="text-gray-700"
                 />
               </button>
-              <h3 className="text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block font-poppins font-semibold">OUR COMPANY</h3>
+              <h3 className="text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>OUR COMPANY</h3>
               <ul className={`space-y-2 md:space-y-3 ${isCompanyOpen ? 'block' : 'hidden'} md:block`}>
-                <li><Link href="/" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 font-lora">Home</Link></li>
-                <li><Link href="/static/aboutus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 font-lora">About Us</Link></li>
-                <li><Link href="/static/contactus" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 font-lora">Contact Us</Link></li>
+                <li><Link href="/" className="hover:underline transition-colors text-sm md:text-base text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>Home</Link></li>
+                <li><Link href="/static/aboutus" className="hover:underline transition-colors text-sm md:text-base text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>About Us</Link></li>
+                <li><Link href="/static/contactus" className="hover:underline transition-colors text-sm md:text-base text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>Contact Us</Link></li>
               </ul>
             </div>
 
@@ -222,7 +222,7 @@ const Footer: React.FC = () => {
                 onClick={() => setIsMoreInfoOpen(!isMoreInfoOpen)}
                 className="flex items-center justify-between w-full md:hidden"
               >
-                <h3 className="text-lg md:text-xl tracking-tight font-poppins font-semibold">MORE INFO</h3>
+                <h3 className="text-lg md:text-xl tracking-tight font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>MORE INFO</h3>
                 <Icon 
                   icon={isMoreInfoOpen ? "mdi:chevron-up" : "mdi:chevron-down"} 
                   width="24" 
@@ -230,15 +230,15 @@ const Footer: React.FC = () => {
                   className="text-gray-700"
                 />
               </button>
-              <h3 className="text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block font-poppins font-semibold">MORE INFO</h3>
+              <h3 className="text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>MORE INFO</h3>
               <ul className={`space-y-2 md:space-y-3 ${isMoreInfoOpen ? 'block' : 'hidden'} md:block`}>
-                <li><Link href="/delivery" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 font-lora">Delivery & Installation</Link></li>
-                <li><Link href="/static/privacypolicy" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 font-lora">Privacy Policy</Link></li>
-                <li><Link href="/static/return" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 font-lora">Returns & Refunds</Link></li>
-                <li><Link href="/static/help" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 font-lora">Help & FAQs</Link></li>
-                <li><Link href="/static/terms" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 font-lora">Terms & Conditions</Link></li>
-                <li><Link href="/static/warranty" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 font-lora">Warranty Terms</Link></li>
-                <li><Link href="/static/careers" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 font-lora">Careers</Link></li>
+                <li><Link href="/delivery" className="hover:underline transition-colors text-sm md:text-base text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>Delivery & Installation</Link></li>
+                <li><Link href="/static/privacypolicy" className="hover:underline transition-colors text-sm md:text-base text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>Privacy Policy</Link></li>
+                <li><Link href="/static/return" className="hover:underline transition-colors text-sm md:text-base text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>Returns & Refunds</Link></li>
+                <li><Link href="/static/help" className="hover:underline transition-colors text-sm md:text-base text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>Help & FAQs</Link></li>
+                <li><Link href="/static/terms" className="hover:underline transition-colors text-sm md:text-base text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>Terms & Conditions</Link></li>
+                <li><Link href="/static/warranty" className="hover:underline transition-colors text-sm md:text-base text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>Warranty Terms</Link></li>
+                <li><Link href="/static/careers" className="hover:underline transition-colors text-sm md:text-base text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>Careers</Link></li>
               </ul>
             </div>
 
@@ -248,7 +248,7 @@ const Footer: React.FC = () => {
                 onClick={() => setIsLocationOpen(!isLocationOpen)}
                 className="flex items-center justify-between w-full md:hidden"
               >
-                <span className="text-lg md:text-xl tracking-tight whitespace-nowrap font-poppins font-semibold">CONNECT WITH US</span>
+                <span className="text-lg md:text-xl tracking-tight whitespace-nowrap font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>CONNECT WITH US</span>
                 <Icon 
                   icon={isLocationOpen ? "mdi:chevron-up" : "mdi:chevron-down"} 
                   width="24" 
@@ -256,10 +256,10 @@ const Footer: React.FC = () => {
                   className="text-gray-700"
                 />
               </button>
-                <span className="text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block whitespace-nowrap font-poppins font-semibold">CONNECT WITH US</span>
+                <span className="text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block whitespace-nowrap font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>CONNECT WITH US</span>
                 <ul className={`space-y-2 md:space-y-3 ${isLocationOpen ? 'block' : 'hidden'} md:block`}>
                 <li>
-                  <a href="mailto:izajtrading@gmail.com" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2 font-lora">
+                  <a href="mailto:izajtrading@gmail.com" className="hover:underline transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2 style={{ fontFamily: 'Jost, sans-serif' }}">
                   <span className="flex items-center">
                     <Icon icon="mdi:email-outline" width={18} height={18} className="inline-block align-middle !text-gray-700" />
                     <span className="inline-block align-middle ml-1">izajtrading@gmail.com</span>
@@ -267,17 +267,17 @@ const Footer: React.FC = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="tel:+639123456789" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2 font-lora">
+                  <a href="tel:+639123456789" className="hover:underline transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2 style={{ fontFamily: 'Jost, sans-serif' }}">
                   <Icon icon="mdi:cellphone" width="18" height="18" /> +63 9423633442
                   </a>
                 </li>
                 <li>
-                  <a href="tel:+63491234567" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2 font-lora">
+                  <a href="tel:+63491234567" className="hover:underline transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2 style={{ fontFamily: 'Jost, sans-serif' }}">
                   <Icon icon="mdi:phone" width="18" height="18" /> (049) 123 4567
                   </a>
                 </li>
                 <li>
-                  <a href="https://facebook.com/izajlighting" target="_blank" rel="noopener noreferrer" className="hover:text-orange-500 transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2 font-lora">
+                  <a href="https://facebook.com/izajlighting" target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors text-sm md:text-base text-gray-700 flex items-center gap-2 style={{ fontFamily: 'Jost, sans-serif' }}">
                   <Icon icon="mdi:facebook" width="18" height="18" className="text-[#1877F3]" /> Izaj Lighting Centre
                   </a>
                 </li>
@@ -290,7 +290,7 @@ const Footer: React.FC = () => {
                 onClick={() => setIsBranchesOpen(!isBranchesOpen)}
                 className="flex items-center justify-between w-full md:hidden"
               >
-                <h3 className="text-lg md:text-xl tracking-tight font-poppins font-semibold">OUR BRANCHES</h3>
+                <h3 className="text-lg md:text-xl tracking-tight font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>OUR BRANCHES</h3>
                 <Icon 
                   icon={isBranchesOpen ? "mdi:chevron-up" : "mdi:chevron-down"} 
                   width="24" 
@@ -298,7 +298,7 @@ const Footer: React.FC = () => {
                   className="text-gray-700"
                 />
               </button>
-              <h3 className="text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block font-poppins font-semibold">OUR BRANCHES</h3>
+              <h3 className="text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>OUR BRANCHES</h3>
               <ul className={`space-y-1 md:space-y-2 text-gray-500 text-sm md:text-base ${isBranchesOpen ? 'block' : 'hidden'} md:block`}>
                 <li>
                   <BranchDropdown name="San Pablo City">
@@ -390,7 +390,7 @@ const Footer: React.FC = () => {
                 className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
               >
                 <Icon icon="mdi:translate" width="18" height="18" className="md:w-5 md:h-5 text-gray-700" />
-                <span className="text-sm md:text-base text-gray-700 font-lora">{selectedLanguage}</span>
+                <span className="text-sm md:text-base text-gray-700 style={{ fontFamily: 'Jost, sans-serif' }}">{selectedLanguage}</span>
                 <Icon 
                   icon="mdi:chevron-down" 
                   width="18" 
@@ -405,7 +405,7 @@ const Footer: React.FC = () => {
                       <button
                         key={language.code}
                         onClick={() => handleLanguageSelect(language.name)}
-                        className={`block w-full text-left px-3 md:px-4 py-2 text-sm md:text-base text-gray-700 hover:bg-gray-100 font-lora ${
+                        className={`block w-full text-left px-3 md:px-4 py-2 text-sm md:text-base text-gray-700 hover:bg-gray-100 style={{ fontFamily: 'Jost, sans-serif' }} ${
                           selectedLanguage === language.name ? 'bg-gray-50 font-medium' : ''
                         }`}
                       >
@@ -423,12 +423,12 @@ const Footer: React.FC = () => {
 
           {/* Bottom Footer Info */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-2">
-            <div className="text-gray-700 text-xs md:text-sm font-lora">
+            <div className="text-gray-700 text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
               © Izaj Lighting Centre 2024
               <br />
               IZAJ (PHILIPPINES), INC. (Registration No. 123456789)
             </div>
-            <div className="flex flex-wrap gap-4 md:gap-6 text-gray-700 text-xs md:text-sm font-lora">
+            <div className="flex flex-wrap gap-4 md:gap-6 text-gray-700 text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
               <Link href="/static/cookiepolicy" className="hover:underline">Cookie policy</Link>
               <button onClick={handleCookieSettingsClick} className="hover:underline">Cookie settings</button>
               <Link href="/static/termofuse" className="hover:underline">Terms of use</Link>
@@ -448,8 +448,8 @@ const Footer: React.FC = () => {
             </button>
 
             <div className="p-4 md:p-6 mt-6">
-              <h2 className="text-xl md:text-2xl mb-3 md:mb-4 font-poppins font-semibold">Cookie Preferences</h2>
-              <p className="text-gray-600 text-xs md:text-sm mb-4 md:mb-6 font-lora">
+              <h2 className="text-xl md:text-2xl mb-3 md:mb-4 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }} style={{ fontFamily: 'Jost, sans-serif' }}>Cookie Preferences</h2>
+              <p className="text-gray-600 text-xs md:text-sm mb-4 md:mb-6 style={{ fontFamily: 'Jost, sans-serif' }}">
                 When you visit any website, it may store or retrieve information
                 on your browser, mostly in the form of cookies. This information
                 might be about you, your preferences or your device and is
@@ -462,9 +462,9 @@ const Footer: React.FC = () => {
                 types of cookies may impact your experience of the site and the
                 services we are able to offer.
               </p>
-              <a href="#" className="text-blue-600 hover:underline text-xs md:text-sm font-lora">More information</a>
+              <a href="#" className="text-blue-600 hover:underline text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">More information</a>
 
-              <h3 className="text-lg md:text-xl mb-3 md:mb-4 mt-6 md:mt-8 font-poppins font-semibold">Manage Cookie Settings</h3>
+              <h3 className="text-lg md:text-xl mb-3 md:mb-4 mt-6 md:mt-8 font-semibold">Manage Cookie Settings</h3>
 
               {/* Cookie Categories */}
               <div className="space-y-2 md:space-y-4">
@@ -472,9 +472,9 @@ const Footer: React.FC = () => {
                 <div className="border-t border-gray-200 py-3 md:py-4 flex items-center justify-between">
                   <div className="flex items-center gap-2 cursor-pointer">
                     <Icon icon="mdi:plus" width="18" height="18" className="md:w-5 md:h-5 text-gray-700" />
-                    <span className="font-semibold text-sm md:text-base font-lora">Strictly Necessary Cookies</span>
+                    <span className="font-semibold text-sm md:text-base style={{ fontFamily: 'Jost, sans-serif' }}">Strictly Necessary Cookies</span>
                   </div>
-                  <div className="flex items-center gap-2 text-blue-600 font-semibold text-xs md:text-sm font-lora">
+                  <div className="flex items-center gap-2 text-blue-600 font-semibold text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
                     <Icon icon="mdi:check-circle" width="18" height="18" className="md:w-5 md:h-5 text-blue-600" />
                     Always Active
                   </div>
@@ -485,14 +485,14 @@ const Footer: React.FC = () => {
                   <div className="py-3 md:py-4 flex items-center justify-between cursor-pointer" onClick={togglePerformanceExpanded}>
                     <div className="flex items-center gap-2">
                       <Icon icon={isPerformanceExpanded ? "mdi:minus" : "mdi:plus"} width="18" height="18" className="md:w-5 md:h-5 text-gray-700" />
-                      <span className="font-semibold text-sm md:text-base font-lora">Performance Cookies</span>
+                      <span className="font-semibold text-sm md:text-base style={{ fontFamily: 'Jost, sans-serif' }}">Performance Cookies</span>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); togglePerformanceEnabled(); }}>
                       <Icon icon={isPerformanceEnabled ? "mdi:toggle-right" : "mdi:toggle-left"} width="36" height="20" className={isPerformanceEnabled ? "text-blue-600" : "text-gray-400"} />
                     </button>
                   </div>
                   {isPerformanceExpanded && (
-                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm font-lora">
+                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
                       <p>Performance cookies are used to collect information about how visitors use the website.</p>
                     </div>
                   )}
@@ -503,14 +503,14 @@ const Footer: React.FC = () => {
                   <div className="py-3 md:py-4 flex items-center justify-between cursor-pointer" onClick={toggleFunctionalExpanded}>
                     <div className="flex items-center gap-2">
                       <Icon icon={isFunctionalExpanded ? "mdi:minus" : "mdi:plus"} width="18" height="18" className="md:w-5 md:h-5 text-gray-700" />
-                      <span className="font-semibold text-sm md:text-base font-lora">Functional Cookies</span>
+                      <span className="font-semibold text-sm md:text-base style={{ fontFamily: 'Jost, sans-serif' }}">Functional Cookies</span>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); toggleFunctionalEnabled(); }}>
                       <Icon icon={isFunctionalEnabled ? "mdi:toggle-right" : "mdi:toggle-left"} width="36" height="20" className={isFunctionalEnabled ? "text-blue-600" : "text-gray-400"} />
                     </button>
                   </div>
                   {isFunctionalExpanded && (
-                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm font-lora">
+                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
                       <p>Functional cookies allow the website to remember choices you make and provide enhanced, more personal features.</p>
                     </div>
                   )}
@@ -521,14 +521,14 @@ const Footer: React.FC = () => {
                   <div className="py-3 md:py-4 flex items-center justify-between cursor-pointer" onClick={toggleTargetingExpanded}>
                     <div className="flex items-center gap-2">
                       <Icon icon={isTargetingExpanded ? "mdi:minus" : "mdi:plus"} width="18" height="18" className="md:w-5 md:h-5 text-gray-700" />
-                      <span className="font-semibold text-sm md:text-base font-lora">Targeting Cookies</span>
+                      <span className="font-semibold text-sm md:text-base style={{ fontFamily: 'Jost, sans-serif' }}">Targeting Cookies</span>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); toggleTargetingEnabled(); }}>
                       <Icon icon={isTargetingEnabled ? "mdi:toggle-right" : "mdi:toggle-left"} width="36" height="20" className={isTargetingEnabled ? "text-blue-600" : "text-gray-400"} />
                     </button>
                   </div>
                   {isTargetingExpanded && (
-                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm font-lora">
+                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
                       <p>Targeting cookies are used to deliver advertisements more relevant to you and your interests.</p>
                     </div>
                   )}
@@ -538,13 +538,13 @@ const Footer: React.FC = () => {
               {/* Buttons */}
               <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 md:gap-4">
                 <button 
-                  className="bg-black text-white text-sm md:text-base font-semibold rounded-md px-4 py-2 md:py-3 hover:bg-gray-800 transition-colors flex-1 font-lora"
+                  className="bg-black text-white text-sm md:text-base font-semibold rounded-md px-4 py-2 md:py-3 hover:bg-gray-800 transition-colors flex-1 style={{ fontFamily: 'Jost, sans-serif' }}"
                   onClick={handleOnlyNecessaryClick}
                 >
                   Only Necessary Cookies
                 </button>
                 <button 
-                  className="bg-white text-black text-sm md:text-base font-semibold rounded-md px-4 py-2 md:py-3 border border-gray-300 hover:bg-gray-100 transition-colors flex-1 font-lora"
+                  className="bg-white text-black text-sm md:text-base font-semibold rounded-md px-4 py-2 md:py-3 border border-gray-300 hover:bg-gray-100 transition-colors flex-1 style={{ fontFamily: 'Jost, sans-serif' }}"
                   onClick={handleConfirmChoicesClick}
                 >
                   Confirm My Choices
@@ -570,13 +570,13 @@ const BranchDropdown: React.FC<BranchDropdownProps> = ({ name, children }) => {
     <div className="relative">
       <button
         type="button"
-        className="w-full text-left px-2 py-1 hover:text-orange-500 transition-colors font-lora"
+        className="w-full text-left px-2 py-1 hover:underline transition-colors style={{ fontFamily: 'Jost, sans-serif' }}"
         onClick={() => setOpen(!open)}
       >
         <span>{name}</span>
       </button>
       {open && (
-        <div className="pl-4 pt-1 font-lora">
+        <div className="pl-4 pt-1 style={{ fontFamily: 'Jost, sans-serif' }}">
           {children}
         </div>
       )}

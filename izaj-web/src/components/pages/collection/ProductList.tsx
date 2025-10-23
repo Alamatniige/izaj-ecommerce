@@ -33,9 +33,6 @@ interface ProductListProps {
   handleSortChange: (option: string) => void;
   setSortModalOpen: (open: boolean) => void;
   setFilterDrawerOpen: (open: boolean) => void;
-  currentPage: number;
-  totalPages: number;
-  handlePageChange: (page: number) => void;
 }
 
 const ProductList: React.FC<ProductListProps> = ({
@@ -49,9 +46,6 @@ const ProductList: React.FC<ProductListProps> = ({
   handleSortChange,
   setSortModalOpen,
   setFilterDrawerOpen,
-  currentPage,
-  totalPages,
-  handlePageChange,
 }) => {
   // Image cycling states
   const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
@@ -300,67 +294,6 @@ const ProductList: React.FC<ProductListProps> = ({
         </div>
       )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-10 space-x-1">
-          <button 
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1.5 border rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Icon icon="mdi:chevron-left" width="16" height="16" />
-          </button>
-          
-          {/* Page numbers */}
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            let pageNum;
-            if (totalPages <= 5) {
-              pageNum = i + 1;
-            } else if (currentPage <= 3) {
-              pageNum = i + 1;
-            } else if (currentPage >= totalPages - 2) {
-              pageNum = totalPages - 4 + i;
-            } else {
-              pageNum = currentPage - 2 + i;
-            }
-            
-            return (
-              <button
-                key={pageNum}
-                onClick={() => handlePageChange(pageNum)}
-                className={`px-3 py-1.5 border rounded-md transition-colors ${
-                  currentPage === pageNum
-                    ? 'bg-black text-white'
-                    : 'hover:bg-gray-100'
-                }`}
-              >
-                {pageNum}
-              </button>
-            );
-          })}
-          
-          {totalPages > 5 && currentPage < totalPages - 2 && (
-            <span className="px-3 py-1.5">...</span>
-          )}
-          
-          {totalPages > 5 && currentPage < totalPages - 2 && (
-            <button
-              onClick={() => handlePageChange(totalPages)}
-              className="px-3 py-1.5 border rounded-md hover:bg-gray-100 transition-colors"
-            >
-              {totalPages}
-            </button>
-          )}
-          
-          <button 
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1.5 border rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Icon icon="mdi:chevron-right" width="16" height="16" />
-          </button>
-        </div>
-      )}
     </main>
   );
 };

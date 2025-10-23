@@ -131,12 +131,14 @@ export default function HeroSection() {
       <div className="absolute inset-0 w-full bg-gradient-to-r from-black/70 via-black/40 to-transparent text-white p-4 sm:p-6 md:p-8 flex items-end">
         <div className="max-w-4xl animate-fade-in-up">
           <h1 
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 sm:mb-3 md:mb-4 drop-shadow-lg animate-slide-in-left font-poppins font-semibold"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-2 sm:mb-3 md:mb-4 drop-shadow-lg animate-slide-in-left"
+            style={{ fontFamily: 'Jost, sans-serif' }}
           >
             {heroImages[currentIndex].heading}
           </h1>
           <p 
-            className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl whitespace-pre-line drop-shadow-md animate-slide-in-left animation-delay-200 font-lora font-light"
+            className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl whitespace-pre-line drop-shadow-md animate-slide-in-left animation-delay-200"
+            style={{ fontFamily: 'Jost, sans-serif' }}
           >
             {heroImages[currentIndex].subheading}
           </p>

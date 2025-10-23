@@ -14,27 +14,28 @@ interface LightingCategoryProps {
 
 const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
   const allItems = [
-    { id: 1, name: "Ceiling Lights", image: "ceiling.avif" },
-    { id: 2, name: "Chandelier", image: "chandelier.avif" },
-    { id: 3, name: "Pendant Lights", image: "pendant.avif" },
-    { id: 4, name: "Wall Lights", image: "wall.avif" },
-    { id: 5, name: "Table Lamps", image: "table.avif" },
-    { id: 6, name: "Cluster Chandelier", image: "cluster2.avif" },
-    { id: 7, name: "Floor Lamps", image: "floor.avif" },
-    { id: 8, name: "Painting Lights", image: "painting.avif" },
-    { id: 9, name: "Indoor Lights", image: "indoor.avif" },
-    { id: 10, name: "Outdoor Lights", image: "outdoor.avif" },
-    { id: 11, name: "Mirror", image: "mirror.avif" },
-    { id: 12, name: "Magnetic Lights", image: "magnetic.avif" },
+    { id: 1, name: "Ceiling Lights", image: "bey.jpg" },
+    { id: 2, name: "Chandelier", image: "bey2.jpg" },
+    { id: 3, name: "Pendant Lights", image: "bey3.jpg" },
+    { id: 4, name: "Wall Lights", image: "bey4.jpg" },
+    { id: 5, name: "Table Lamps", image: "bey5.jpg" },
+    { id: 6, name: "Cluster Chandelier", image: "bey6.jpg" },
+    { id: 7, name: "Floor Lamps", image: "bey7.jpg" },
+    { id: 8, name: "Painting Lights", image: "bey8.jpg" },
+    { id: 9, name: "Indoor Lights", image: "bey9.jpg" },
+    { id: 10, name: "Outdoor Lights", image: "bey10.jpg" },
+    { id: 11, name: "Mirror", image: "bey11.jpg" },
+    { id: 12, name: "Magnetic Lights", image: "bey12.jpg" },
   ];
 
   const [currentPage, setCurrentPage] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [totalPages, setTotalPages] = useState(Math.ceil(allItems.length / 5));
+  const [itemsPerPage, setItemsPerPage] = useState(4);
+  const [totalPages, setTotalPages] = useState(Math.ceil(allItems.length / 4));
   const [slideDirection, setSlideDirection] = useState<'forward' | 'backward'>('forward');
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Minimum swipe distance (in px)
@@ -52,11 +53,11 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
         setItemsPerPage(allItems.length); // Show all on mobile
         setTotalPages(1);
       } else if (width >= 640 && width < 1024) {
-        setItemsPerPage(5); // Tablet: 5 per page
-        setTotalPages(Math.ceil(allItems.length / 5));
+        setItemsPerPage(3); // Tablet: 3 per page
+        setTotalPages(Math.ceil(allItems.length / 3));
       } else {
-        setItemsPerPage(5); // Desktop: 5 per page
-        setTotalPages(Math.ceil(allItems.length / 5));
+        setItemsPerPage(4); // Desktop: 4 per page
+        setTotalPages(Math.ceil(allItems.length / 4));
       }
     };
     handleResize();
@@ -72,13 +73,25 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
   };
 
   const handleNextClick = () => {
-    setSlideDirection('forward');
-    setCurrentPage((prev) => (prev + 1) % totalPages);
+    if (currentPage < totalPages - 1) {
+      setIsAnimating(true);
+      setSlideDirection('forward');
+      setTimeout(() => {
+        setCurrentPage((prev) => prev + 1);
+        setIsAnimating(false);
+      }, 500);
+    }
   };
 
   const handlePrevClick = () => {
-    setSlideDirection('backward');
-    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
+    if (currentPage > 0) {
+      setIsAnimating(true);
+      setSlideDirection('backward');
+      setTimeout(() => {
+        setCurrentPage((prev) => prev - 1);
+        setIsAnimating(false);
+      }, 500);
+    }
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -120,19 +133,19 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
   `;
 
   const slideAnimationKeyframes = `
-    @keyframes slideInForward {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+    @keyframes slideOutLeft {
+      0% { transform: translateX(0); opacity: 1; }
+      100% { transform: translateX(-100%); opacity: 0; }
     }
-    @keyframes slideInBackward {
-      from { transform: translateX(-100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
+    @keyframes slideOutRight {
+      0% { transform: translateX(0); opacity: 1; }
+      100% { transform: translateX(100%); opacity: 0; }
     }
-    .slide-in-forward {
-      animation: slideInForward 0.5s ease-out forwards;
+    .animate-slide-out-left {
+      animation: slideOutLeft 0.5s ease-in-out forwards;
     }
-    .slide-in-backward {
-      animation: slideInBackward 0.5s ease-out forwards;
+    .animate-slide-out-right {
+      animation: slideOutRight 0.5s ease-in-out forwards;
     }
   `;
 
@@ -164,15 +177,30 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
       <style>{slideLeftKeyframes}</style>
       <style>{slideAnimationKeyframes}</style>
       <style>{improvedEffects}</style>
-      <section className="container mx-auto px-4 sm:px-14 md:px-18 lg:px-28 py-8 max-w-[90%] relative">
+      
+      {/* Brand Messaging Section */}
+      <section className="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-12 mt-8 bg-white">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>
+            Discover Your Perfect Lighting
+          </h2>
+          <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
+            Transform your space with our carefully curated collection of premium lighting solutions. 
+            From elegant chandeliers to modern LED fixtures, find the perfect lighting to illuminate your style.
+          </p>
+        </div>
+      </section>
+
+      <section className="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-16 mt-8 relative bg-gray-50">
         <div className="flex justify-between items-baseline mb-6">
-          <h2 className="text-lg md:text-xl text-black font-poppins font-semibold">
-            Lighting Category
+          <h2 className="text-lg md:text-xl text-black font-extrabold" style={{ fontFamily: 'Jost, sans-serif' }}>
+          Choose By Categories
           </h2>
           <div className="flex-grow"></div>
           <Link
             href="/product-list"
-            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-lora"
+            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-semibold"
+            style={{ fontFamily: 'Jost, sans-serif' }}
           >
             View all
           </Link>
@@ -208,60 +236,92 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
           `}
         </style>
 
-        <div
-          className={`flex ${isMobile || isTablet ? 'flex-nowrap overflow-x-auto pb-2' : 'flex-wrap justify-center gap-4 sm:gap-6 transition-all duration-700 ease-in-out'} ${!(isMobile || isTablet) ? (slideDirection === 'forward' ? 'slide-in-forward' : 'slide-in-backward') : ''}`}
-          style={{
-            position: 'relative',
-            width: '100%',
-            touchAction: isMobile || isTablet ? 'pan-x pinch-zoom' : 'pan-y pinch-zoom',
-            WebkitOverflowScrolling: isMobile || isTablet ? 'touch' : undefined,
-            paddingLeft: isMobile || isTablet ? '8px' : undefined,
-            paddingRight: isMobile || isTablet ? '8px' : undefined
-          }}
-        >
-          {(isMobile || isTablet ? allItems : getCurrentPageItems()).map((item, idx) => (
-            <div
-              key={item.id}
-              className={`category-tile flex-shrink-0 ${isMobile ? 'w-[48vw] max-w-[320px]' : isTablet ? 'w-48 max-w-[220px]' : 'w-32 sm:w-40 md:w-48'} flex flex-col items-center relative`}
-              onMouseEnter={() => setHoveredIndex(idx)}
-              onMouseLeave={() => setHoveredIndex(null)}
-              style={isMobile ? { minWidth: '48vw', maxWidth: 320 } : isTablet ? { minWidth: 192, maxWidth: 220 } : {}}
-              tabIndex={0}
-            >
-              <div className={`category-img ${isMobile ? 'w-36 h-36' : isTablet ? 'w-32 h-32' : 'w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48'} rounded-full overflow-hidden duration-300`}>
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="relative">
-                <h3
-                  className={`${isMobile ? 'text-base' : isTablet ? 'text-sm' : 'text-xs sm:text-base md:text-lg'} font-light text-black mt-2 text-center hover:text-orange-500 transition-all duration-500 inline-flex items-center font-lora`}
-                >
-                  <span
-                    className={`inline-flex items-center transition-transform duration-500 ${
-                      hoveredIndex === idx && !(isMobile || isTablet) ? "slide-left-anim" : ""
+        {(isMobile || isTablet) ? (
+          <div className="flex flex-nowrap overflow-x-auto gap-6 pb-2 px-1 -mx-1">
+            {allItems.map((item, idx) => (
+              <div
+                key={item.id}
+                className="overflow-hidden relative flex flex-col w-full group max-w-[500px] min-w-0"
+                style={isMobile ? { width: '70vw', minWidth: '70vw', flex: '0 0 70vw' } : isTablet ? { width: '40vw', minWidth: '40vw', flex: '0 0 40vw' } : {}}
+                onMouseEnter={() => setHoveredIndex(idx)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                <div className="relative overflow-hidden">
+                  <img 
+                    src={item.image} 
+                    alt={item.name} 
+                    className={`w-full h-64 sm:h-96 object-cover transition-all duration-300 ${
+                      hoveredIndex === idx ? 'scale-110' : 'scale-100'
                     }`}
-                  >
-                    {item.name}
-                    <span
-                      className={`ml-1 sm:ml-2 transition-opacity duration-500 ${
-                        hoveredIndex === idx && !(isMobile || isTablet) ? "opacity-100" : "opacity-0"
+                  />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <h3 className={`text-white text-xl sm:text-2xl md:text-3xl font-bold text-center transition-all duration-500 mb-4 ${
+                      hoveredIndex === idx ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                    }`} style={{ 
+                      fontFamily: 'Jost, sans-serif', 
+                      fontWeight: 600,
+                      textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
+                    }}>
+                      {item.name}
+                    </h3>
+                    <Link
+                      href={`/product-list?category=${encodeURIComponent(item.name)}`}
+                      className={`text-black py-2 px-4 hover:opacity-80 transition-all duration-500 text-sm text-center block rounded-sm border ${
+                        hoveredIndex === idx ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                       }`}
+                      style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: 'white', borderColor: 'white', letterSpacing: '0.1em' }}
                     >
-                      <Icon
-                        icon="cil:arrow-right"
-                        className="h-4 w-4 sm:h-5 sm:w-5 text-black"
-                        width="20"
-                        height="20"
-                      />
-                    </span>
-                  </span>
-                </h3>
+                      VIEW
+                    </Link>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        ) : (
+          <div 
+            className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 justify-center transition-all duration-500 ease-in-out ${isAnimating ? (slideDirection === 'forward' ? 'animate-slide-out-left' : 'animate-slide-out-right') : ''}`}
+          >
+            {getCurrentPageItems().map((item, idx) => (
+              <div 
+                key={item.id} 
+                className="overflow-hidden relative flex flex-col w-full group"
+                onMouseEnter={() => setHoveredIndex(currentPage * itemsPerPage + idx)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                <div className="relative overflow-hidden">
+                  <img 
+                    src={item.image} 
+                    alt={item.name} 
+                    className={`w-full h-64 sm:h-96 object-cover transition-all duration-300 ${
+                      hoveredIndex === (currentPage * itemsPerPage + idx) ? 'scale-110' : 'scale-100'
+                    }`}
+                  />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <h3 className={`text-white text-xl sm:text-2xl md:text-3xl font-bold text-center transition-all duration-500 mb-4 ${
+                      hoveredIndex === (currentPage * itemsPerPage + idx) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                    }`} style={{ 
+                      fontFamily: 'Jost, sans-serif', 
+                      fontWeight: 600,
+                      textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
+                    }}>
+                      {item.name}
+                    </h3>
+                    <Link
+                      href={`/product-list?category=${encodeURIComponent(item.name)}`}
+                      className={`text-black py-2 px-4 hover:opacity-80 transition-all duration-500 text-sm text-center block rounded-sm border ${
+                        hoveredIndex === (currentPage * itemsPerPage + idx) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                      }`}
+                      style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: 'white', borderColor: 'white', letterSpacing: '0.1em' }}
+                    >
+                      VIEW
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         </div>
 
         {/* Pagination arrows only on desktop */}
@@ -284,7 +344,6 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
             <Icon icon="mdi:chevron-right" className="h-4 w-4 sm:h-6 sm:w-6 text-gray-600" width="24" height="24" />
           </button>
         )}
-        </div>
       </section>
     </>
   );

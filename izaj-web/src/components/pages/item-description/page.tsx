@@ -201,6 +201,51 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
     setIsImageModalOpen(true);
   };
 
+  // Handle Get Directions functionality
+  const handleGetDirections = () => {
+    const storeAddress = "173 1, San Pablo City, 4000 Laguna, Philippines";
+    const encodedAddress = encodeURIComponent(storeAddress);
+    
+    // Try to detect the user's platform and open appropriate map app
+    const userAgent = navigator.userAgent.toLowerCase();
+    
+    if (/iphone|ipad|ipod/.test(userAgent)) {
+      // iOS - try Apple Maps first, fallback to Google Maps
+      const appleMapsUrl = `http://maps.apple.com/?q=${encodedAddress}`;
+      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+      
+      // Try to open Apple Maps, if it fails, open Google Maps in browser
+      window.open(appleMapsUrl, '_blank');
+      
+      // Fallback: also open Google Maps in case Apple Maps doesn't work
+      setTimeout(() => {
+        window.open(googleMapsUrl, '_blank');
+      }, 1000);
+    } else if (/android/.test(userAgent)) {
+      // Android - try Google Maps app first, fallback to web
+      const googleMapsAppUrl = `geo:0,0?q=${encodedAddress}`;
+      const googleMapsWebUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+      
+      // Try to open Google Maps app
+      window.location.href = googleMapsAppUrl;
+      
+      // Fallback: open Google Maps in browser if app doesn't open
+      setTimeout(() => {
+        window.open(googleMapsWebUrl, '_blank');
+      }, 1000);
+    } else {
+      // Desktop or other platforms - open Google Maps in browser
+      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+      window.open(googleMapsUrl, '_blank');
+    }
+    
+    // Show success message
+    toast.success('Opening directions to IZAJ Lighting Centre', {
+      icon: '🗺️',
+      duration: 3000,
+    });
+  };
+
   // Fetch reviews function
   const fetchReviews = async () => {
     try {
@@ -841,7 +886,12 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
 
               {/* Action Buttons */}
               <div className="pt-4 space-y-3">
-                <button className="w-full bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                <button 
+                  onClick={handleGetDirections}
+                  className="w-full bg-black text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2" 
+                  style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
+                >
+                  <Icon icon="mdi:map-marker" className="text-lg" />
                   Get Directions
                 </button>
                 

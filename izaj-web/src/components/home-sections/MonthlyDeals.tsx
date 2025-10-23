@@ -178,7 +178,7 @@ export default function MonthlyDeals() {
   }, [hoveredProduct, allProducts]);
 
   // Determine productsPerPage based on screen size (avoid window on SSR)
-  let productsPerPage = 5;
+  let productsPerPage = 4;
   if (isMobile) {
     productsPerPage = 2;
   } else if (isTablet) {
@@ -206,7 +206,7 @@ export default function MonthlyDeals() {
         setTimeout(() => {
           setDesktopCurrentPage(desktopCurrentPage - 1);
           setIsAnimating(false);
-        }, 300);
+        }, 500);
       }
     } else {
       if (desktopCurrentPage > 0) {
@@ -215,7 +215,7 @@ export default function MonthlyDeals() {
         setTimeout(() => {
           setDesktopCurrentPage(desktopCurrentPage - 1);
           setIsAnimating(false);
-        }, 300);
+        }, 500);
       }
     }
   };
@@ -233,7 +233,7 @@ export default function MonthlyDeals() {
         setTimeout(() => {
           setDesktopCurrentPage(desktopCurrentPage + 1);
           setIsAnimating(false);
-        }, 300);
+        }, 500);
       }
     } else {
       if (desktopCurrentPage < totalPages - 1) {
@@ -242,7 +242,7 @@ export default function MonthlyDeals() {
         setTimeout(() => {
           setDesktopCurrentPage(desktopCurrentPage + 1);
           setIsAnimating(false);
-        }, 300);
+        }, 500);
       }
     }
   };
@@ -250,48 +250,68 @@ export default function MonthlyDeals() {
   // Add CSS classes for animations
   const getSlideClass = (isAnimating: boolean, direction: 'left' | 'right') => {
     if (!isAnimating) return '';
-    return direction === 'left' ? 'slide-left' : 'slide-right';
+    return direction === 'left' ? 'animate-slide-out-left' : 'animate-slide-out-right';
   };
 
   if (isLoading) {
     return (
       <section className="container mx-auto px-2 sm:px-6 md:px-8 lg:px-12 py-8 max-w-[95%] relative">
         <div className="flex justify-between items-baseline mb-4">
-          <h2 className="text-lg md:text-xl text-black font-poppins font-semibold">
+          <h2 className="text-lg md:text-xl text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>
             Monthly Deals 
           </h2>
           <div className="flex-grow"></div>
           <Link
             href="/sales"
-            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-lora"
+            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-semibold"
+            style={{ fontFamily: 'Jost, sans-serif' }}
           >
             View all
           </Link>
         </div>
         <div className="flex justify-center items-center py-4">
-          <div className="text-gray-500 font-lora">Loading products...</div>
+          <div className="text-gray-500 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Loading products...</div>
         </div>
       </section>
     );
   }
 
   return (
-      <section className="container mx-auto px-2 sm:px-6 md:px-8 lg:px-12 py-8 max-w-[95%] relative">
+    <>
+      <style jsx>{`
+        @keyframes slideOutLeft {
+          0% { transform: translateX(0); opacity: 1; }
+          100% { transform: translateX(-100%); opacity: 0; }
+        }
+        @keyframes slideOutRight {
+          0% { transform: translateX(0); opacity: 1; }
+          100% { transform: translateX(100%); opacity: 0; }
+        }
+        .animate-slide-out-left {
+          animation: slideOutLeft 0.5s ease-in-out forwards;
+        }
+        .animate-slide-out-right {
+          animation: slideOutRight 0.5s ease-in-out forwards;
+        }
+      `}</style>
+      <section className="w-full bg-gray-50 py-12 sm:py-16 md:py-20">
+        <div className="container mx-auto px-0 sm:px-0 max-w-6xl relative">
         <div className="flex justify-between items-baseline mb-4">
-          <h2 className="text-lg md:text-xl text-black font-poppins font-semibold">
+          <h2 className="text-lg md:text-xl text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>
             Monthly Deals 
           </h2>
           <div className="flex-grow"></div>
           <Link
             href="/sales"
-            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-lora"
+            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-semibold"
+            style={{ fontFamily: 'Jost, sans-serif' }}
           >
             View all
           </Link>
         </div>
 
       <div 
-        className="relative px-4 sm:px-12"
+        className="relative px-0 sm:px-0"
         onMouseEnter={() => setIsHoveringProducts(true)}
         onMouseLeave={() => setIsHoveringProducts(false)}
       >
@@ -382,7 +402,7 @@ export default function MonthlyDeals() {
             </div>
           ) : (
             <div 
-              className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 justify-center transition-all duration-300 ease-out ${getSlideClass(isAnimating, slideDirection)}`}
+              className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 justify-center transition-all duration-500 ease-in-out ${getSlideClass(isAnimating, slideDirection)}`}
             >
               {currentProducts.map((product) => (
                 <div 
@@ -437,6 +457,8 @@ export default function MonthlyDeals() {
           )}
         </div>
       </div>
-    </section>
+        </div>
+      </section>
+    </>
   );
 }
