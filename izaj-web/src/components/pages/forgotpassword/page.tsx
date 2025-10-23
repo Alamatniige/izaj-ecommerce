@@ -93,14 +93,14 @@ const ForgotPasswordPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           {/* Left Section - Title */}
           <div className="space-y-8">
-            <h1 className="text-4xl font-bold text-black leading-tight">
+            <h1 className="text-4xl font-bold text-black leading-tight font-poppins">
               Reset your password
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 font-jost">
               Remember your password?{' '}
               <button
                 onClick={() => router.push('/login')}
-                className="text-black hover:underline font-medium"
+                className="text-black hover:underline font-medium font-jost"
               >
                 Log in here
               </button>
@@ -109,16 +109,16 @@ const ForgotPasswordPage: React.FC = () => {
 
           {/* Right Section - Form */}
           <div className="bg-white max-w-lg">
-            <p className="text-black text-base mb-6 leading-relaxed font-bold">
+            <p className="text-black text-base mb-6 leading-relaxed font-bold font-jost">
               Enter your email address and we'll send you a password reset link.
             </p>
 
-            <p className="text-gray-600 text-sm mb-8">
+            <p className="text-gray-600 text-sm mb-8 font-jost">
               We'll send a secure link to your email that will allow you to create a new password.
             </p>
 
             {message && (
-              <div className={`mb-6 text-sm p-4 rounded-lg ${
+              <div className={`mb-6 text-sm p-4 rounded-lg font-jost ${
                 message.includes('sent') || message.includes('successfully') 
                   ? 'text-green-700 bg-green-50 border border-green-200' 
                   : 'text-red-600 bg-red-50 border border-red-200'
@@ -130,7 +130,7 @@ const ForgotPasswordPage: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-black">
+                <label className="block text-sm font-medium text-black font-jost">
                   Email Address
                 </label>
                 <input
@@ -141,11 +141,11 @@ const ForgotPasswordPage: React.FC = () => {
                   ref={emailInputRef}
                   className={`w-full px-4 pr-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${
                     errors.email ? 'border-red-500' : 'border-gray-300'
-                  } focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                  } focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                   placeholder="Enter your email address"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  <p className="mt-1 text-sm text-red-600 font-jost">{errors.email}</p>
                 )}
               </div>
 
@@ -153,7 +153,7 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-black text-white py-4 px-6 text-base font-medium hover:bg-gray-800 transition-all duration-300 flex items-center justify-center disabled:opacity-50 rounded-none"
+                className="w-full bg-black text-white py-4 px-6 text-base font-medium hover:bg-gray-800 transition-all duration-300 flex items-center justify-center disabled:opacity-50 rounded-none font-poppins"
               >
                 {isLoading ? (
                   <>
@@ -170,7 +170,7 @@ const ForgotPasswordPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => router.push('/login')}
-                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  className="text-sm text-gray-600 hover:text-gray-800 transition-colors font-jost"
                 >
                   Back to Login
                 </button>

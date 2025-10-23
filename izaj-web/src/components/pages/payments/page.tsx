@@ -6,6 +6,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import RequireAuth from '@/components/common/RequireAuth';
 import { ewalletService, EWallet } from '@/services/ewalletService';
+import AccountSidebar from '../../common/AccountSidebar';
 
 const BankandCard: React.FC = () => {
   const [userData, setUserData] = useState({
@@ -119,11 +120,12 @@ const BankandCard: React.FC = () => {
   return (
     <RequireAuth>
     <div className="flex flex-col min-h-screen bg-white font-sans">
-      {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
+      {/* Mobile: My Account Navigation */}
       <div className="lg:hidden bg-white px-4 pt-4 shadow-sm">
         <div
           className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
           onClick={() => setIsAccountModalOpen(true)}
+          style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
         >
           <div className="flex items-center space-x-2">
             <Icon icon="mdi:credit-card-outline" className="text-black w-5 h-5" />
@@ -147,134 +149,74 @@ const BankandCard: React.FC = () => {
             >
               <Icon icon="mdi:close" />
             </button>
-            <div className="font-bold text-xl mb-4 text-black text:center mt-4">My Account</div>
+            <div className="font-bold text-xl mb-4 text-black text-center mt-4" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>My Account</div>
             <ul className="space-y-1 px-4 pb-6">
               <li>
-                <span className="inline-flex items-center text-black font-semibold text-base">
+                <span className="inline-flex items-center text-black font-semibold text-base" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                   My Account
                 </span>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/account#profile" className="text-black hover:text-gray-900 text-base block transition-colors">Profile</Link>
+                <Link href="/account" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Profile</Link>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors">My Orders</Link>
+                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>My Orders</Link>
               </li>
               <li className="pl-8 py-3 bg-gray-100 rounded-lg transition-colors duration-300">
-                <Link href="/payments" className="text-black font-semibold text-base block transition-colors">Payment Methods</Link>
+                <span className="text-black font-semibold text-base block" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Payment Methods</span>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/addresses" className="text-black hover:text-gray-900 text-base block transition-colors">Addresses</Link>
+                <Link href="/addresses" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Addresses</Link>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
-                <Link href="/changepassword" className="text-black hover:text-gray-900 text-base block transition-colors">Change Password</Link>
+                <Link href="/changepassword" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Change Password</Link>
               </li>
             </ul>
           </div>
         </div>
       )}
       {/* Main Content */}
-      <main className="flex-grow py-6 md:py-12">
-        <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
-            {/* Left Column - User Profile */}
-            <div className="hidden lg:block w-full lg:w-80 bg-white rounded-2xl shadow-lg p-6 border border-gray-300 self-start">
-              <div className="flex flex-col items-center">
-                <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-black shadow-lg bg-gray-100 flex items-center justify-center relative">
-                  {profileImage ? (
-                    <img src={profileImage} alt="User" className="w-full h-full object-cover" />
-                  ) : (
-                    <Icon icon="lucide:user" className="w-10 h-10 text-gray-500" />
-                  )}
-                </div>
-                <div className="font-semibold text-xl mb-6 text-center text-gray-800">
-                  {`${userData.firstName} ${userData.lastName}`.trim() || 'User'}
-                </div>
+      <main className="flex-grow py-6 md:py-12 bg-white">
+        <div className="w-full max-w-screen-xl mx-auto px-0">
+          {/* Header Section - Similar to ProductList */}
+          <div className="mb-6 sm:mb-8 text-center">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-0 sm:mt-1 lg:mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+              Payment Methods
+            </h1>
             
-                <ul className="w-full space-y-2">
-                  <li className="flex items-center p-3 rounded-xl mb-2 bg-gray-100">
-                    <Icon icon="lucide:user" className="text-gray-600 mr-3 w-5 h-5" />
-                    <span className="text-gray-700 font-medium text-sm">My Account</span>
-                  </li>
-                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                    <Link href="/account#profile" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                      <Icon icon="mdi:account-outline" className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                      Profile
-                    </Link>
-                  </li>
-                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                    <Link href="/orders" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                      <Icon icon="mdi:package-variant" className="w-4 h-4 mr-2" />
-                      My Orders
-                    </Link>
-                  </li>
-                  <li className="pl-4 py-2 bg-black rounded-lg">
-                    <Link href="/payments" className="text-white font-semibold text-sm block flex items-center">
-                      <Icon icon="mdi:credit-card-outline" className="w-4 h-4 mr-2" />
-                      Payment Methods
-                    </Link>
-                  </li>
-                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                    <Link href="/addresses" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                      <Icon icon="mdi:map-marker" className="w-4 h-4 mr-2" />
-                      Addresses
-                    </Link>
-                  </li>
-                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg mb-2 transition-all duration-200 group">
-                   <Link href="/changepassword" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                     <Icon icon="mdi:lock-outline" className="w-4 h-4 mr-2" />
-                     Change Password
-                   </Link>
-                  </li>
-                </ul>
-              </div>
+            {/* Horizontal line under title */}
+            <div className="w-24 h-0.5 bg-gray-800 mx-auto mb-8"></div>
+            
+            <div className="max-w-4xl mx-auto">
+              <p className="text-gray-700 text-sm sm:text-base mb-6 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                Manage your e-wallets and payment methods for convenient checkout.
+              </p>
             </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
+            {/* Left Column - Sidebar - Only on large screens */}
+            <AccountSidebar 
+              userData={userData}
+              profileImage={profileImage}
+              activePage="payments"
+            />
             {/* Right Column - Payment Methods */}
-            <div className="w-full md:flex-1">
+            <div className="flex-1">
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
-                {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gray-50">
-                  <div className="flex items-center space-x-3">
-                    {viewMode === 'add' && (
-                      <button
-                        onClick={() => {
-                          setViewMode('list');
-                          setNewWallet({ type: 'GCash', accountName: '', accountNumber: '' });
-                        }}
-                        className="text-gray-600 hover:text-black transition-colors mr-2"
-                      >
-                        <Icon icon="mdi:arrow-left" className="w-6 h-6" />
-                      </button>
-                    )}
-                    <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-                      <Icon 
-                        icon={viewMode === 'add' ? 'mdi:wallet-plus' : 'mdi:credit-card-multiple'} 
-                        className="w-5 h-5 text-white" 
-                      />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800">
-                        {viewMode === 'add' ? 'Add E-Wallet' : 'Payment Methods'}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {viewMode === 'add' ? 'Add a new e-wallet to your account' : 'Manage your e-wallets'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                {/* Content */}
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   {viewMode === 'list' ? (
                     // LIST VIEW
                     <div>
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2 sm:gap-0">
-                        <h3 className="text-base sm:text-lg font-bold flex items-center text-gray-800">
+                        <h3 className="text-base sm:text-lg font-bold flex items-center text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                           <Icon icon="mdi:wallet-outline" className="mr-2 text-gray-800" width="24" height="24" />
                           E-Wallet
                         </h3>
                         <button 
                           onClick={() => setViewMode('add')}
                           className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-black hover:bg-gray-800 text-white text-xs sm:text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl mt-2 sm:mt-0"
+                          style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                         >
                           <Icon icon="mdi:plus" className="w-4 h-4" />
                           Add New E-Wallet
@@ -332,9 +274,32 @@ const BankandCard: React.FC = () => {
                   ) : (
                     // ADD VIEW
                     <div className="space-y-6">
+                      {/* Add Mode Header */}
+                      <div className="flex items-center space-x-3 mb-6">
+                        <button
+                          onClick={() => {
+                            setViewMode('list');
+                            setNewWallet({ type: 'GCash', accountName: '', accountNumber: '' });
+                          }}
+                          className="text-gray-600 hover:text-black transition-colors mr-2"
+                        >
+                          <Icon icon="mdi:arrow-left" className="w-6 h-6" />
+                        </button>
+                        <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
+                          <Icon icon="mdi:wallet-plus" className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                            Add E-Wallet
+                          </h3>
+                          <p className="text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                            Add a new e-wallet to your account
+                          </p>
+                        </div>
+                      </div>
                         {/* E-Wallet Type Selection */}
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-3">
+                          <label className="block text-sm font-semibold text-gray-700 mb-3" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                             E-Wallet Type
                           </label>
                           <div className="grid grid-cols-2 gap-3">
@@ -367,7 +332,7 @@ const BankandCard: React.FC = () => {
 
                         {/* Account Name */}
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                             Account Name
                           </label>
                           <input
@@ -381,7 +346,7 @@ const BankandCard: React.FC = () => {
 
                         {/* Account Number */}
                         <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          <label className="block text-sm font-semibold text-gray-700 mb-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                             Account Number / Mobile Number
                           </label>
                           <input
@@ -402,6 +367,7 @@ const BankandCard: React.FC = () => {
                             }}
                             disabled={isLoading}
                             className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                           >
                             Cancel
                           </button>
@@ -409,6 +375,7 @@ const BankandCard: React.FC = () => {
                             onClick={handleAddWallet}
                             disabled={isLoading}
                             className="flex-1 px-4 py-3 bg-black text-white font-semibold rounded-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                           >
                             {isLoading ? (
                               <>

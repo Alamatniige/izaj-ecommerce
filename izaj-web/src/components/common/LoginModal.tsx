@@ -229,16 +229,16 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 </button>
 
             <div className="p-8 mt-8">
-              <h2 id="login-modal-title" className="text-3xl font-bold mb-6 text-black">
+              <h2 id="login-modal-title" className="text-3xl font-bold mb-6 text-black font-poppins">
                 Log in to your account
               </h2>
               
-              <p className="text-black text-base mb-8 leading-relaxed ">
+              <p className="text-black text-base mb-8 leading-relaxed font-jost">
                 Get a more personalized experience where you don't need to fill in your information every time.
               </p>
 
               {errors.general && (
-                <div className="mb-6 text-sm text-red-600 bg-red-50 p-4 rounded-lg border border-red-200">
+                <div className="mb-6 text-sm text-red-600 bg-red-50 p-4 rounded-lg border border-red-200 font-jost">
                   {errors.general}
                 </div>
               )}
@@ -246,7 +246,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="modal-email" className="block text-sm font-medium text-black">Email or Phone</label>
+                  <label htmlFor="modal-email" className="block text-sm font-medium text-black font-jost">Email or Phone</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       {isPhoneMode ? (
@@ -265,17 +265,17 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                       ref={emailInputRef}
                       aria-invalid={!!errors.email}
                       aria-describedby={errors.email ? 'modal-email-help' : undefined}
-                      className={`w-full ${isPhoneMode ? 'pl-16' : 'pl-12'} pr-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                      className={`w-full ${isPhoneMode ? 'pl-16' : 'pl-12'} pr-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                       placeholder={isPhoneMode ? '9XXXXXXXXXX' : 'Enter your email or phone'}
                     />
                     {errors.email && (
-                      <p id="modal-email-help" className="mt-1 text-sm text-red-600">{errors.email}</p>
+                      <p id="modal-email-help" className="mt-1 text-sm text-red-600 font-jost">{errors.email}</p>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="modal-password" className="block text-sm font-medium text-black">Password</label>
+                  <label htmlFor="modal-password" className="block text-sm font-medium text-black font-jost">Password</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -283,7 +283,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                       name="password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-4 pr-12 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                      className={`w-full px-4 py-4 pr-12 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                       placeholder="Enter your password"
                     />
                     <button
@@ -294,7 +294,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                       <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 text-gray-600 hover:text-black transition-colors duration-200" />
                     </button>
                     {errors.password && (
-                      <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                      <p className="mt-1 text-sm text-red-600 font-jost">{errors.password}</p>
                     )}
                   </div>
                 </div>
@@ -309,7 +309,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                       onChange={handleInputChange}
                       className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                     />
-                    <label htmlFor="modal-rememberMe" className="ml-2 text-sm text-gray-700">
+                    <label htmlFor="modal-rememberMe" className="ml-2 text-sm text-gray-700 font-jost">
                       Remember me
                     </label>
                   </div>
@@ -319,7 +319,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                       onClose();
                       router.push('/forgot-password');
                     }} 
-                    className="text-sm text-black hover:underline font-medium"
+                    className="text-sm text-black hover:underline font-medium font-jost"
                   >
                     Forgot your password?
                   </button>
@@ -328,7 +328,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-black text-white py-4 px-6 text-base font-medium hover:bg-gray-800 transition-all duration-300 flex items-center justify-center disabled:opacity-50 rounded-lg"
+                  className="w-full bg-black text-white py-4 px-6 text-base font-medium hover:bg-gray-800 transition-all duration-300 flex items-center justify-center disabled:opacity-50 rounded-lg font-poppins"
                 >
                   {isLoading ? (
                     <>
@@ -346,7 +346,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                       <div className="w-full border-t border-gray-300"></div>
                     </div>
                     <div className="relative flex justify-center">
-                      <span className="px-4 bg-white text-base text-gray-600">New at IZAJ?</span>
+                      <span className="px-4 bg-white text-base text-gray-600 font-jost">New at IZAJ?</span>
                     </div>
                   </div>
                   <button
@@ -355,7 +355,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                       onClose();
                       router.push('/signup');
                     }}
-                    className="w-full bg-white text-black py-4 px-6 text-base border-2 border-gray-300 font-medium hover:bg-gray-50 transition-all duration-300 rounded-lg mt-4"
+                    className="w-full bg-white text-black py-4 px-6 text-base border-2 border-gray-300 font-medium hover:bg-gray-50 transition-all duration-300 rounded-lg mt-4 font-poppins"
                   >
                     Create account
                   </button>

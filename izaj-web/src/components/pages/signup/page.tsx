@@ -228,14 +228,14 @@ const SignupPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           {/* Left Section - Title */}
           <div className="space-y-8">
-            <h1 className="text-4xl font-bold text-black leading-tight tracking-tight">
+            <h1 className="text-4xl font-bold text-black leading-tight tracking-tight font-poppins">
               Create an IZAJ account
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 font-jost">
               Already have an account?{' '}
               <button
                 onClick={() => router.push('/login')}
-                className="text-black hover:underline font-medium"
+                className="text-black hover:underline font-medium font-jost"
               >
                 Log in here
               </button>
@@ -269,10 +269,10 @@ const SignupPage: React.FC = () => {
               {/* Product Info Overlay */}
               <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-black/90 via-black/70 to-transparent">
                 <div className="transform transition-all duration-700">
-                  <h3 className="text-2xl font-bold text-white mb-2">
+                  <h3 className="text-2xl font-bold text-white mb-2 font-poppins">
                     {featuredProducts[currentProductIndex].name}
                   </h3>
-                  <p className="text-gray-200 text-base">
+                  <p className="text-gray-200 text-base font-jost">
                     {featuredProducts[currentProductIndex].description}
                   </p>
                 </div>
@@ -302,20 +302,20 @@ const SignupPage: React.FC = () => {
             </div>
 
             {/* Additional Info */}
-            <div className="flex items-center space-x-6 text-sm text-gray-600">
-              <div className="flex items-center space-x-2">
-                <Icon icon="mdi:check-circle" className="w-5 h-5 text-green-600" />
-                <span>Premium Quality</span>
+              <div className="flex items-center space-x-6 text-sm text-gray-600">
+                <div className="flex items-center space-x-2">
+                  <Icon icon="mdi:check-circle" className="w-5 h-5 text-green-600" />
+                  <span className="font-jost">Premium Quality</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Icon icon="mdi:truck-fast" className="w-5 h-5 text-blue-600" />
+                  <span className="font-jost">Fast Delivery</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Icon icon="mdi:shield-check" className="w-5 h-5 text-purple-600" />
+                  <span className="font-jost">Secure Shopping</span>
+                </div>
               </div>
-              <div className="flex items-center space-x-2">
-                <Icon icon="mdi:truck-fast" className="w-5 h-5 text-blue-600" />
-                <span>Fast Delivery</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Icon icon="mdi:shield-check" className="w-5 h-5 text-purple-600" />
-                <span>Secure Shopping</span>
-              </div>
-            </div>
 
             {/* Stats Counter */}
             <div className="mt-8 p-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
@@ -325,8 +325,8 @@ const SignupPage: React.FC = () => {
                   <div className="flex items-center justify-center mb-2">
                     <Icon icon="mdi:account-group" className="w-6 h-6 text-blue-600 mr-2" />
                   </div>
-                  <div className="text-3xl font-bold text-black mb-1">10,000+</div>
-                  <div className="text-sm text-gray-600 font-medium">Happy Customers</div>
+                  <div className="text-3xl font-bold text-black mb-1 font-poppins">10,000+</div>
+                  <div className="text-sm text-gray-600 font-medium font-jost">Happy Customers</div>
                 </div>
 
                 {/* Products */}
@@ -334,8 +334,8 @@ const SignupPage: React.FC = () => {
                   <div className="flex items-center justify-center mb-2">
                     <Icon icon="mdi:lightbulb-on" className="w-6 h-6 text-yellow-500 mr-2" />
                   </div>
-                  <div className="text-3xl font-bold text-black mb-1">500+</div>
-                  <div className="text-sm text-gray-600 font-medium">Quality Products</div>
+                  <div className="text-3xl font-bold text-black mb-1 font-poppins">500+</div>
+                  <div className="text-sm text-gray-600 font-medium font-jost">Quality Products</div>
                 </div>
 
                 {/* Rating */}
@@ -343,14 +343,14 @@ const SignupPage: React.FC = () => {
                   <div className="flex items-center justify-center mb-2">
                     <Icon icon="mdi:star" className="w-6 h-6 text-yellow-400 mr-2" />
                   </div>
-                  <div className="text-3xl font-bold text-black mb-1">5.0★</div>
-                  <div className="text-sm text-gray-600 font-medium">Customer Rating</div>
+                  <div className="text-3xl font-bold text-black mb-1 font-poppins">5.0★</div>
+                  <div className="text-sm text-gray-600 font-medium font-jost">Customer Rating</div>
                 </div>
               </div>
 
               {/* Bottom tagline */}
               <div className="mt-6 pt-6 border-t border-gray-300 text-center">
-                <p className="text-sm text-gray-700 font-medium">
+                <p className="text-sm text-gray-700 font-medium font-jost">
                   Join thousands of Filipinos lighting up their homes with IZAJ
                 </p>
               </div>
@@ -359,12 +359,12 @@ const SignupPage: React.FC = () => {
 
           {/* Right Section - Form */}
           <div className="bg-white max-w-lg">
-            <p className="text-black text-base mb-8 leading-relaxed font-bold">
+            <p className="text-black text-base mb-8 leading-relaxed font-bold font-jost">
               From your profile, you will find all information connected to your account. And it's free to join!
             </p>
 
             {errors.general && (
-              <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+              <div className="mb-4 text-sm text-red-600 bg-red-50 p-3 rounded-lg font-jost">
                 {errors.general}
               </div>
             )}
@@ -373,81 +373,81 @@ const SignupPage: React.FC = () => {
               {/* First Name and Last Name */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-black">First name</label>
+                  <label className="block text-sm font-medium text-black font-jost">First name</label>
                   <input
                     type="text"
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.firstName ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                    className={`w-full px-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.firstName ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                     placeholder="Enter first name"
                   />
                   {errors.firstName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>
+                    <p className="mt-1 text-sm text-red-600 font-jost">{errors.firstName}</p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-black">Last name</label>
+                  <label className="block text-sm font-medium text-black font-jost">Last name</label>
                   <input
                     type="text"
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.lastName ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                    className={`w-full px-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.lastName ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                     placeholder="Enter last name"
                   />
                   {errors.lastName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>
+                    <p className="mt-1 text-sm text-red-600 font-jost">{errors.lastName}</p>
                   )}
                 </div>
               </div>
 
               {/* Phone Number */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-black">Phone number (optional)</label>
+                <label className="block text-sm font-medium text-black font-jost">Phone number (optional)</label>
                 <div className="relative">
                   <input
                     type="tel"
                     name="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                    className={`w-full pl-12 pr-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                     placeholder="9123456789"
                   />
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-base">+63</span>
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 text-base font-jost">+63</span>
                 </div>
                 {errors.phoneNumber && (
-                  <p className="mt-1 text-sm text-red-600">{errors.phoneNumber}</p>
+                  <p className="mt-1 text-sm text-red-600 font-jost">{errors.phoneNumber}</p>
                 )}
               </div>
 
               {/* Email */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-black">Email address</label>
+                <label className="block text-sm font-medium text-black font-jost">Email address</label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
                   ref={emailInputRef}
-                  className={`w-full px-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                  className={`w-full px-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                   placeholder="Enter your email"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  <p className="mt-1 text-sm text-red-600 font-jost">{errors.email}</p>
                 )}
               </div>
 
               {/* Password */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-black">Password</label>
+                <label className="block text-sm font-medium text-black font-jost">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-4 pr-12 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                    className={`w-full px-4 py-4 pr-12 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                     placeholder="Enter password"
                   />
                   <button
@@ -462,25 +462,25 @@ const SignupPage: React.FC = () => {
                 {/* Password Requirements */}
                 {formData.password && (
                   <div className="mt-2 p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Password Requirements:</p>
+                    <p className="text-sm font-medium text-gray-700 mb-2 font-jost">Password Requirements:</p>
                     <div className="space-y-1">
-                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.minLength ? 'text-green-600' : 'text-gray-500'}`}>
+                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.minLength ? 'text-green-600' : 'text-gray-500'} font-jost`}>
                         <Icon icon={validatePassword(formData.password).requirements.minLength ? "mdi:check-circle" : "mdi:circle-outline"} className="w-4 h-4 mr-2" />
                         At least 8 characters
                       </div>
-                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasUppercase ? 'text-green-600' : 'text-gray-500'}`}>
+                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasUppercase ? 'text-green-600' : 'text-gray-500'} font-jost`}>
                         <Icon icon={validatePassword(formData.password).requirements.hasUppercase ? "mdi:check-circle" : "mdi:circle-outline"} className="w-4 h-4 mr-2" />
                         One uppercase letter
                       </div>
-                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasLowercase ? 'text-green-600' : 'text-gray-500'}`}>
+                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasLowercase ? 'text-green-600' : 'text-gray-500'} font-jost`}>
                         <Icon icon={validatePassword(formData.password).requirements.hasLowercase ? "mdi:check-circle" : "mdi:circle-outline"} className="w-4 h-4 mr-2" />
                         One lowercase letter
                       </div>
-                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasNumber ? 'text-green-600' : 'text-gray-500'}`}>
+                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasNumber ? 'text-green-600' : 'text-gray-500'} font-jost`}>
                         <Icon icon={validatePassword(formData.password).requirements.hasNumber ? "mdi:check-circle" : "mdi:circle-outline"} className="w-4 h-4 mr-2" />
                         One number
                       </div>
-                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasSpecialChar ? 'text-green-600' : 'text-gray-500'}`}>
+                      <div className={`flex items-center text-sm ${validatePassword(formData.password).requirements.hasSpecialChar ? 'text-green-600' : 'text-gray-500'} font-jost`}>
                         <Icon icon={validatePassword(formData.password).requirements.hasSpecialChar ? "mdi:check-circle" : "mdi:circle-outline"} className="w-4 h-4 mr-2" />
                         One special character
                       </div>
@@ -489,20 +489,20 @@ const SignupPage: React.FC = () => {
                 )}
                 
                 {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                  <p className="mt-1 text-sm text-red-600 font-jost">{errors.password}</p>
                 )}
               </div>
 
               {/* Confirm Password */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-black">Confirm Password</label>
+                <label className="block text-sm font-medium text-black font-jost">Confirm Password</label>
                 <div className="relative">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-4 pr-12 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none`}
+                    className={`w-full px-4 py-4 pr-12 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                     placeholder="Confirm your password"
                   />
                   <button
@@ -518,12 +518,12 @@ const SignupPage: React.FC = () => {
                 {formData.confirmPassword && (
                   <div className="mt-2">
                     {formData.password === formData.confirmPassword ? (
-                      <div className="flex items-center text-sm text-green-600">
+                      <div className="flex items-center text-sm text-green-600 font-jost">
                         <Icon icon="mdi:check-circle" className="w-4 h-4 mr-2" />
                         Passwords match
                       </div>
                     ) : (
-                      <div className="flex items-center text-sm text-red-600">
+                      <div className="flex items-center text-sm text-red-600 font-jost">
                         <Icon icon="mdi:alert-circle" className="w-4 h-4 mr-2" />
                         Passwords do not match
                       </div>
@@ -532,7 +532,7 @@ const SignupPage: React.FC = () => {
                 )}
                 
                 {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                  <p className="mt-1 text-sm text-red-600 font-jost">{errors.confirmPassword}</p>
                 )}
               </div>
 
@@ -542,10 +542,10 @@ const SignupPage: React.FC = () => {
                 onClick={() => setShowAddressForm(!showAddressForm)}
               >
                 <div>
-                  <label className="block text-sm font-bold text-black">Add home address (optional)</label>
+                  <label className="block text-sm font-bold text-black font-jost">Add home address (optional)</label>
                 </div>
                 
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 font-jost">
                   We'll remember your information for a quick and easy checkout experience
                 </p>
 
@@ -556,7 +556,7 @@ const SignupPage: React.FC = () => {
                   >
                     {/* Province */}
                     <div className="space-y-2">
-                      <label className="block text-sm font-medium text-black flex items-center">
+                      <label className="block text-sm font-medium text-black flex items-center font-jost">
                         <Icon icon="mdi:map-outline" className="w-4 h-4 mr-2 text-black" />
                         Province
                       </label>
@@ -565,14 +565,14 @@ const SignupPage: React.FC = () => {
                         name="province"
                         value={formData.province}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none"
+                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost"
                         placeholder="e.g., Laguna"
                       />
                     </div>
 
                     {/* City / Municipality */}
                     <div className="space-y-2">
-                      <label className="block text-sm font-medium text-black flex items-center">
+                      <label className="block text-sm font-medium text-black flex items-center font-jost">
                         <Icon icon="mdi:city" className="w-4 h-4 mr-2 text-black" />
                         City / Municipality
                       </label>
@@ -581,14 +581,14 @@ const SignupPage: React.FC = () => {
                         name="city"
                         value={formData.city}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none"
+                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost"
                         placeholder="e.g., San Pablo City"
                       />
                     </div>
 
                     {/* Street Address */}
                     <div className="space-y-2">
-                      <label className="block text-sm font-medium text-black flex items-center">
+                      <label className="block text-sm font-medium text-black flex items-center font-jost">
                         <Icon icon="mdi:home-outline" className="w-4 h-4 mr-2 text-black" />
                         Street / House / Building
                       </label>
@@ -597,7 +597,7 @@ const SignupPage: React.FC = () => {
                         name="address"
                         value={formData.address}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none"
+                        className="w-full px-4 py-3 text-base border-2 border-gray-300 bg-white text-black placeholder-gray-400 focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost"
                         placeholder="e.g., 123 Sampaguita St."
                       />
                     </div>
@@ -615,12 +615,12 @@ const SignupPage: React.FC = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, agreeToPrivacy: e.target.checked }))}
                   className="mt-1 w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
                 />
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 font-jost">
                   By creating an account, you agree to our{' '}
                   <button
                     type="button"
                     onClick={() => router.push('/static/privacypolicy')}
-                    className="text-blue-600 hover:underline font-medium"
+                    className="text-blue-600 hover:underline font-medium font-jost"
                   >
                     Privacy Policy
                   </button>
@@ -631,7 +631,7 @@ const SignupPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-black text-white py-4 px-6 text-base font-medium hover:bg-gray-800 transition-all duration-300 flex items-center justify-center disabled:opacity-50 rounded-none"
+                className="w-full bg-black text-white py-4 px-6 text-base font-medium hover:bg-gray-800 transition-all duration-300 flex items-center justify-center disabled:opacity-50 rounded-none font-poppins"
               >
                 {isLoading ? (
                   <>

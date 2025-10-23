@@ -4,6 +4,7 @@ import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import RequireAuth from '../../common/RequireAuth';
 import { useUserContext } from '../../../context/UserContext';
+import AccountSidebar from '../../common/AccountSidebar';
 
 const MyProfile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -332,11 +333,12 @@ const MyProfile: React.FC = () => {
           </div>
         </div>
       )}
-      {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
+      {/* Mobile: My Account Navigation */}
       <div className="lg:hidden bg-white px-4 pt-4 shadow-sm">
         <div
           className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
           onClick={() => setIsAccountModalOpen(true)}
+          style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
         >
           <div className="flex items-center space-x-2">
             <Icon icon="mdi:account-outline" className="text-black w-5 h-5" />
@@ -360,116 +362,68 @@ const MyProfile: React.FC = () => {
             >
               <Icon icon="mdi:close" />
             </button>
-            <div className="font-bold text-xl mb-4 text-black text-center mt-4">My Account</div>
+            <div className="font-bold text-xl mb-4 text-black text-center mt-4" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>My Account</div>
             <ul className="space-y-1 px-4 pb-6">
               <li>
-                <span className="inline-flex items-center text-black font-semibold text-base">
+                <span className="inline-flex items-center text-black font-semibold text-base" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                   My Account
                 </span>
               </li>
               <li className="pl-8 py-3 bg-gray-100 rounded-lg transition-colors duration-300">
-                <a href="#profile" className="text-black font-semibold text-base block">Profile</a>
+                <span className="text-black font-semibold text-base block" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Profile</span>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors">My Orders</Link>
+                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>My Orders</Link>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/payments" className="text-black hover:text-gray-900 text-base block transition-colors">Payment Methods</Link>
+                <Link href="/payments" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Payment Methods</Link>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/addresses" className="text-black  hover:text-gray-900 text-base block transition-colors">Addresses</Link>
+                <Link href="/addresses" className="text-black  hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Addresses</Link>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
-                <Link href="/changepassword" className="text-black hover:text-gray-900 text-base block transition-colors">Change Password</Link>
+                <Link href="/changepassword" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Change Password</Link>
               </li>
             </ul>
           </div>
         </div>
       )}
-      {/* Main Content - My Profile Section */}
-      <main className="flex-grow py-6 md:py-12 bg-gray-50">
-        <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
-            {/* Left Column - User Profile (Sidebar) - Only on large screens */}
-            <div className="hidden lg:block w-full lg:w-80 bg-white rounded-2xl shadow-lg p-6 border border-gray-300 self-start">
-              <div className="flex flex-col items-center">
-                {/* Profile image and name only on desktop */}
-                <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-black shadow-lg bg-gray-100 flex items-center justify-center relative">
-                  {profileImage ? (
-                    <img src={profileImage} alt="User" className="w-full h-full object-cover" />
-                  ) : (
-                    <Icon icon="lucide:user" className="w-10 h-10 text-gray-500" />
-                  )}
-                </div>
-                <div className="font-semibold text-xl mb-6 text-center text-gray-800">
-                  {`${formData.firstName} ${formData.lastName}`.trim() || 'User'}
-                </div>
-                <ul className="w-full space-y-2">
-                  <li className="flex items-center p-3 rounded-xl mb-2 bg-gray-100">
-                    <Icon icon="lucide:user" className="text-gray-600 mr-3 w-5 h-5" />
-                    <span className="text-gray-700 font-medium text-sm">My Account</span>
-                  </li>
-                  <li className="pl-4 py-2 bg-black rounded-lg">
-                    <a href="#profile" className="text-white font-semibold text-sm block flex items-center">
-                      <Icon icon="mdi:account-outline" className="w-4 h-4 mr-2" />
-                      Profile
-                    </a>
-                  </li>
-                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                    <Link href="/orders" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                      <Icon icon="mdi:package-variant" className="w-4 h-4 mr-2" />
-                      My Orders
-                    </Link>
-                  </li>
-                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                    <Link href="/payments" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                      <Icon icon="mdi:credit-card-outline" className="w-4 h-4 mr-2" />
-                      Payment Methods
-                    </Link>
-                  </li>
-                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                    <Link href="/addresses" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                      <Icon icon="mdi:map-marker" className="w-4 h-4 mr-2" />
-                      Addresses
-                    </Link>
-                  </li>
-                  <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg mb-2 transition-all duration-200 group">
-                    <Link href="/changepassword" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                      <Icon icon="mdi:lock-outline" className="w-4 h-4 mr-2" />
-                      Change Password
-                    </Link>
-                  </li>
-                </ul>
-              </div>
+      {/* Main Content */}
+      <main className="flex-grow py-6 md:py-12 bg-white">
+        <div className="w-full max-w-screen-xl mx-auto px-0">
+          {/* Header Section - Similar to ProductList */}
+          <div className="mb-6 sm:mb-8 text-center">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-0 sm:mt-1 lg:mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+              My Profile
+            </h1>
+            
+            {/* Horizontal line under title */}
+            <div className="w-24 h-0.5 bg-gray-800 mx-auto mb-8"></div>
+            
+            <div className="max-w-4xl mx-auto">
+              <p className="text-gray-700 text-sm sm:text-base mb-6 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                Manage your account information, profile picture, and personal details.
+              </p>
             </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
+            {/* Left Column - Sidebar - Only on large screens */}
+            <AccountSidebar 
+              userData={formData}
+              profileImage={profileImage}
+              activePage="profile"
+            />
             
             {/* Right Column - Profile Content */}
             <div className="flex-1">
-              <div id="profile" className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
-                <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gray-50">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-                      <Icon icon="mdi:account-circle" className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-xl font-bold text-gray-800">My Profile</h3>
-                      <p className="text-sm text-gray-500">Manage your account information</p>
-                    </div>
-                  </div>
-                  {(isLoading || uploading) && (
-                    <Icon icon="mdi:loading" className="w-5 h-5 text-gray-400 animate-spin" />
-                  )}
-                </div>
-                <div className="p-2 sm:p-4 md:p-6 lg:p-8">
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
+                <div className="p-4 sm:p-6">
                   {/* Profile Form */}
                   <form onSubmit={handleSubmit}>
                     <div className="flex flex-col gap-4">
                       {/* Form Fields - Now on top */}
                       <div className="flex-1">
-                        <div className="mb-2 sm:mb-4">
-                          <h4 className="text-gray-900 font-semibold">Personal Information</h4>
-                          <p className="text-gray-500 text-xs">Make sure your details are accurate and up-to-date.</p>
-                        </div>
                         {/* First Name Field */}
                         <div className="grid md:grid-cols-2 gap-4">
                         <div className="mb-4 sm:mb-5">

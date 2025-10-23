@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import RequireAuth from '../../common/RequireAuth';
+import AccountSidebar from '../../common/AccountSidebar';
 
 const ChangePass: React.FC = () => {
   const [userData, setUserData] = useState({
@@ -187,11 +188,12 @@ const ChangePass: React.FC = () => {
   return (
     <RequireAuth>
     <div className="flex flex-col min-h-screen bg-white font-sans">
-      {/* Mobile: My Account Plain Text with Dropdown Icon as Modal Trigger */}
+      {/* Mobile: My Account Navigation */}
       <div className="lg:hidden bg-white px-4 pt-4 shadow-sm">
         <div
           className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
           onClick={() => setIsAccountModalOpen(true)}
+          style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
         >
           <div className="flex items-center space-x-2">
             <Icon icon="mdi:lock-outline" className="text-black w-5 h-5" />
@@ -215,111 +217,62 @@ const ChangePass: React.FC = () => {
             >
               <Icon icon="mdi:close" />
             </button>
-            <div className="font-bold text-xl mb-4 text-black text-center mt-4">My Account</div>
+            <div className="font-bold text-xl mb-4 text-black text-center mt-4" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>My Account</div>
             <ul className="space-y-1 px-4 pb-6">
               <li>
-                <span className="inline-flex items-center text-black font-semibold text-base">
+                <span className="inline-flex items-center text-black font-semibold text-base" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                   My Account
                 </span>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/account#profile" className="text-black hover:text-gray-900 text-base block transition-colors">Profile</Link>
+                <Link href="/account" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Profile</Link>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors">My Orders</Link>
+                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>My Orders</Link>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/payments" className="text-black hover:text-gray-900 text-base block transition-colors">Payment Methods</Link>
+                <Link href="/payments" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Payment Methods</Link>
               </li>
               <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/addresses" className="text-black hover:text-gray-900 text-base block transition-colors">Addresses</Link>
+                <Link href="/addresses" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Addresses</Link>
               </li>
               <li className="pl-8 py-3 bg-gray-100 rounded-lg mb-2 transition-colors duration-300">
-                <Link href="/changepassword" className="text-black font-semibold text-base block transition-colors">Change Password</Link>
+                <span className="text-black font-semibold text-base block" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Change Password</span>
               </li>
             </ul>
           </div>
         </div>
       )}
       {/* Main Content */}
-<main className="flex-grow py-6 md:py-12">
-  <div className="w-full max-w-screen-xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
-    <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
-      {/* Left Column - User Profile */}
-      <div className="hidden lg:block w-full lg:w-80 bg-white rounded-2xl shadow-lg p-6 border border-gray-300 self-start">
-        <div className="flex flex-col items-center">
-          <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-black shadow-lg bg-gray-100 flex items-center justify-center relative">
-            {profileImage ? (
-              <img src={profileImage} alt="User" className="w-full h-full object-cover" />
-            ) : (
-              <Icon icon="lucide:user" className="w-10 h-10 text-gray-500" />
-            )}
-          </div>
-          <div className="font-semibold text-xl mb-6 text-center text-gray-800">
-            {`${userData.firstName} ${userData.lastName}`.trim() || 'User'}
-          </div>
-        
-            <ul className="w-full space-y-2">
-              <li className="flex items-center p-3 rounded-xl mb-2 bg-gray-100">
-                <Icon icon="lucide:user" className="text-gray-600 mr-3 w-5 h-5" />
-                <span className="text-gray-700 font-medium text-sm">My Account</span>
-              </li>
-              <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                <Link href="/account#profile" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                  <Icon icon="mdi:account-outline" className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                  Profile
-                </Link>
-              </li>
-              <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                <Link href="/orders" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                  <Icon icon="mdi:package-variant" className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                  My Orders
-                </Link>
-              </li>
-              <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                <Link href="/payments" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                  <Icon icon="mdi:credit-card-outline" className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                  Payment Methods
-                </Link>
-              </li>
-              <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                <Link href="/addresses" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center">
-                  <Icon icon="mdi:map-marker" className="w-4 h-4 mr-2" />
-                  Addresses
-                </Link>
-              </li>
-              <li className="pl-4 py-2 bg-black rounded-lg">
-                <a href="/changepassword" className="text-white font-semibold text-sm block flex items-center">
-                  <Icon icon="mdi:lock-outline" className="w-4 h-4 mr-2" />
-                  Change Password
-                </a>
-              </li>
-            </ul>
-          
-        </div>
-      </div>
-      {/* Right Column - Change Password Section */}
-      <div className="w-full md:flex-1">
-     
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
-          {/* Header */}
-          <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gray-50">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-                <Icon icon="mdi:lock-reset" className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">Change Password</h3>
-                <p className="text-sm text-gray-500">Keep your account secure</p>
-              </div>
+      <main className="flex-grow py-6 md:py-12 bg-white">
+        <div className="w-full max-w-screen-xl mx-auto px-0">
+          {/* Header Section - Similar to ProductList */}
+          <div className="mb-6 sm:mb-8 text-center">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-0 sm:mt-1 lg:mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+              Change Password
+            </h1>
+            
+            {/* Horizontal line under title */}
+            <div className="w-24 h-0.5 bg-gray-800 mx-auto mb-8"></div>
+            
+            <div className="max-w-4xl mx-auto">
+              <p className="text-gray-700 text-sm sm:text-base mb-6 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                Update your password to keep your account secure and protected.
+              </p>
             </div>
-            {isLoading && (
-              <Icon icon="mdi:loading" className="w-5 h-5 text-gray-400 animate-spin" />
-            )}
           </div>
 
-          {/* Password Form */}
-          <div className="p-6">
+          <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
+            {/* Left Column - Sidebar - Only on large screens */}
+            <AccountSidebar 
+              userData={userData}
+              profileImage={profileImage}
+              activePage="changepassword"
+            />
+            {/* Right Column - Change Password Section */}
+            <div className="flex-1">
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
+                <div className="p-4 sm:p-6">
             <form onSubmit={handleSubmit} className="max-w-md space-y-4">
               {/* Success Message */}
               {successMessage && (
@@ -337,7 +290,7 @@ const ChangePass: React.FC = () => {
 
               {/* Current Password */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-black">Current Password</label>
+                <label className="block text-sm font-medium mb-2 text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Current Password</label>
                 <div className="relative">
                   <input 
                     type={showPasswords.currentPassword ? "text" : "password"}
@@ -363,7 +316,7 @@ const ChangePass: React.FC = () => {
 
               {/* New Password */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-black">New Password</label>
+                <label className="block text-sm font-medium mb-2 text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>New Password</label>
                 <div className="relative">
                   <input 
                     type={showPasswords.newPassword ? "text" : "password"}
@@ -392,7 +345,7 @@ const ChangePass: React.FC = () => {
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-sm font-medium mb-2 text-black">Confirm Password</label>
+                <label className="block text-sm font-medium mb-2 text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Confirm Password</label>
                 <div className="relative">
                   <input 
                     type={showPasswords.confirmPassword ? "text" : "password"}
@@ -422,6 +375,7 @@ const ChangePass: React.FC = () => {
                   type="submit"
                   disabled={isLoading}
                   className={`px-6 py-3 bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                  style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                 >
                   {isLoading ? (
                     <>

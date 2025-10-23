@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 import RequireAuth from '../../common/RequireAuth';
+import AccountSidebar from '../../common/AccountSidebar';
 import { useUserContext } from '../../../context/UserContext';
 
 interface Order {
@@ -500,56 +501,11 @@ const MyOrders: React.FC = () => {
 
             <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
               {/* Left Column - Sidebar - Only on large screens */}
-              <div className="hidden lg:block w-full lg:w-80 bg-white rounded-2xl shadow-lg p-6 border border-gray-300 self-start sticky top-6">
-                <div className="flex flex-col items-center">
-                  <div className="w-24 h-24 rounded-full overflow-hidden mb-6 border-4 border-black shadow-lg bg-gray-100 flex items-center justify-center">
-                    {user?.profilePicture ? (
-                      <img src={user.profilePicture} alt="User" className="w-full h-full object-cover" />
-                    ) : (
-                      <Icon icon="lucide:user" className="w-10 h-10 text-gray-500" />
-                    )}
-                  </div>
-                  <div className="font-semibold text-xl mb-6 text-center text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                    {user ? `${user.firstName} ${user.lastName}` : 'User'}
-                  </div>
-                  <ul className="w-full space-y-2">
-                    <li className="flex items-center p-3 rounded-xl mb-2 bg-gray-100">
-                      <Icon icon="lucide:user" className="text-gray-600 mr-3 w-5 h-5" />
-                      <span className="text-gray-700 font-medium text-sm" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}>My Account</span>
-                    </li>
-                    <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                      <Link href="/account" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                        <Icon icon="mdi:account-outline" className="w-4 h-4 mr-2" />
-                        Profile
-                      </Link>
-                    </li>
-                    <li className="pl-4 py-2 bg-black rounded-lg">
-                      <span className="text-white font-semibold text-sm block flex items-center" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                        <Icon icon="mdi:package-variant" className="w-4 h-4 mr-2" />
-                        My Orders
-                      </span>
-                    </li>
-                    <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                      <Link href="/payments" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                        <Icon icon="mdi:credit-card-outline" className="w-4 h-4 mr-2" />
-                        Payment Methods
-                      </Link>
-                    </li>
-                    <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg transition-all duration-200 group">
-                      <Link href="/addresses" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                        <Icon icon="mdi:map-marker" className="w-4 h-4 mr-2" />
-                        Addresses
-                      </Link>
-                    </li>
-                    <li className="pl-4 py-2 hover:bg-gray-100 rounded-lg mb-2 transition-all duration-200 group">
-                      <Link href="/changepassword" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                        <Icon icon="mdi:lock-outline" className="w-4 h-4 mr-2" />
-                        Change Password
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+              <AccountSidebar 
+                userData={user ? { firstName: user.firstName, lastName: user.lastName } : { firstName: '', lastName: '' }}
+                profileImage={user?.profilePicture || ''}
+                activePage="orders"
+              />
 
               {/* Right Column - Orders Content */}
               <div className="flex-1">
