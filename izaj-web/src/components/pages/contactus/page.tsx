@@ -50,9 +50,9 @@ const ContactUs: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" style={{ fontFamily: 'Jost, sans-serif' }}>
       {/* Hero Section */}
-      <section className="relative bg-black text-white overflow-hidden">
+      <section className="relative bg-black text-white overflow-hidden" style={{ fontFamily: 'Jost, sans-serif' }}>
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{
@@ -64,31 +64,31 @@ const ContactUs: React.FC = () => {
           <div className="text-center">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 border border-white/20">
               <Icon icon="mdi:email" className="text-white" width="20" height="20" />
-              <span className="text-sm font-medium">Get In Touch</span>
+              <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>Get In Touch</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight" style={{ fontFamily: 'Jost, sans-serif' }}>
               Contact <span className="text-white">Us</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed mb-12">
+            <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed mb-12" style={{ fontFamily: 'Jost, sans-serif' }}>
               We'd love to hear from you. Send us a message and we'll respond as soon as possible.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <div className="flex items-center gap-2 text-white">
                 <Icon icon="mdi:clock" width="20" height="20" />
-                <span className="font-medium">Mon-Sun: 9AM-5PM</span>
+                <span className="font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>Mon-Sun: 9AM-5PM</span>
               </div>
               <div className="hidden sm:block w-px h-6 bg-gray-600"></div>
               <div className="flex items-center gap-2 text-white">
                 <Icon icon="mdi:phone" width="20" height="20" />
-                <span className="font-medium">+63 912 345 6789</span>
+                <span className="font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>+63 912 345 6789</span>
               </div>
               <div className="hidden sm:block w-px h-6 bg-gray-600"></div>
               <div className="flex items-center gap-2 text-white">
                 <Icon icon="mdi:email" width="20" height="20" />
-                <span className="font-medium">contact@izaj.com</span>
+                <span className="font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>contact@izaj.com</span>
               </div>
             </div>
           </div>
@@ -99,17 +99,17 @@ const ContactUs: React.FC = () => {
       <main className="relative">
 
         {/* Contact Information Section */}
-        <section className="py-20 bg-gray-50">
+        <section className="py-20 bg-gray-50" style={{ fontFamily: 'Jost, sans-serif' }}>
           <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 rounded-full px-4 py-2 mb-6">
                 <Icon icon="mdi:map-marker" width="20" height="20" />
-                <span className="text-sm font-semibold">Our Information</span>
+                <span className="text-sm font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Our Information</span>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>
                 Get In <span className="text-black">Touch</span>
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: 'Jost, sans-serif' }}>
                 Multiple ways to reach us. We're here to help with all your lighting needs.
               </p>
             </div>
@@ -119,8 +119,8 @@ const ContactUs: React.FC = () => {
                 <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Icon icon="mdi:map-marker" className="text-white" width="32" height="32" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Our Location</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>Our Location</h3>
+                <p className="text-gray-600 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
                   San Pablo - 173 I, San Pablo City, 4000 Laguna
                 </p>
               </div>
@@ -129,8 +129,8 @@ const ContactUs: React.FC = () => {
                 <div className="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Icon icon="mdi:phone" className="text-white" width="32" height="32" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Phone Number</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>Phone Number</h3>
+                <p className="text-gray-600 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
                   +63 912 345 6789
                 </p>
               </div>
@@ -139,8 +139,8 @@ const ContactUs: React.FC = () => {
                 <div className="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Icon icon="mdi:email" className="text-white" width="32" height="32" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Email Address</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>Email Address</h3>
+                <p className="text-gray-600 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
                   contact@izaj.com
                 </p>
               </div>
@@ -149,8 +149,8 @@ const ContactUs: React.FC = () => {
                 <div className="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
                   <Icon icon="mdi:clock" className="text-white" width="32" height="32" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Working Hours</h3>
-                <p className="text-gray-600 leading-relaxed">
+                <h3 className="text-xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>Working Hours</h3>
+                <p className="text-gray-600 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
                   Monday to Sunday: 9:00 AM - 5:00 PM
                 </p>
               </div>
@@ -158,7 +158,7 @@ const ContactUs: React.FC = () => {
 
             {/* Social Media Section */}
             <div className="mt-16 text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-8">Follow Us</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-8" style={{ fontFamily: 'Jost, sans-serif' }}>Follow Us</h3>
               <div className="flex justify-center space-x-6">
                 <a href="#" className="w-12 h-12 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors duration-300 group">
                   <Icon icon="mdi:facebook" className="text-white group-hover:scale-110 transition-transform duration-300" width="24" height="24" />
@@ -175,17 +175,17 @@ const ContactUs: React.FC = () => {
         </section>
 
         {/* Contact Form Section */}
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-white" style={{ fontFamily: 'Jost, sans-serif' }}>
           <div className="max-w-4xl mx-auto px-6">
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 rounded-full px-4 py-2 mb-6">
                 <Icon icon="mdi:message" width="20" height="20" />
-                <span className="text-sm font-semibold">Send Message</span>
+                <span className="text-sm font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Send Message</span>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>
                 Send Us A <span className="text-black">Message</span>
               </h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: 'Jost, sans-serif' }}>
                 Have a question or need assistance? Fill out the form below and we'll get back to you as soon as possible.
               </p>
             </div>
@@ -194,7 +194,7 @@ const ContactUs: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-8">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-3">
+                    <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
                       Your Name *
                     </label>
                     <input
@@ -204,13 +204,14 @@ const ContactUs: React.FC = () => {
                       value={formData.name}
                       onChange={handleChange}
                       className="w-full border-2 border-gray-200 rounded-2xl shadow-sm py-4 px-6 focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-lg transition-all duration-300"
+                      style={{ fontFamily: 'Jost, sans-serif' }}
                       placeholder="Enter your full name"
                       required
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-3">
+                    <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
                       Email Address *
                     </label>
                     <input
@@ -220,6 +221,7 @@ const ContactUs: React.FC = () => {
                       value={formData.email}
                       onChange={handleChange}
                       className="w-full border-2 border-gray-200 rounded-2xl shadow-sm py-4 px-6 focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-lg transition-all duration-300"
+                      style={{ fontFamily: 'Jost, sans-serif' }}
                       placeholder="Enter your email address"
                       required
                     />
@@ -228,7 +230,7 @@ const ContactUs: React.FC = () => {
 
                 <div className="grid md:grid-cols-2 gap-8">
                   <div>
-                    <label htmlFor="phone" className="block text-sm font-semibold text-gray-900 mb-3">
+                    <label htmlFor="phone" className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
                       Phone Number
                     </label>
                     <input
@@ -238,12 +240,13 @@ const ContactUs: React.FC = () => {
                       value={formData.phone}
                       onChange={handleChange}
                       className="w-full border-2 border-gray-200 rounded-2xl shadow-sm py-4 px-6 focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-lg transition-all duration-300"
+                      style={{ fontFamily: 'Jost, sans-serif' }}
                       placeholder="Enter your phone number"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-semibold text-gray-900 mb-3">
+                    <label htmlFor="subject" className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
                       Subject *
                     </label>
                     <select
@@ -252,6 +255,7 @@ const ContactUs: React.FC = () => {
                       value={formData.subject}
                       onChange={handleChange}
                       className="w-full border-2 border-gray-200 rounded-2xl shadow-sm py-4 px-6 focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-lg transition-all duration-300"
+                      style={{ fontFamily: 'Jost, sans-serif' }}
                       required
                     >
                       <option value="">Select a subject</option>
@@ -266,19 +270,20 @@ const ContactUs: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-semibold text-gray-900 mb-3">
+                  <label htmlFor="message" className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
                     Message *
                   </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    rows={6}
-                    className="w-full border-2 border-gray-200 rounded-2xl shadow-sm py-4 px-6 focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-lg transition-all duration-300 resize-none"
-                    placeholder="Tell us how we can help you..."
-                    required
-                  />
+                    <textarea
+                      id="message"
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      rows={6}
+                      className="w-full border-2 border-gray-200 rounded-2xl shadow-sm py-4 px-6 focus:outline-none focus:ring-2 focus:ring-black focus:border-black text-lg transition-all duration-300 resize-none"
+                      style={{ fontFamily: 'Jost, sans-serif' }}
+                      placeholder="Tell us how we can help you..."
+                      required
+                    />
                 </div>
 
                 <div className="text-center">
@@ -286,14 +291,15 @@ const ContactUs: React.FC = () => {
                     type="submit"
                     disabled={isSubmitting}
                     className="bg-black text-white py-4 px-12 rounded-2xl font-bold text-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
                   >
                     {isSubmitting ? (
                       <div className="flex items-center justify-center gap-3">
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>Sending Message...</span>
+                        <span style={{ fontFamily: 'Jost, sans-serif' }}>Sending Message...</span>
                       </div>
                     ) : (
-                      'Send Message'
+                      <span style={{ fontFamily: 'Jost, sans-serif' }}>Send Message</span>
                     )}
                   </button>
                 </div>
@@ -301,66 +307,7 @@ const ContactUs: React.FC = () => {
             </div>
           </div>
         </section>
-        {/* Newsletter Subscription Section */}
-        <section className="py-20 bg-black text-white relative overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-5">
-            <div className="absolute inset-0" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-            }}></div>
-          </div>
-          
-          <div className="relative max-w-4xl mx-auto px-6 text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 border border-white/20">
-              <Icon icon="mdi:email" className="text-white" width="20" height="20" />
-              <span className="text-sm font-medium">Stay Connected</span>
-            </div>
-            
-            <h2 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-              Join Our <span className="text-white">Lighting Community</span>
-            </h2>
-            
-            <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Get exclusive access to new collections, special offers, and lighting design tips delivered straight to your inbox.
-            </p>
-            
-            <form onSubmit={handleSubscribe} className="max-w-2xl mx-auto">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-grow">
-                  <input
-                    type="email"
-                    placeholder="Enter your email address"
-                    className="w-full px-6 py-4 rounded-2xl border-2 border-white/20 focus:outline-none focus:ring-2 focus:ring-white bg-white/10 backdrop-blur-sm text-white placeholder-gray-300 text-lg"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  {email && !email.includes('@') && (
-                    <p className="absolute -bottom-6 left-4 text-red-400 text-sm">Please enter a valid email address</p>
-                  )}
-                </div>
-                <button
-                  type="submit"
-                  disabled={isSubscribing}
-                  className="bg-white text-black px-8 py-4 rounded-2xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 border-2 border-white min-w-[180px] disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubscribing ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                      <span>Subscribing...</span>
-                    </div>
-                  ) : (
-                    'Subscribe Now'
-                  )}
-                </button>
-              </div>
-            </form>
-            
-            <p className="text-sm text-gray-400 mt-8 italic">
-              Join 10,000+ lighting enthusiasts. Unsubscribe anytime.
-            </p>
-          </div>
-        </section>
+       
       </main>
     </div>
   );
