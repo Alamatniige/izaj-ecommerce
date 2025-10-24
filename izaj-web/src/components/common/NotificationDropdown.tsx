@@ -124,7 +124,7 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsNotificationDropdownOpen(!isNotificationDropdownOpen)}
-        className="relative text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
+        className="relative text-black hover:text-gray-600 transition-all duration-200 hover:scale-110 font-jost"
         aria-label="Notifications"
       >
         <Icon 
@@ -134,7 +134,7 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
         />
 
         {user && unreadCount > 0 && (
-          <span className={`absolute -top-1 -right-1 bg-gradient-to-r from-gray-800 to-black text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg ${
+          <span className={`absolute -top-1 -right-1 bg-gradient-to-r from-gray-800 to-black text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg font-jost ${
             unreadCount > 9 ? 'px-1' : ''
           }`}>
             {unreadCount > 99 ? '99+' : unreadCount}
@@ -143,16 +143,16 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
       </button>
 
       {isNotificationDropdownOpen && (
-        <div className="absolute right-0 sm:right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-100 transform origin-top-right animate-scale-in max-w-[calc(100vw-2rem)]">
+        <div className="absolute right-0 sm:right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden border border-gray-100 transform origin-top-right animate-scale-in max-w-[calc(100vw-2rem)] font-jost">
           <div className="py-3 px-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 flex justify-between items-center">
-            <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+            <h3 className="font-semibold text-gray-800 flex items-center gap-2 font-jost">
               <Icon icon="mdi:bell-outline" className="w-5 h-5 text-black" />
               Notifications
             </h3>
             {user && unreadCount > 0 && (
               <button 
                 onClick={markAllAsRead}
-                className="text-sm text-gray-600 hover:text-black font-medium transition-colors duration-200 flex items-center gap-1 hover:bg-gray-100 px-2 py-1 rounded-lg"
+                className="text-sm text-gray-600 hover:text-black font-medium transition-colors duration-200 flex items-center gap-1 hover:bg-gray-100 px-2 py-1 rounded-lg font-jost"
               >
                 <Icon icon="mdi:check-all" className="w-4 h-4" />
                 Mark all read
@@ -187,7 +187,7 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
                           {getNotificationIcon(notification.type)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm leading-relaxed ${
+                          <p className={`text-sm leading-relaxed font-jost ${
                             notification.isRead
                               ? 'text-gray-600'
                               : 'text-gray-800 font-medium'
@@ -195,12 +195,12 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
                             {notification.message}
                           </p>
                           <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                            <p className="text-xs text-gray-500 flex items-center gap-1 font-jost">
                               <Icon icon="mdi:clock-outline" className="w-3.5 h-3.5" />
                               {notification.time}
                             </p>
                             {!notification.isRead && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-black text-white">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-black text-white font-jost">
                                 New
                               </span>
                             )}
@@ -224,8 +224,8 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
                   <div className="bg-gray-50 rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-4">
                     <Icon icon="mdi:bell-off-outline" className="h-8 w-8 text-gray-400" />
                   </div>
-                  <h3 className="text-base font-semibold text-gray-800 mb-2">No notifications yet</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="text-base font-semibold text-gray-800 mb-2 font-jost">No notifications yet</h3>
+                  <p className="text-sm text-gray-500 font-jost">
                     We'll notify you about your orders, promotions, and updates
                   </p>
                 </div>
@@ -235,12 +235,12 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
                 <div className="bg-gray-50 rounded-full w-16 h-16 mx-auto flex items-center justify-center mb-4">
                   <Icon icon="mdi:account-alert-outline" className="h-8 w-8 text-gray-600" />
                 </div>
-                <h3 className="text-base font-semibold text-gray-800 mb-2">Sign in to view notifications</h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <h3 className="text-base font-semibold text-gray-800 mb-2 font-jost">Sign in to view notifications</h3>
+                <p className="text-sm text-gray-600 mb-4 font-jost">
                   Stay updated with your orders and promotions
                 </p>
                 <button 
-                  className="inline-flex items-center px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-300 font-medium text-sm"
+                  className="inline-flex items-center px-6 py-2.5 bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-300 font-medium text-sm font-jost"
                   onClick={() => {
                     setIsNotificationDropdownOpen(false);
                     onOpenAuthModal();
