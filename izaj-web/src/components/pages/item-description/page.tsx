@@ -706,6 +706,30 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                                         Verified
                                       </span>
                                     )}
+                                    
+                                    {/* Admin Reply */}
+                                    {review.admin_reply && (
+                                      <div className="mt-3 pl-4 border-l-2 border-yellow-500 bg-yellow-50 rounded-r-lg p-2">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <Icon icon="mdi:shield-account" className="w-3 h-3 text-yellow-600" />
+                                          <span className="text-xs font-semibold text-yellow-900" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                                            Admin Response
+                                          </span>
+                                          {review.admin_reply_at && (
+                                            <span className="text-xs text-yellow-700" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                                              • {new Date(review.admin_reply_at).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                              })}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <p className="text-xs text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                                          {review.admin_reply}
+                                        </p>
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
