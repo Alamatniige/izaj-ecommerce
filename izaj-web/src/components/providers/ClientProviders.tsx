@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { CartProvider, UserProvider, CartIconProvider, FavoritesProvider } from '../../context';
+import { CartProvider, UserProvider, CartIconProvider, FavoritesProvider, NotificationsProvider } from '../../context';
 
 interface ClientProvidersProps {
   children: React.ReactNode;
@@ -10,13 +10,15 @@ interface ClientProvidersProps {
 export default function ClientProviders({ children }: ClientProvidersProps) {
   return (
     <UserProvider>
-      <CartProvider>
-        <CartIconProvider>
-          <FavoritesProvider>
-            {children}
-          </FavoritesProvider>
-        </CartIconProvider>
-      </CartProvider>
+      <NotificationsProvider>
+        <CartProvider>
+          <CartIconProvider>
+            <FavoritesProvider>
+              {children}
+            </FavoritesProvider>
+          </CartIconProvider>
+        </CartProvider>
+      </NotificationsProvider>
     </UserProvider>
   );
 }

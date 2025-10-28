@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import { useNotifications } from '@/context/NotificationsContext';
 
 interface User {
   firstName: string;
@@ -7,67 +8,50 @@ interface User {
   email: string;
 }
 
-interface Notification {
-  id: number;
-  type: 'order' | 'promo' | 'review' | 'system' | 'favorite';
-  message: string;
-  time: string;
-  isRead: boolean;
-  link?: string;
-}
-
 interface NotificationDropdownProps {
   user: User | null;
   onOpenAuthModal: () => void;
 }
 
+// Helper function to format time ago
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return 'Just now';
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} ${diffInMinutes === 1 ? 'minute' : 'minutes'} ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) {
+    return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+  }
+
+  const diffInWeeks = Math.floor(diffInDays / 7);
+  if (diffInWeeks < 4) {
+    return `${diffInWeeks} ${diffInWeeks === 1 ? 'week' : 'weeks'} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  return `${diffInMonths} ${diffInMonths === 1 ? 'month' : 'months'} ago`;
+}
+
 export default function NotificationDropdown({ user, onOpenAuthModal }: NotificationDropdownProps) {
   const [isNotificationDropdownOpen, setIsNotificationDropdownOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: 1,
-      type: 'order',
-      message: 'Your order #12345 has been shipped and is on its way!',
-      time: '2 hours ago',
-      isRead: false,
-      link: '/orders'
-    },
-    {
-      id: 2,
-      type: 'promo',
-      message: 'Flash sale! 30% off all ceiling lights this weekend only',
-      time: '5 hours ago',
-      isRead: false,
-      link: '/sales'
-    },
-    {
-      id: 3,
-      type: 'review',
-      message: 'Your review for "Modern Chandelier" received a helpful response',
-      time: 'Yesterday',
-      isRead: true,
-      link: '/reviews'
-    },
-    {
-      id: 4,
-      type: 'system',
-      message: 'Your account information was successfully updated',
-      time: '3 days ago',
-      isRead: true,
-      link: '/account'
-    },
-    {
-      id: 5,
-      type: 'favorite',
-      message: 'Your favorite "Crystal Pendant Light" is back in stock!',
-      time: '1 week ago',
-      isRead: true,
-      link: '/favorites'
-    }
-  ]);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, isLoading } = useNotifications();
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -81,29 +65,23 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
         return <Icon icon="mdi:information" className="h-5 w-5 text-gray-600" />;
       case 'favorite':
         return <Icon icon="mdi:heart" className="h-5 w-5 text-red-600" />;
+      case 'payment':
+        return <Icon icon="mdi:credit-card" className="h-5 w-5 text-yellow-600" />;
       default:
         return <Icon icon="mdi:bell" className="h-5 w-5 text-gray-600" />;
     }
   };
 
-  const markAsRead = (id: number) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, isRead: true }
-          : notification
-      )
-    );
+  const handleMarkAsRead = async (id: string) => {
+    await markAsRead(id);
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isRead: true }))
-    );
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead();
   };
 
-  const deleteNotification = (id: number) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  const handleDeleteNotification = async (id: string) => {
+    await deleteNotification(id);
   };
 
   useEffect(() => {
@@ -151,7 +129,7 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
             </h3>
             {user && unreadCount > 0 && (
               <button 
-                onClick={markAllAsRead}
+                onClick={handleMarkAllAsRead}
                 className="text-sm text-gray-600 hover:text-black font-medium transition-colors duration-200 flex items-center gap-1 hover:bg-gray-100 px-2 py-1 rounded-lg font-jost"
               >
                 <Icon icon="mdi:check-all" className="w-4 h-4" />
@@ -162,17 +140,25 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
 
           <div className="max-h-80 sm:max-h-96 overflow-y-auto custom-scrollbar">
             {user ? (
-              notifications.length > 0 ? (
+              isLoading ? (
+                <div className="py-8 text-center px-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
+                  <p className="text-sm text-gray-500 mt-2 font-jost">Loading notifications...</p>
+                </div>
+              ) : notifications.length > 0 ? (
                 <div className="py-1">
                   {notifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`px-4 py-3 hover:bg-gray-50 transition-all duration-200 group relative ${
-                        !notification.isRead ? 'bg-gray-50/50' : 'bg-white'
+                      className={`px-4 py-3 hover:bg-gray-50 transition-all duration-200 group relative cursor-pointer ${
+                        !notification.is_read ? 'bg-gray-50/50' : 'bg-white'
                       }`}
                       onClick={() => {
-                        if (!notification.isRead) {
-                          markAsRead(notification.id);
+                        if (!notification.is_read) {
+                          handleMarkAsRead(notification.id);
+                        }
+                        if (notification.link) {
+                          window.location.href = notification.link;
                         }
                       }}
                     >
@@ -182,13 +168,14 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
                           notification.type === 'promo' ? 'bg-green-50' :
                           notification.type === 'review' ? 'bg-purple-50' :
                           notification.type === 'favorite' ? 'bg-red-50' :
+                          notification.type === 'payment' ? 'bg-yellow-50' :
                           'bg-gray-50'
                         }`}>
                           {getNotificationIcon(notification.type)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm leading-relaxed font-jost ${
-                            notification.isRead
+                            notification.is_read
                               ? 'text-gray-600'
                               : 'text-gray-800 font-medium'
                           }`}>
@@ -197,9 +184,9 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
                           <div className="flex items-center justify-between mt-2">
                             <p className="text-xs text-gray-500 flex items-center gap-1 font-jost">
                               <Icon icon="mdi:clock-outline" className="w-3.5 h-3.5" />
-                              {notification.time}
+                              {formatTimeAgo(notification.created_at)}
                             </p>
-                            {!notification.isRead && (
+                            {!notification.is_read && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-black text-white font-jost">
                                 New
                               </span>
@@ -209,7 +196,7 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            deleteNotification(notification.id);
+                            handleDeleteNotification(notification.id);
                           }}
                           className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-gray-400 hover:text-red-500 p-1 hover:bg-red-50 rounded-lg"
                         >
