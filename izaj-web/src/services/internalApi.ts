@@ -10,6 +10,7 @@ export interface InternalProduct {
   image_url?: string;
   media_urls?: string[];
   publish_status: boolean;
+  pickup_available?: boolean;
   display_quantity: number;
   last_sync_at: string;
 }

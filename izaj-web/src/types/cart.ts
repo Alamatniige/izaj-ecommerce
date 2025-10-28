@@ -12,6 +12,10 @@ export interface CartItem {
   material?: string;
   isSale?: boolean;
   isNew?: boolean;
+  product?: {
+    pickup_available?: boolean;
+    [key: string]: any;
+  };
 }
 
 export interface Cart {

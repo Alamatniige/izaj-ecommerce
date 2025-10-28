@@ -137,6 +137,9 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
       quantity: quantity,
       color: selectedColor,
       size: '120cm', // Default size since it's not in the product data
+      product: {
+        pickup_available: (product as any).pickup_available,
+      }
     });
 
     // Show success toast notification
@@ -518,6 +521,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
               </div>
               
               {/* Pickup Availability Section */}
+              {product?.pickup_available && (
               <div className="mb-6">
                 <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
                   <div className="flex-shrink-0 mt-0.5">
@@ -540,6 +544,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                   </div>
                 </div>
               </div>
+              )}
               
               {/* Tab Navigation */}
               <div className="mb-6">

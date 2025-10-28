@@ -60,7 +60,8 @@ export async function GET(request: NextRequest) {
         description,
         image_url,
         media_urls,
-        publish_status
+        publish_status,
+        pickup_available
       `, { count: 'exact' })
       .eq('publish_status', true)
       .order('inserted_at', { ascending: false });
@@ -100,7 +101,8 @@ export async function GET(request: NextRequest) {
       console.log('🔍 API: Raw product from Supabase:', {
         id: product.id,
         product_name: product.product_name,
-        status: product.status
+        status: product.status,
+        pickup_available: product.pickup_available
       });
       
       // Parse media URLs if they exist
@@ -137,6 +139,7 @@ export async function GET(request: NextRequest) {
         image_url: primaryImageUrl,
         media_urls: mediaUrls,
         publish_status: product.publish_status,
+        pickup_available: product.pickup_available !== undefined ? product.pickup_available : true, // Default to true if not set
         display_quantity: 0, // We'll use status instead
         last_sync_at: product.inserted_at || new Date().toISOString(),
       };
@@ -144,7 +147,8 @@ export async function GET(request: NextRequest) {
       console.log('🔍 API: Transformed product:', {
         id: transformedProduct.id,
         product_name: transformedProduct.product_name,
-        status: transformedProduct.status
+        status: transformedProduct.status,
+        pickup_available: transformedProduct.pickup_available
       });
       
       return transformedProduct;

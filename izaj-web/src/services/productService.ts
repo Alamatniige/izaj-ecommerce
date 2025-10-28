@@ -9,6 +9,7 @@ export interface Product {
   category?: string;
   stock?: number;
   status?: string;
+  pickup_available?: boolean;
 }
 
 import { InternalApiService, InternalProduct } from './internalApi';
@@ -59,7 +60,8 @@ const transformToLegacyProduct = (internalProduct: InternalProduct): Product => 
     description: internalProduct.description,
     category: internalProduct.category,
     stock: getStockFromStatus(internalProduct.status),
-    status: internalProduct.status || 'In Stock'
+    status: internalProduct.status || 'In Stock',
+    pickup_available: internalProduct.pickup_available
   };
   
   console.log('🔍 productService: Transformed product:', {

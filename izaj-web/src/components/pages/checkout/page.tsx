@@ -127,31 +127,57 @@ const Checkout = () => {
     }));
   };
 
+  // Handle delivery method change
+  const handleDeliveryMethodChange = (method: 'ship' | 'pickup') => {
+    setDeliveryMethod(method);
+    // Reset payment method when switching to pickup
+    if (method === 'pickup') {
+      setFormData(prev => ({
+        ...prev,
+        paymentMethod: 'cash_on_delivery' // Default to cash on pickup
+      }));
+    }
+  };
+
   const validateForm = (): boolean => {
     if (!formData.email || !formData.firstName || !formData.lastName) {
       setError('Please fill in all contact information');
       return false;
     }
     
-    if (!formData.address || !formData.city || !formData.province) {
-      setError('Please fill in all address fields (Province, City, and Street Address)');
-      return false;
-    }
-    
-    if (!formData.phone) {
-      setError('Please provide a phone number');
-      return false;
-    }
-    
-    if (!formData.paymentMethod) {
-      setError('Please select a payment method');
-      return false;
+    // For pickup, only phone is required from contact info
+    if (deliveryMethod === 'pickup') {
+      if (!formData.phone) {
+        setError('Please provide a phone number');
+        return false;
+      }
+    } else {
+      // For shipping, full address is required
+      if (!formData.address || !formData.city || !formData.province) {
+        setError('Please fill in all address fields (Province, City, and Street Address)');
+        return false;
+      }
+      
+      if (!formData.phone) {
+        setError('Please provide a phone number');
+        return false;
+      }
+      
+      // Payment method is only required for shipping
+      if (!formData.paymentMethod) {
+        setError('Please select a payment method');
+        return false;
+      }
     }
     
     return true;
   };
 
   const calculateShipping = () => {
+    // Pickup orders have no shipping fee
+    if (deliveryMethod === 'pickup') {
+      return 0;
+    }
     // Free shipping for orders above ₱10,000
     if (cart.totalPrice >= 10000) {
       return 0;
@@ -181,27 +207,50 @@ const Checkout = () => {
 
     try {
       // Prepare order data with complete address
-      const fullAddress = formData.address;
+      let orderData;
       
-      const orderData = {
-        items: cart.items.map(item => ({
-          product_id: item.productId,
-          name: item.name,
-          price: item.price,
-          image: item.image,
-          quantity: item.quantity
-        })),
-        shipping_address_line1: fullAddress,
-        shipping_address_line2: undefined,
-        shipping_city: formData.city,
-        shipping_province: formData.province,
-        shipping_postal_code: formData.postalCode || undefined,
-        shipping_phone: formData.phone,
-        recipient_name: `${formData.firstName} ${formData.lastName}`,
-        payment_method: formData.paymentMethod as 'gcash' | 'maya' | 'cash_on_delivery',
-        shipping_fee: shippingFee,
-        customer_notes: deliveryMethod === 'pickup' ? 'Customer prefers pickup' : undefined
-      };
+      if (deliveryMethod === 'pickup') {
+        // For pickup orders, use store address and default to cash on pickup
+        orderData = {
+          items: cart.items.map(item => ({
+            product_id: item.productId,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+            quantity: item.quantity
+          })),
+          shipping_address_line1: 'IZAJ Lighting Centre Store',
+          shipping_address_line2: undefined,
+          shipping_city: 'Manila',
+          shipping_province: 'Metro Manila',
+          shipping_postal_code: undefined,
+          shipping_phone: formData.phone,
+          recipient_name: `${formData.firstName} ${formData.lastName}`,
+          payment_method: 'cash_on_delivery' as 'gcash' | 'maya' | 'cash_on_delivery',
+          customer_notes: 'PICKUP ORDER - Customer will collect from store. Payment: Cash on Pickup'
+        };
+      } else {
+        // For shipping orders, use provided address
+        const fullAddress = formData.address;
+        orderData = {
+          items: cart.items.map(item => ({
+            product_id: item.productId,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+            quantity: item.quantity
+          })),
+          shipping_address_line1: fullAddress,
+          shipping_address_line2: undefined,
+          shipping_city: formData.city,
+          shipping_province: formData.province,
+          shipping_postal_code: formData.postalCode || undefined,
+          shipping_phone: formData.phone,
+          recipient_name: `${formData.firstName} ${formData.lastName}`,
+          payment_method: formData.paymentMethod as 'gcash' | 'maya' | 'cash_on_delivery',
+          customer_notes: undefined
+        };
+      }
 
       console.log('🔵 Submitting order data:', orderData);
 
@@ -252,30 +301,33 @@ const Checkout = () => {
   
   return (
     <RequireAuth>
-    <div className="min-h-screen bg-white to-white font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white font-jost">
      {/* Header */}
-     <div className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-center space-x-4">
-              <Icon icon="mdi:shield-check" className="text-black text-2xl" />
-            <span className="text-base font-semibold text-gray-800">Secure Checkout</span>
+     <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex items-center justify-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
+                <Icon icon="mdi:shield-check" className="text-white text-xl" />
+              </div>
+            <span className="text-xl font-bold text-gray-900 font-jost">Secure Checkout</span>
           </div>
+          <p className="text-center text-sm text-gray-600 mt-2 font-jost">Complete your order in a few simple steps</p>
         </div>
       </div>
 
         {/* Error Message */}
         {error && (
           <div className="max-w-7xl mx-auto px-4 mt-4">
-            <div className="bg-red-50 border-2 border-red-400 text-red-700 px-6 py-4 rounded-xl shadow-lg">
+            <div className="bg-red-50 border-2 border-red-400 text-red-700 px-6 py-4 rounded-xl shadow-lg font-jost">
               <div className="flex items-start gap-3">
                 <Icon icon="mdi:alert-circle" className="w-6 h-6 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <h4 className="font-semibold text-red-800 mb-1">Order Creation Failed</h4>
-                  <p className="text-sm whitespace-pre-line">{error}</p>
+                  <h4 className="font-semibold text-red-800 mb-1 font-jost">Order Creation Failed</h4>
+                  <p className="text-sm whitespace-pre-line font-jost">{error}</p>
                   {error.includes('Database tables') && (
                     <div className="mt-3 bg-red-100 border border-red-300 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-red-900 mb-2">📋 Quick Fix:</p>
-                      <ol className="text-xs text-red-800 space-y-1 list-decimal list-inside">
+                      <p className="text-xs font-semibold text-red-900 mb-2 font-jost">📋 Quick Fix:</p>
+                      <ol className="text-xs text-red-800 space-y-1 list-decimal list-inside font-jost">
                         <li>Open Supabase Dashboard → SQL Editor</li>
                         <li>Copy contents of: <code className="bg-red-200 px-1 rounded">orders-schema.sql</code></li>
                         <li>Paste and click Run</li>
@@ -298,15 +350,15 @@ const Checkout = () => {
         <form onSubmit={handleSubmit} className="p-4 md:p-8 max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left - Form */}
-          <div className="lg:col-span-7 space-y-6 sticky top-4">
+          <div className="lg:col-span-7 space-y-6">
             {/* Contact */}
-            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center mr-3">
-                      <Icon icon="mdi:account" className="text-white" />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
+                      <Icon icon="mdi:account" className="text-white text-lg" />
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-800">Contact Information</h2>
+                  <h2 className="text-xl font-bold text-gray-900 font-jost">Contact Information</h2>
                 </div>
               </div>
               <div className="relative mb-4">
@@ -320,10 +372,10 @@ const Checkout = () => {
                     onChange={handleInputChange}
                   placeholder="Email" 
                     required
-                    className="w-full pl-10 p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
+                    className="w-full pl-10 p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost shadow-sm hover:border-gray-300" 
                 />
               </div>
-              <label className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 cursor-pointer">
+              <label className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 cursor-pointer font-jost">
                   <input 
                     type="checkbox"
                     name="newsletter"
@@ -336,55 +388,81 @@ const Checkout = () => {
             </div>
 
             {/* Delivery */}
-            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center mb-6">
-                  <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center mr-3">
-                    <Icon icon="mdi:truck-delivery" className="text-white" />
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
+                    <Icon icon="mdi:truck-delivery" className="text-white text-lg" />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-800">Delivery Method</h2>
+                <h2 className="text-xl font-bold text-gray-900 font-jost">Delivery Method</h2>
               </div>
               <div className="flex items-center mb-6 space-x-4">
-                  <label className="flex items-center p-4 border rounded-lg cursor-pointer transition-all w-1/2 hover:border-black hover:bg-gray-50" style={{ borderColor: deliveryMethod === 'ship' ? '#000000' : '#e5e7eb' }}>
+                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all w-1/2 hover:border-black hover:bg-gray-50 shadow-sm hover:shadow-md" style={{ borderColor: deliveryMethod === 'ship' ? '#000000' : '#e5e7eb', backgroundColor: deliveryMethod === 'ship' ? '#f9fafb' : 'white' }}>
                   <input 
                     type="radio" 
                     name="delivery" 
                     checked={deliveryMethod === 'ship'} 
-                    onChange={() => setDeliveryMethod('ship')}
+                    onChange={() => handleDeliveryMethodChange('ship')}
                       className="mr-3 text-black focus:ring-black" 
                   /> 
                   <div>
-                    <div className="font-medium text-gray-800">Ship</div>
-                    <div className="text-xs text-gray-500">Delivered to your address</div>
+                    <div className="font-bold text-gray-900 font-jost">Ship</div>
+                    <div className="text-xs text-gray-600 font-jost">Delivered to your address</div>
                   </div>
                 </label>
-                  <label className="flex items-center p-4 border rounded-lg cursor-pointer transition-all w-1/2 hover:border-black hover:bg-gray-50" style={{ borderColor: deliveryMethod === 'pickup' ? '#000000' : '#e5e7eb' }}>
+                  {cart.items.some(item => item.product?.pickup_available) && (
+                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all w-1/2 hover:border-black hover:bg-gray-50 shadow-sm hover:shadow-md" style={{ borderColor: deliveryMethod === 'pickup' ? '#000000' : '#e5e7eb', backgroundColor: deliveryMethod === 'pickup' ? '#f9fafb' : 'white' }}>
                   <input 
                     type="radio"
                     name="delivery" 
                     checked={deliveryMethod === 'pickup'}
-                    onChange={() => setDeliveryMethod('pickup')}
+                    onChange={() => handleDeliveryMethodChange('pickup')}
                       className="mr-3 text-black focus:ring-black" 
                   /> 
                   <div>
-                    <div className="font-medium text-gray-800">Pickup</div>
-                    <div className="text-xs text-gray-500">Collect from our store</div>
+                    <div className="font-bold text-gray-900 font-jost">Pickup</div>
+                    <div className="text-xs text-gray-600 font-jost">Collect from our store</div>
                   </div>
                 </label>
+                  )}
               </div>
 
               <div className="space-y-4">
-                  {/* Saved Addresses Selection */}
-                  {savedAddresses.length > 0 && (
+                  {/* Pickup Information */}
+                  {deliveryMethod === 'pickup' && (
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-6 mb-4 shadow-md">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                          <Icon icon="mdi:store" className="text-white text-xl" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-blue-900 mb-3 font-jost text-lg">Pickup Information</h3>
+                          <div className="space-y-2 text-sm text-blue-900 font-jost">
+                            <p className="flex items-center gap-2"><strong className="text-blue-800">📍 Store:</strong> IZAJ Lighting Centre</p>
+                            <p className="flex items-center gap-2"><strong className="text-blue-800">🏠 Location:</strong> San Pablo City, Laguna</p>
+                            <div className="mt-3 bg-white rounded-lg p-3 border border-blue-200">
+                              <p className="text-xs text-blue-800 font-medium flex items-center gap-2 font-jost">
+                                <Icon icon="mdi:bell-outline" className="text-blue-600" />
+                                You'll receive a notification when your order is ready for pickup
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Saved Addresses Selection - Only show for shipping */}
+                  {deliveryMethod === 'ship' && savedAddresses.length > 0 && (
                     <div className="mb-6">
                       <div className="flex items-center justify-between mb-3">
-                        <label className="block text-sm font-medium text-gray-700 flex items-center">
+                        <label className="block text-sm font-medium text-gray-700 flex items-center font-jost">
                           <Icon icon="mdi:bookmark" className="w-4 h-4 mr-2 text-black" />
                           Saved Addresses
                         </label>
                         <button
                           type="button"
                           onClick={() => setShowSavedAddresses(!showSavedAddresses)}
-                          className="text-sm text-black hover:underline flex items-center"
+                          className="text-sm text-black hover:underline flex items-center font-jost"
                         >
                           {showSavedAddresses ? 'Hide' : 'Show'} Saved Addresses
                           <Icon icon={showSavedAddresses ? "mdi:chevron-up" : "mdi:chevron-down"} className="w-4 h-4 ml-1" />
@@ -406,13 +484,13 @@ const Checkout = () => {
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-medium text-gray-800">{address.name}</span>
+                                    <span className="font-medium text-gray-800 font-jost">{address.name}</span>
                                     {address.is_default && (
-                                      <span className="px-2 py-1 bg-black text-white text-xs rounded-full">Default</span>
+                                      <span className="px-2 py-1 bg-black text-white text-xs rounded-full font-jost">Default</span>
                                     )}
                                   </div>
-                                  <p className="text-sm text-gray-600 mb-1">{address.phone}</p>
-                                  <p className="text-sm text-gray-700">{address.address}</p>
+                                  <p className="text-sm text-gray-600 mb-1 font-jost">{address.phone}</p>
+                                  <p className="text-sm text-gray-700 font-jost">{address.address}</p>
                                 </div>
                                 <input
                                   type="radio"
@@ -430,7 +508,7 @@ const Checkout = () => {
                       <div className="text-center pt-3 border-t border-gray-200">
                         <Link 
                           href="/addresses" 
-                          className="text-sm text-black hover:underline flex items-center justify-center gap-2"
+                          className="text-sm text-black hover:underline flex items-center justify-center gap-2 font-jost"
                         >
                           <Icon icon="mdi:plus" className="w-4 h-4" />
                           Manage Addresses
@@ -441,7 +519,7 @@ const Checkout = () => {
 
                   <select 
                     name="country"
-                    className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black"
+                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost shadow-sm hover:border-gray-300"
                     disabled
                   >
                   <option>Philippines</option>
@@ -455,7 +533,7 @@ const Checkout = () => {
                       onChange={handleInputChange}
                       placeholder="First name"
                       required
-                      className="p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
+                      className="p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost shadow-sm hover:border-gray-300" 
                     />
                     <input 
                       type="text"
@@ -464,59 +542,67 @@ const Checkout = () => {
                       onChange={handleInputChange}
                       placeholder="Last name"
                       required
-                      className="p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
+                      className="p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost shadow-sm hover:border-gray-300" 
                     />
                   </div>
                   
                   
-                  {/* Province Input */}
-                  <div className="relative">
-                    <Icon icon="mdi:map-marker" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  {/* Province Input - Hide for pickup */}
+                  {deliveryMethod === 'ship' && (
+                    <div className="relative">
+                      <Icon icon="mdi:map-marker" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <input 
+                        type="text"
+                        name="province"
+                        value={formData.province}
+                        onChange={handleInputChange}
+                        placeholder="Province "
+                        required
+                        className="w-full pl-10 p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost shadow-sm hover:border-gray-300" 
+                      />
+                    </div>
+                  )}
+                  
+                  {/* City Input - Hide for pickup */}
+                  {deliveryMethod === 'ship' && (
+                    <div className="relative">
+                      <Icon icon="mdi:city" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      <input 
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        placeholder="City/Municipality "
+                        required
+                        className="w-full pl-10 p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost shadow-sm hover:border-gray-300" 
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Street Address - Hide for pickup */}
+                  {deliveryMethod === 'ship' && (
                     <input 
                       type="text"
-                      name="province"
-                      value={formData.province}
+                      name="address"
+                      value={formData.address}
                       onChange={handleInputChange}
-                      placeholder="Province "
+                      placeholder="House No., Street Name "
                       required
-                      className="w-full pl-10 p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost shadow-sm hover:border-gray-300" 
                     />
-                  </div>
+                  )}
                   
-                  {/* City Input */}
-                  <div className="relative">
-                    <Icon icon="mdi:city" className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  {/* Postal Code - Hide for pickup */}
+                  {deliveryMethod === 'ship' && (
                     <input 
                       type="text"
-                      name="city"
-                      value={formData.city}
+                      name="postalCode"
+                      value={formData.postalCode}
                       onChange={handleInputChange}
-                      placeholder="City/Municipality "
-                      required
-                      className="w-full pl-10 p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
+                      placeholder="Postal code " 
+                      className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost shadow-sm hover:border-gray-300" 
                     />
-                  </div>
-                  
-                  {/* Street Address */}
-                  <input 
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    placeholder="House No., Street Name "
-                    required
-                    className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
-                  />
-                  
-                  {/* Postal Code */}
-                  <input 
-                    type="text"
-                    name="postalCode"
-                    value={formData.postalCode}
-                    onChange={handleInputChange}
-                    placeholder="Postal code " 
-                    className="w-full p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
-                  />
+                  )}
                   
                   {/* Phone */}
                 <div className="relative">
@@ -530,18 +616,18 @@ const Checkout = () => {
                       onChange={handleInputChange}
                       placeholder="Phone (e.g., 09123456789)"
                       required
-                      className="w-full pl-10 p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black" 
+                      className="w-full pl-10 p-3.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost" 
                     />
                   </div>
                   
-                  {/* Address Preview */}
-                  {formData.address && formData.city && formData.province && (
+                  {/* Address Preview - Only show for shipping */}
+                  {deliveryMethod === 'ship' && formData.address && formData.city && formData.province && (
                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                       <div className="flex items-start gap-2">
                         <Icon icon="mdi:information" className="text-blue-600 w-5 h-5 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-xs font-semibold text-gray-700 mb-1">Complete Address:</p>
-                          <p className="text-sm text-gray-800">
+                          <p className="text-xs font-semibold text-gray-700 mb-1 font-jost">Complete Address:</p>
+                          <p className="text-sm text-gray-800 font-jost">
                             {formData.address}, {formData.city}, {formData.province}
                             {formData.postalCode && `, ${formData.postalCode}`}
                           </p>
@@ -550,7 +636,9 @@ const Checkout = () => {
                     </div>
                   )}
               </div>
-              <label className="inline-flex items-center text-sm text-gray-600 mt-4 block hover:text-gray-800 cursor-pointer">
+              {/* Only show save info checkbox for shipping */}
+              {deliveryMethod === 'ship' && (
+                <label className="inline-flex items-center text-sm text-gray-600 mt-4 block hover:text-gray-800 cursor-pointer font-jost">
                   <input 
                     type="checkbox"
                     name="saveInfo"
@@ -558,52 +646,79 @@ const Checkout = () => {
                     onChange={handleInputChange}
                     className="rounded text-black focus:ring-black mr-2" 
                   /> 
-                Save this information for next time
-              </label>
+                  Save this information for next time
+                </label>
+              )}
             </div>
 
             {/* Shipping Method */}
               {deliveryMethod === 'ship' && (
-            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center mb-6">
-                    <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center mr-3">
-                      <Icon icon="mdi:package-variant" className="text-white" />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
+                      <Icon icon="mdi:package-variant" className="text-white text-lg" />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-800">Shipping Method</h2>
+                <h2 className="text-xl font-bold text-gray-900 font-jost">Shipping Method</h2>
               </div>
-                  <div className="border border-gray-200 hover:border-black hover:bg-gray-50 p-5 rounded-lg flex justify-between items-center cursor-pointer transition-all">
+                  <div className="border-2 border-gray-200 hover:border-black hover:bg-gray-50 p-6 rounded-xl flex justify-between items-center cursor-pointer transition-all shadow-sm hover:shadow-md">
                 <div>
-                      <div className="font-medium text-gray-800">Standard Shipping</div>
-                  <div className="text-xs text-gray-500">3-5 business days</div>
+                      <div className="font-bold text-gray-900 font-jost">Standard Shipping</div>
+                  <div className="text-sm text-gray-600 font-jost mt-1">3-5 business days</div>
                       {shippingFee === 0 && (
-                        <div className="text-xs text-green-600 font-medium mt-1">
-                          <Icon icon="mdi:check-circle" className="inline mr-1" />
+                        <div className="text-sm text-green-600 font-semibold mt-2 font-jost flex items-center gap-1">
+                          <Icon icon="mdi:check-circle" className="text-green-600" />
                           Free shipping (order above ₱10,000)
                         </div>
                       )}
                     </div>
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-bold text-gray-900 text-xl font-jost">
                       {shippingFee === 0 ? 'FREE' : `₱${shippingFee.toFixed(2)}`}
                     </span>
                   </div>
                 </div>
               )}
 
-            {/* Payment */}
-            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            {/* Pickup Method */}
+              {deliveryMethod === 'pickup' && (
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center mb-6">
-                  <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center mr-3">
-                    <Icon icon="mdi:credit-card" className="text-white" />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
+                      <Icon icon="mdi:store" className="text-white text-lg" />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-800">Payment</h2>
+                <h2 className="text-xl font-bold text-gray-900 font-jost">Pickup Method</h2>
               </div>
-              <p className="text-sm text-gray-500 mb-6 flex items-center">
-                <Icon icon="mdi:shield-check" className="mr-2 text-green-500 text-lg" />
+                  <div className="border-2 border-gray-200 hover:border-black hover:bg-gray-50 p-6 rounded-xl flex justify-between items-center cursor-pointer transition-all shadow-sm hover:shadow-md">
+                <div>
+                      <div className="font-bold text-gray-900 font-jost">Store Pickup</div>
+                  <div className="text-sm text-gray-600 font-jost mt-1">Collect from our store</div>
+                      <div className="text-sm text-green-600 font-semibold mt-2 font-jost flex items-center gap-1">
+                          <Icon icon="mdi:check-circle" className="text-green-600" />
+                          No shipping fee
+                        </div>
+                    </div>
+                    <span className="font-bold text-gray-900 text-xl font-jost">
+                      FREE
+                    </span>
+                  </div>
+                </div>
+              )}
+
+            {/* Payment - Only show for shipping */}
+            {deliveryMethod === 'ship' && (
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
+                    <Icon icon="mdi:credit-card" className="text-white text-lg" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 font-jost">Payment</h2>
+              </div>
+              <p className="text-sm text-gray-600 mb-6 flex items-center font-jost bg-green-50 px-4 py-3 rounded-xl border border-green-200">
+                <Icon icon="mdi:shield-check" className="mr-2 text-green-600 text-lg" />
                 All transactions are secure and encrypted
               </p>
                 
                 <div className="space-y-3 mb-4">
-                  <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:border-black hover:bg-gray-50 transition-all" style={{ borderColor: formData.paymentMethod === 'gcash' ? '#000000' : '#e5e7eb' }}>
+                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'gcash' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'gcash' ? '#f9fafb' : 'white' }}>
                     <input 
                       type="radio"
                       name="paymentMethod"
@@ -612,11 +727,11 @@ const Checkout = () => {
                       onChange={handleInputChange}
                       className="mr-3 text-black focus:ring-black" 
                     /> 
-                    <img src="/gcash.png" alt="GCash" className="h-8 object-contain mr-3" />
-                    <span className="font-medium text-gray-800">GCash</span>
+                    <img src="/gcash.png" alt="GCash" className="h-10 object-contain mr-3" />
+                    <span className="font-bold text-gray-900 font-jost">GCash</span>
                   </label>
                   
-                  <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:border-black hover:bg-gray-50 transition-all" style={{ borderColor: formData.paymentMethod === 'maya' ? '#000000' : '#e5e7eb' }}>
+                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'maya' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'maya' ? '#f9fafb' : 'white' }}>
                 <input 
                   type="radio" 
                       name="paymentMethod"
@@ -625,11 +740,11 @@ const Checkout = () => {
                       onChange={handleInputChange}
                       className="mr-3 text-black focus:ring-black" 
                     /> 
-                    <img src="/maya.png" alt="Maya" className="h-8 object-contain mr-3" />
-                    <span className="font-medium text-gray-800">Maya</span>
+                    <img src="/maya.png" alt="Maya" className="h-10 object-contain mr-3" />
+                    <span className="font-bold text-gray-900 font-jost">Maya</span>
               </label>
                   
-                  <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:border-black hover:bg-gray-50 transition-all" style={{ borderColor: formData.paymentMethod === 'cash_on_delivery' ? '#000000' : '#e5e7eb' }}>
+                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'cash_on_delivery' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'cash_on_delivery' ? '#f9fafb' : 'white' }}>
                 <input 
                   type="radio" 
                       name="paymentMethod"
@@ -638,17 +753,52 @@ const Checkout = () => {
                       onChange={handleInputChange}
                       className="mr-3 text-black focus:ring-black" 
                     /> 
-                    <Icon icon="mdi:cash" className="h-8 w-8 text-gray-600 mr-3" />
-                    <span className="font-medium text-gray-800">Cash on Delivery</span>
+                    <Icon icon="mdi:cash" className="h-10 w-10 text-gray-600 mr-3" />
+                    <span className="font-bold text-gray-900 font-jost">Cash on Delivery</span>
               </label>
                 </div>
             </div>
+            )}
+
+            {/* Pickup Payment Information */}
+            {deliveryMethod === 'pickup' && (
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
+                    <Icon icon="mdi:cash-register" className="text-white text-lg" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 font-jost">Payment</h2>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-6 shadow-md">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <Icon icon="mdi:information" className="text-white text-xl" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-blue-900 mb-3 font-jost text-lg">Pay Cash When You Pickup</h3>
+                    <p className="text-sm text-blue-900 mb-4 font-jost leading-relaxed">
+                      For pickup orders, you will pay with cash when you collect your items from our store.
+                    </p>
+                    <div className="bg-white border-2 border-blue-300 rounded-xl p-4 shadow-sm">
+                      <p className="font-bold text-blue-900 mb-2 flex items-center gap-2 font-jost">
+                        <Icon icon="mdi:check-circle" className="text-green-600 text-xl" />
+                        No need to pay online
+                      </p>
+                      <p className="text-blue-800 text-sm font-jost">
+                        Simply bring exact amount or use Maya/GCash at the store
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            )}
           </div>
 
           {/* Right - Summary */}
-          <div className="lg:col-span-5 h-fit">
-            <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow sticky top-4">
-              <h2 className="text-lg font-semibold text-gray-800 mb-6">Order Summary</h2>
+          <div className="lg:col-span-5">
+            <div className="bg-white p-8 rounded-2xl shadow-xl border-2 border-gray-200 hover:shadow-2xl transition-all duration-300 sticky top-6 self-start">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 font-jost">Order Summary</h2>
               
               <div className="max-h-64 overflow-auto mb-6 space-y-4">
                   {cart.items.map((item) => (
@@ -659,25 +809,25 @@ const Checkout = () => {
                           alt={item.name}
                       className="w-full h-full object-cover"
                     />
-                        <span className="absolute top-0 right-0 bg-black text-white text-xs px-2 py-1 rounded-bl-lg">{item.quantity}</span>
+                        <span className="absolute top-0 right-0 bg-black text-white text-xs px-2 py-1 rounded-bl-lg font-jost">{item.quantity}</span>
                   </div>
                   <div className="flex-1">
-                        <p className="font-medium text-gray-800 text-sm">{item.name}</p>
+                        <p className="font-medium text-gray-800 text-sm font-jost">{item.name}</p>
                     <div className="flex items-center mt-1">
-                          <p className="text-sm font-medium text-black">₱{item.price.toFixed(2)}</p>
+                          <p className="text-sm font-medium text-black font-jost">₱{item.price.toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
                   ))}
               </div>
 
-              <div className="space-y-4 text-sm mb-6">
+              <div className="space-y-4 text-sm mb-6 font-jost">
                 <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal ({cart.totalItems} {cart.totalItems === 1 ? 'item' : 'items'})</span>
                     <span className="font-medium">₱{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Shipping</span>
+                  <span className="text-gray-600">{deliveryMethod === 'pickup' ? 'Pickup' : 'Shipping'}</span>
                     <span className="font-medium">{shippingFee === 0 ? 'FREE' : `₱${shippingFee.toFixed(2)}`}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-4 flex justify-between text-base">
@@ -691,27 +841,27 @@ const Checkout = () => {
                 <button 
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-4 bg-black hover:bg-gray-800 text-white font-medium rounded-lg transition-colors flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-5 bg-gradient-to-r from-black to-gray-900 hover:from-gray-900 hover:to-black text-white font-bold rounded-xl transition-all flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed font-jost shadow-lg hover:shadow-xl transform hover:scale-[1.02] duration-200"
                 >
                   {isSubmitting ? (
                     <>
-                      <Icon icon="mdi:loading" className="animate-spin mr-2" />
-                      Processing...
+                      <Icon icon="mdi:loading" className="animate-spin mr-2 text-xl" />
+                      <span className="text-lg">Processing...</span>
                     </>
                   ) : (
                     <>
-                <span>Complete order</span>
-                <Icon icon="mdi:arrow-right" className="ml-2 group-hover:translate-x-1 transition-transform" />
+                <span className="text-lg">Complete Order</span>
+                <Icon icon="mdi:arrow-right" className="ml-2 text-xl group-hover:translate-x-1 transition-transform" />
                     </>
                   )}
               </button>
 
-              <p className="text-xs text-gray-500 mt-4 text-center">
+              <p className="text-xs text-gray-500 mt-4 text-center font-jost">
                   By completing your purchase, you agree to our <Link href="/static/termofpurchase" className="underline hover:text-gray-800">Terms of Service</Link>.
               </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-6 mt-8 text-xs text-gray-500">
+            <div className="flex flex-wrap justify-center gap-6 mt-8 text-xs text-gray-500 font-jost">
                 <Link href="/static/return" className="hover:text-gray-800 hover:underline">Refund policy</Link>
                 <Link href="/static/privacypolicy" className="hover:text-gray-800 hover:underline">Privacy policy</Link>
                 <Link href="/static/termofuse" className="hover:text-gray-800 hover:underline">Terms of service</Link>
