@@ -162,6 +162,58 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
       price: price,
       image: product.image,
     });
+
+    // Show success toast notification
+    const isCurrentlyFavorite = isFavorite(product.id.toString());
+    toast.success(
+      isCurrentlyFavorite 
+        ? `${product.name} removed from favorites` 
+        : `${product.name} added to favorites!`,
+      {
+        icon: isCurrentlyFavorite ? '💔' : '❤️',
+        duration: 3000,
+      }
+    );
+  };
+
+  const handleShareProduct = async () => {
+    if (!product) return;
+
+    const productUrl = `${window.location.origin}/item-description/${product.id}`;
+    const shareText = `Check out this amazing product: ${product.name} - ${product.price} PHP`;
+
+    try {
+      if (navigator.share) {
+        // Use native share API if available (mobile)
+        await navigator.share({
+          title: product.name,
+          text: shareText,
+          url: productUrl,
+        });
+      } else {
+        // Fallback to clipboard copy
+        await navigator.clipboard.writeText(`${shareText}\n${productUrl}`);
+        toast.success('Product link copied to clipboard!', {
+          icon: '📋',
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing product:', error);
+      // Fallback to clipboard copy
+      try {
+        await navigator.clipboard.writeText(`${shareText}\n${productUrl}`);
+        toast.success('Product link copied to clipboard!', {
+          icon: '📋',
+          duration: 3000,
+        });
+      } catch (clipboardError) {
+        toast.error('Unable to share product', {
+          icon: '❌',
+          duration: 3000,
+        });
+      }
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -487,7 +539,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
               </div>
               
               {/* Quantity Selector and Add to Cart Button */}
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-4 mb-4">
                 <div className="flex items-center border border-gray-300 rounded">
                   <button
                     type="button"
@@ -517,6 +569,51 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                   style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
                 >
                   {cartLoading ? 'Adding...' : 'Add to Cart'}
+                </button>
+              </div>
+              
+              {/* Share and Favorite Buttons */}
+              <div className="flex items-center justify-start gap-3 mb-6">
+                {/* Share Button */}
+                <button
+                  onClick={handleShareProduct}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all duration-200 group shadow-sm hover:shadow-md"
+                  title="Share this product"
+                >
+                  <Icon 
+                    icon="material-symbols:share" 
+                    className="text-gray-500 group-hover:text-gray-700 transition-colors text-lg" 
+                  />
+                  <span className="text-sm font-medium text-gray-600 group-hover:text-gray-800 transition-colors" style={{ fontFamily: 'Jost, sans-serif' }}>
+                    Share
+                  </span>
+                </button>
+                
+                {/* Heart/Favorite Button */}
+                <button
+                  onClick={handleToggleFavorite}
+                  className={`flex items-center gap-2 px-4 py-2.5 border rounded-lg transition-all duration-200 group shadow-sm hover:shadow-md ${
+                    isFavorite(product?.id?.toString() || '') 
+                      ? 'border-red-200 bg-red-50 hover:bg-red-100 hover:border-red-300' 
+                      : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                  }`}
+                  title={isFavorite(product?.id?.toString() || '') ? 'Remove from favorites' : 'Add to favorites'}
+                >
+                  <Icon 
+                    icon={isFavorite(product?.id?.toString() || '') ? "material-symbols:favorite" : "material-symbols:favorite-outline"} 
+                    className={`transition-colors text-lg ${
+                      isFavorite(product?.id?.toString() || '') 
+                        ? 'text-red-500' 
+                        : 'text-gray-500 group-hover:text-gray-700'
+                    }`} 
+                  />
+                  <span className={`text-sm font-medium transition-colors ${
+                    isFavorite(product?.id?.toString() || '') 
+                      ? 'text-red-600' 
+                      : 'text-gray-600 group-hover:text-gray-800'
+                  }`} style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {isFavorite(product?.id?.toString() || '') ? 'Saved' : 'Save'}
+                  </span>
                 </button>
               </div>
               
