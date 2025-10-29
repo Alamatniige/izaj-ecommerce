@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InternalApiService } from '../../../services/internalApi';
+import { NewsletterNotificationService } from '../../../services/newsletterNotifications';
 
 export async function GET(request: NextRequest) {
   try {
@@ -63,6 +64,21 @@ export async function POST(request: NextRequest) {
     // In a real app, you would save this to a database
     // For now, just return the created product
     console.log('Product created:', newProduct);
+
+    // Send notification to newsletter subscribers
+    try {
+      await NewsletterNotificationService.notifyNewProducts([{
+        name: newProduct.name,
+        price: newProduct.price,
+        imageUrl: newProduct.imageUrl || newProduct.image_url,
+        productUrl: `${process.env.NEXT_PUBLIC_APP_URL}/products/${newProduct.id}`,
+        category: newProduct.category
+      }]);
+      console.log('✅ Newsletter notification sent for new product');
+    } catch (notifyError) {
+      console.error('Failed to send newsletter notification:', notifyError);
+      // Don't fail the request if notification fails
+    }
 
     return NextResponse.json({
       success: true,

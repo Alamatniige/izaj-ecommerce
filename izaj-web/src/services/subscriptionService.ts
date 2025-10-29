@@ -21,32 +21,20 @@ export class SubscriptionService {
   }
 
   /**
-   * Subscribes user to newsletter
+   * Subscribes user to newsletter via API
    */
   static async subscribe(email: string): Promise<SubscriptionResult> {
     try {
-      // For now, we'll simulate a successful subscription
-      // In a real implementation, this would make an API call to your backend
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check if email is already subscribed (simulate)
-      const existingSubscriptions = this.getStoredSubscriptions();
-      if (existingSubscriptions.includes(email)) {
-        return {
-          success: false,
-          error: 'This email is already subscribed to our newsletter.'
-        };
-      }
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-      // Store subscription locally (in a real app, this would be sent to your backend)
-      this.storeSubscription(email);
-
-      return {
-        success: true,
-        message: 'Welcome to the IZAJ Family! You are now subscribed to our newsletter.'
-      };
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error('Subscription error:', error);
       return {
@@ -57,62 +45,20 @@ export class SubscriptionService {
   }
 
   /**
-   * Gets stored subscriptions from localStorage (for demo purposes)
-   */
-  private static getStoredSubscriptions(): string[] {
-    if (typeof window === 'undefined') return [];
-    
-    try {
-      const stored = localStorage.getItem('izaj_subscriptions');
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Error reading stored subscriptions:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Stores subscription in localStorage (for demo purposes)
-   */
-  private static storeSubscription(email: string): void {
-    if (typeof window === 'undefined') return;
-    
-    try {
-      const existing = this.getStoredSubscriptions();
-      const updated = [...existing, email];
-      localStorage.setItem('izaj_subscriptions', JSON.stringify(updated));
-    } catch (error) {
-      console.error('Error storing subscription:', error);
-    }
-  }
-
-  /**
-   * Unsubscribes user from newsletter
+   * Unsubscribes user from newsletter via API
    */
   static async unsubscribe(email: string): Promise<SubscriptionResult> {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const existingSubscriptions = this.getStoredSubscriptions();
-      const updatedSubscriptions = existingSubscriptions.filter(sub => sub !== email);
-      
-      if (existingSubscriptions.length === updatedSubscriptions.length) {
-        return {
-          success: false,
-          error: 'Email not found in our subscription list.'
-        };
-      }
+      const response = await fetch('/api/unsubscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-      // Update stored subscriptions
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('izaj_subscriptions', JSON.stringify(updatedSubscriptions));
-      }
-
-      return {
-        success: true,
-        message: 'You have been successfully unsubscribed from our newsletter.'
-      };
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error('Unsubscription error:', error);
       return {
@@ -123,11 +69,17 @@ export class SubscriptionService {
   }
 
   /**
-   * Checks if email is subscribed
+   * Checks if email is subscribed (via API)
    */
-  static isSubscribed(email: string): boolean {
-    const normalizedEmail = this.normalizeEmail(email);
-    const subscriptions = this.getStoredSubscriptions();
-    return subscriptions.includes(normalizedEmail);
+  static async isSubscribed(email: string): Promise<boolean> {
+    try {
+      const normalizedEmail = this.normalizeEmail(email);
+      const response = await fetch(`/api/subscribe/check?email=${encodeURIComponent(normalizedEmail)}`);
+      const data = await response.json();
+      return data.isSubscribed || false;
+    } catch (error) {
+      console.error('Check subscription error:', error);
+      return false;
+    }
   }
 }
