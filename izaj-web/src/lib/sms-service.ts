@@ -1,10 +1,12 @@
 import twilio from 'twilio';
 
-// Initialize Twilio client
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+function getTwilioClient() {
+  const accountSid = process.env.TWILIO_ACCOUNT_SID || '';
+  const authToken = process.env.TWILIO_AUTH_TOKEN || '';
+  if (!accountSid || !authToken) return null;
+  if (!accountSid.startsWith('AC')) return null;
+  return twilio(accountSid, authToken);
+}
 
 export interface SendOTPResult {
   success: boolean;
@@ -26,12 +28,18 @@ export interface VerifyOTPResult {
 export async function sendOTP(phoneNumber: string, otp: string): Promise<SendOTPResult> {
   try {
     // Check Twilio configuration first
-    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
+    if (!process.env.TWILIO_PHONE_NUMBER) {
       console.error('❌ Twilio configuration missing:', {
-        hasAccountSid: !!process.env.TWILIO_ACCOUNT_SID,
-        hasAuthToken: !!process.env.TWILIO_AUTH_TOKEN,
         hasPhoneNumber: !!process.env.TWILIO_PHONE_NUMBER
       });
+      return {
+        success: false,
+        error: 'SMS service not configured. Please check environment variables.'
+      };
+    }
+
+    const client = getTwilioClient();
+    if (!client) {
       return {
         success: false,
         error: 'SMS service not configured. Please check environment variables.'

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
-import { verifyOTP } from '@/lib/sms-service';
 import { otpVerifyLimiter, createRateLimitResponse } from '@/lib/rate-limiter';
 
 type VerifyOTPBody = {
@@ -10,6 +9,7 @@ type VerifyOTPBody = {
 
 export async function POST(request: Request) {
   try {
+    const { verifyOTP } = await import('@/lib/sms-service');
     // Check rate limit
     const rateLimit = await otpVerifyLimiter.check(request);
     if (!rateLimit.allowed) {
