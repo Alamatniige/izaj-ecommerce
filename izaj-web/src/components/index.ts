@@ -7,9 +7,6 @@ export * from './layout';
 // Common Components
 export * from './common';
 
-// Feature Components
-export * from './features';
-
 // Section Components
 export * from './home-sections';
 

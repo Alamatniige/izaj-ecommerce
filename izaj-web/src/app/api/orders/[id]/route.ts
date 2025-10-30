@@ -1,14 +1,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * GET /api/orders/[id]
  * Get a single order by ID with items and status history
  */
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -44,7 +44,7 @@ export async function GET(
       );
     }
 
-    const orderId = params.id;
+    const { id: orderId } = await context.params;
 
     // Fetch order with items and status history
     const { data: order, error } = await supabase
@@ -93,8 +93,8 @@ export async function GET(
  * Update order (limited fields for customer)
  */
 export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -130,7 +130,7 @@ export async function PATCH(
       );
     }
 
-    const orderId = params.id;
+    const { id: orderId } = await context.params;
     const body = await request.json();
 
     // Check if order exists and belongs to user
@@ -202,10 +202,11 @@ export async function PATCH(
  * Cancel order (only if status is 'pending')
  */
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  console.log('🔵 DELETE /api/orders/[id] - Cancelling order:', params.id);
+  const { id: contextId } = await context.params;
+  console.log('🔵 DELETE /api/orders/[id] - Cancelling order:', contextId);
   
   try {
     const cookieStore = await cookies();
@@ -243,7 +244,7 @@ export async function DELETE(
       );
     }
 
-    const orderId = params.id;
+    const { id: orderId } = await context.params;
     const body = await request.json();
     const cancellationReason = body.reason || 'Cancelled by customer';
     console.log('🔵 Cancellation reason:', cancellationReason);

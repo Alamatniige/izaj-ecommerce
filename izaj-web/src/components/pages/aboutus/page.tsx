@@ -76,7 +76,7 @@ const AboutUs: React.FC = () => {
                                 Our <span className="text-black">Story</span>
                             </h2>
                             <p className="text-xl text-gray-600 max-w-3xl mx-auto" style={{ fontFamily: 'Jost, sans-serif' }}>
-                                From humble beginnings to becoming the Philippines' premier lighting destination
+                                From humble beginnings to becoming the Philippines&#39; premier lighting destination
                             </p>
                         </div>
 
@@ -90,7 +90,7 @@ const AboutUs: React.FC = () => {
                                         <h3 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>Our Mission</h3>
                                     </div>
                                     <p className="text-gray-600 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
-                                        At <span className="font-semibold text-black">Izaj Lighting Centre</span>, we don't just sell chandeliers—we create breathtaking lighting experiences that transform spaces into works of art. From classic crystal masterpieces to modern, statement-making designs, our chandeliers bring elegance, sophistication, and brilliance to every home and business.
+                                        At <span className="font-semibold text-black">Izaj Lighting Centre</span>, we don&#39;t just sell chandeliers—we create breathtaking lighting experiences that transform spaces into works of art. From classic crystal masterpieces to modern, statement-making designs, our chandeliers bring elegance, sophistication, and brilliance to every home and business.
                                     </p>
                                 </div>
 
@@ -391,7 +391,7 @@ const AboutUs: React.FC = () => {
                                             <h3 className="text-3xl font-bold" style={{ fontFamily: 'Jost, sans-serif' }}>Our Vision</h3>
                                         </div>
                                         <p className="text-gray-200 leading-relaxed text-lg" style={{ fontFamily: 'Jost, sans-serif' }}>
-                                            To be the Philippines' most trusted and innovative lighting provider, illuminating every home and business with elegance, quality, and inspiration. We envision a future where every space shines with beauty and purpose, powered by our passion for exceptional lighting solutions.
+                                            To be the Philippines&#39; most trusted and innovative lighting provider, illuminating every home and business with elegance, quality, and inspiration. We envision a future where every space shines with beauty and purpose, powered by our passion for exceptional lighting solutions.
                                         </p>
                                     </div>
                                 </div>

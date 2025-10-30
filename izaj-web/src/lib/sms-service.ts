@@ -10,6 +10,9 @@ export interface SendOTPResult {
   success: boolean;
   messageId?: string;
   error?: string;
+  status?: string;
+  price?: string | null;
+  priceUnit?: string | null;
 }
 
 export interface VerifyOTPResult {

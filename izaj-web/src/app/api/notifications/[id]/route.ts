@@ -6,8 +6,8 @@ import { createClient } from '@/lib/supabase/server';
  * Mark a specific notification as read
  */
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -22,7 +22,7 @@ export async function PUT(
       );
     }
 
-    const notificationId = params.id;
+    const { id: notificationId } = await context.params;
 
     // Update the notification to read
     const { error } = await supabase
@@ -54,8 +54,8 @@ export async function PUT(
  * Delete a specific notification
  */
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -70,7 +70,7 @@ export async function DELETE(
       );
     }
 
-    const notificationId = params.id;
+    const { id: notificationId } = await context.params;
 
     // Delete the notification
     const { error } = await supabase

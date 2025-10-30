@@ -26,16 +26,6 @@ interface ProductListSidebarProps {
 }
 
 const ProductListSidebar: React.FC<ProductListSidebarProps> = ({
-  sidebarDropdownOpen,
-  setSidebarDropdownOpen,
-  architecturalDropdownOpen,
-  setArchitecturalDropdownOpen,
-  mirrorsDropdownOpen,
-  setMirrorsDropdownOpen,
-  fansDropdownOpen,
-  setFansDropdownOpen,
-  selectedCategories,
-  handleCategorySelect,
   availabilityFilter,
   setAvailabilityFilter,
   priceRange,

@@ -3,8 +3,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { productId: string } }
+  _request: NextRequest,
+  context: { params: Promise<{ productId: string }> }
 ) {
   try {
     const cookieStore = await cookies();
@@ -25,7 +25,7 @@ export async function GET(
       }
     );
 
-    const productId = params.productId;
+    const { productId } = await context.params;
 
     console.log('📊 [API] Fetching reviews for product:', productId);
 

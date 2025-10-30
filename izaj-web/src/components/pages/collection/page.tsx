@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { InternalApiService } from '../../../services/internalApi';
 import ProductList from '@/components/pages/collection/ProductList';
 import SortModal from '@/components/pages/collection/SortModal';
@@ -90,9 +90,21 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     const fetchProducts = async () => {
       try {
         const serviceProducts = await InternalApiService.getAllProducts();
-        
+
+        type ApiProduct = {
+          product_name: string;
+          description?: string;
+          price: number | string;
+          image_url?: string;
+          media_urls?: string[];
+          category?: string;
+          status?: string;
+          stock?: number;
+          colors?: string[];
+        };
+
         // Transform service products to collection products
-        const transformedProducts: CollectionProduct[] = serviceProducts.map((product, index) => ({
+        const transformedProducts: CollectionProduct[] = (serviceProducts as ApiProduct[]).map((product, index) => ({
           id: index + 1,
           name: product.product_name,
           description: product.description || '',
@@ -101,22 +113,22 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           reviewCount: 0, // Default review count
           image: product.image_url || '',
           mediaUrls: product.media_urls || [],
-          colors: (product as any).colors || ["black"],
+          colors: product.colors || ["black"],
           isOnSale: false, // Default
           isNew: (
             product.product_name.toLowerCase().includes('new') ||
             product.category?.toLowerCase().includes('new') ||
-            product.description?.toLowerCase().includes('new')
+            (product.description || '').toLowerCase().includes('new')
           ),
           category: product.category,
           stock: (() => {
             // First check if there's a numeric stock field
-            if (typeof (product as any).stock === 'number') {
-              return (product as any).stock;
+            if (typeof product.stock === 'number') {
+              return product.stock;
             }
             
             // Fallback to status field
-            const normalizedStatus = (product as any).status?.toLowerCase() || '';
+            const normalizedStatus = product.status?.toLowerCase() || '';
             switch (normalizedStatus) {
               case 'in stock':
                 return 10; // High stock
@@ -145,10 +157,10 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   }, []);
 
   // Get maximum price from all products
-  const getMaxPrice = () => {
+  const getMaxPrice = useCallback(() => {
     if (allProducts.length === 0) return 282000; // fallback
     return Math.max(...allProducts.map(product => product.price));
-  };
+  }, [allProducts]);
 
   // Update price range when products are loaded
   useEffect(() => {
@@ -160,7 +172,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         max: maxPrice
       }));
     }
-  }, [allProducts]);
+  }, [allProducts, getMaxPrice]);
 
   // Get categories with counts
   const getCategoriesWithCounts = () => {
@@ -183,15 +195,15 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   };
 
   // Handle sort change
-  const handleSortChange = (option: string) => {
+  const handleSortChange = useCallback((option: string) => {
     setSortOption(option);
     setSortModalOpen(false);
-  };
+  }, [setSortOption, setSortModalOpen]);
 
   // Apply sorting when sortOption changes
   useEffect(() => {
     handleSortChange(sortOption);
-  }, [sortOption]);
+  }, [sortOption, handleSortChange]);
 
   // Handle view mode change
   const handleViewModeChange = (mode: 'grid' | 'list') => {

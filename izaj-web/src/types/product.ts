@@ -42,6 +42,7 @@ export interface ProductFilter {
   rating?: number;
   inStock?: boolean;
   tags?: string[];
+  search?: string;
 }
 
 export interface ProductSort {

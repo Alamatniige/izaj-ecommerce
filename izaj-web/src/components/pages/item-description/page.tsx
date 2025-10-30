@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import Image from 'next/image';
-import Link from 'next/link';
+// Link not used
 import toast from 'react-hot-toast';
 
 import CompactChat from '../../common/CompactChat';
@@ -16,13 +16,37 @@ interface ItemDescriptionProps {
   params: { id: string };
 }
 
+type Review = {
+  id: string | number;
+  rating: number;
+  created_at: string;
+  comment: string;
+  verified_purchase?: boolean;
+  admin_reply?: string;
+  admin_reply_at?: string;
+};
+
+type ProductDetails = {
+  id: number;
+  name: string;
+  price: string; // formatted price like ₱32,995
+  image: string;
+  colors?: string[];
+  stock?: number;
+  status?: string;
+  pickup_available?: boolean;
+  category?: string;
+  description?: string;
+  mediaUrls?: string[];
+};
+
 const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
   const id = params?.id;
   const { addToCart, isLoading: cartLoading } = useCartContext();
   const { toggleFavorite, isFavorite } = useFavoritesContext();
   const { addToRecentlyViewed } = useRecentlyViewed();
   const [mainImage, setMainImage] = useState("");
-  const [zoomStyle, setZoomStyle] = useState({});
+  const [zoomStyle, setZoomStyle] = useState<React.CSSProperties>({});
   const imgRef = useRef<HTMLDivElement>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isDeliveryOpen, setIsDeliveryOpen] = useState(false);
@@ -32,7 +56,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
   const [selectedImage, setSelectedImage] = useState('');
   const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [summary, setSummary] = useState({
     total_reviews: 0,
     average_rating: 0,
@@ -43,11 +67,11 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
     one_star: 0
   });
   const [reviewsLoading, setReviewsLoading] = useState(true);
-  const [product, setProduct] = useState<any>(null);
+  const [product, setProduct] = useState<ProductDetails | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState<string>('');
-  const [selectedBranch, setSelectedBranch] = useState<string>('San Pablo City');
+  // Removed unused selectedBranch state
   const [isLoading, setIsLoading] = useState(true);
 
   // Stock status helper function
@@ -119,7 +143,6 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
 
     fetchProduct();
     fetchReviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]); // Only depend on id to prevent infinite re-renders
 
   const handleAddToCart = () => {
@@ -138,7 +161,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
       color: selectedColor,
       size: '120cm', // Default size since it's not in the product data
       product: {
-        pickup_available: (product as any).pickup_available,
+        pickup_available: product.pickup_available,
       }
     });
 
@@ -207,7 +230,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
           icon: '📋',
           duration: 3000,
         });
-      } catch (clipboardError) {
+      } catch (_clipboardError) {
         toast.error('Unable to share product', {
           icon: '❌',
           duration: 3000,
@@ -240,16 +263,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
     setMainImage(thumbnails[index]);
   };
 
-  // Handle next/previous image
-  const handleNextImage = () => {
-    const nextIndex = (currentImageIndex + 1) % thumbnails.length;
-    handleImageSelect(nextIndex);
-  };
-
-  const handlePrevImage = () => {
-    const prevIndex = currentImageIndex === 0 ? thumbnails.length - 1 : currentImageIndex - 1;
-    handleImageSelect(prevIndex);
-  };
+  // Removed unused next/prev image handlers
 
   const handleImageClick = (imageSrc: string) => {
     setSelectedImage(imageSrc);

@@ -103,7 +103,6 @@ const MyOrders: React.FC = () => {
         
         if (result.success && result.data) {
           // Transform API data to match our Order interface
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const transformedOrders = (result.data as any[]).map((order) => {
             // Map old statuses to new ones
             let status = order.status;

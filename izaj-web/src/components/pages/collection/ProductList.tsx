@@ -19,6 +19,7 @@ type CollectionProduct = {
   colors?: string[];
   isOnSale?: boolean;
   isNew?: boolean;
+  category?: string;
   stock?: number;
 };
 

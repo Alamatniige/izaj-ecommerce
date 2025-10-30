@@ -14,6 +14,7 @@ function capitalize(str: string) {
   
   import React, { useState, useEffect, useRef } from 'react';
   import Link from 'next/link';
+  import Image from 'next/image';
   import { useRouter, usePathname } from 'next/navigation';
   import { Icon } from '@iconify/react';
  
@@ -466,11 +467,14 @@ function capitalize(str: string) {
                                 setSearchQuery('');
                               }}
                             >
-                              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-gray-200 group-hover:ring-gray-400 transition-all duration-200">
-                                <img 
-                                  src={product.image} 
+                              <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 ring-1 ring-gray-200 group-hover:ring-gray-400 transition-all duration-200 relative">
+                                <Image
+                                  src={product.image}
                                   alt={product.name}
-                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                  fill
+                                  sizes="48px"
+                                  className="object-cover group-hover:scale-110 transition-transform duration-300"
+                                  unoptimized
                                 />
                               </div>
                               <div className="ml-3 flex-1">
@@ -570,11 +574,14 @@ function capitalize(str: string) {
                     >
                       <div className="w-7 h-7 flex items-center justify-center">
                         {user && user.profilePicture ? (
-                          <img 
-                            src={user.profilePicture} 
-                            alt="Profile" 
-                            className="w-7 h-7 rounded-full object-cover ring-2 ring-gray-200"
-                          />
+                              <Image 
+                                src={user.profilePicture} 
+                                alt="Profile" 
+                                width={28}
+                                height={28}
+                                className="rounded-full object-cover ring-2 ring-gray-200"
+                                unoptimized
+                              />
                         ) : user ? (
                           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-xs font-bold">
                             {getInitials(user.firstName, user.lastName)}
@@ -611,10 +618,13 @@ function capitalize(str: string) {
                         >
                           <div className="w-7 h-7 flex items-center justify-center">
                             {user.profilePicture ? (
-                              <img 
+                              <Image 
                                 src={user.profilePicture} 
                                 alt="Profile" 
-                                className="w-7 h-7 rounded-full object-cover ring-2 ring-gray-200 hover:ring-gray-400 transition-all duration-200"
+                                width={28}
+                                height={28}
+                                className="rounded-full object-cover ring-2 ring-gray-200 hover:ring-gray-400 transition-all duration-200"
+                                unoptimized
                               />
                             ) : (
                               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-xs font-bold hover:shadow-lg transition-all duration-200">
@@ -662,10 +672,13 @@ function capitalize(str: string) {
                             <div className="px-4 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                               <div className="flex items-center space-x-3">
                                 {user.profilePicture ? (
-                                  <img 
+                                  <Image 
                                     src={user.profilePicture} 
                                     alt="Profile" 
-                                    className="w-12 h-12 rounded-full object-cover ring-2 ring-white shadow-md"
+                                    width={48}
+                                    height={48}
+                                    className="rounded-full object-cover ring-2 ring-white shadow-md"
+                                    unoptimized
                                   />
                                 ) : (
                                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-lg font-bold shadow-md">
@@ -853,8 +866,8 @@ function capitalize(str: string) {
                                 <div className="space-y-4">
                                   {cart.items.slice(0, 3).map((item) => (
                                     <div key={item.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                                      <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain rounded-lg" />
+                                      <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center border border-gray-200 relative">
+                                        <Image src={item.image} alt={item.name} fill sizes="64px" className="object-contain rounded-lg" unoptimized />
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <h4 className="font-semibold text-gray-900 text-sm truncate" style={{ fontFamily: 'Jost, sans-serif' }}>
@@ -1212,11 +1225,14 @@ function capitalize(str: string) {
                       <div className="space-y-2">
                         <div className="flex items-center px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
                           {user.profilePicture ? (
-                            <img 
-                              src={user.profilePicture} 
-                              alt="Profile" 
-                              className="w-10 h-10 rounded-full object-cover ring-2 ring-white"
-                            />
+                              <Image 
+                                src={user.profilePicture} 
+                                alt="Profile" 
+                                width={40}
+                                height={40}
+                                className="rounded-full object-cover ring-2 ring-white"
+                                unoptimized
+                              />
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-sm font-bold">
                               {getInitials(user.firstName, user.lastName)}

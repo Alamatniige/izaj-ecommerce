@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Product, ProductFilter, ProductSort } from '../types';
 import { InternalApiService, InternalProduct } from '../services/internalApi';
 
@@ -37,7 +37,7 @@ export const useProducts = (filters?: ProductFilter, sort?: ProductSort) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -76,22 +76,29 @@ export const useProducts = (filters?: ProductFilter, sort?: ProductSort) => {
         // Apply sorting
         if (sort) {
           transformedProducts.sort((a, b) => {
-            const aValue = a[sort.field];
-            const bValue = b[sort.field];
-            
-            if (typeof aValue === 'string' && typeof bValue === 'string') {
-              return sort.direction === 'asc' 
-                ? aValue.localeCompare(bValue)
-                : bValue.localeCompare(aValue);
+            let compare = 0;
+            switch (sort.field) {
+              case 'name':
+                compare = a.name.localeCompare(b.name);
+                break;
+              case 'price':
+                compare = a.price - b.price;
+                break;
+              case 'rating':
+                compare = a.rating - b.rating;
+                break;
+              case 'createdAt':
+                compare = a.createdAt.getTime() - b.createdAt.getTime();
+                break;
+              case 'popularity':
+                // Not present on Product; treat as rating as a proxy
+                compare = a.rating - b.rating;
+                break;
+              default:
+                compare = 0;
             }
-            
-            if (typeof aValue === 'number' && typeof bValue === 'number') {
-              return sort.direction === 'asc' 
-                ? aValue - bValue
-                : bValue - aValue;
-            }
-            
-            return 0;
+
+            return sort.direction === 'asc' ? compare : -compare;
           });
         }
 
@@ -108,11 +115,11 @@ export const useProducts = (filters?: ProductFilter, sort?: ProductSort) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters, sort]);
 
   useEffect(() => {
     fetchProducts();
-  }, [filters?.category, filters?.search, filters?.brand, filters?.minPrice, filters?.maxPrice, filters?.rating, filters?.inStock, sort]);
+  }, [fetchProducts]);
 
   return {
     products,

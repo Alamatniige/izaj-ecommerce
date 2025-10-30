@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { InternalApiService } from '../../../services/internalApi';
 import ProductListSidebar from './ProductListSidebar';
 import ProductListMain from './ProductListMain';
@@ -45,7 +45,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [architecturalDropdownOpen, setArchitecturalDropdownOpen] = useState(false);
   const [mirrorsDropdownOpen, setMirrorsDropdownOpen] = useState(false);
   const [fansDropdownOpen, setFansDropdownOpen] = useState(false);
-  const [] = useState(0);
+  // Removed unused state
   const [, setDeals] = useState<{ id: number; title: string; oldPrice: string; newPrice: string; discount: string; image: string }[]>([]);
   
   const [selectedColors, setSelectedColors] = useState<{ [key: number]: string }>({});
@@ -153,13 +153,24 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
           console.log('🔍 ProductList: Sample product stock/status fields:', allProductsData.slice(0, 3).map(p => ({
             id: p.product_id,
             name: p.product_name,
-            stock: (p as any).stock,
-            status: (p as any).status
+            stock: (p as unknown as { stock?: number }).stock,
+            status: (p as unknown as { status?: string }).status
           })));
         }
         
         // Transform all products and categorize them
-        const transformedProducts = allProductsData.map((product, index) => {
+        type ApiProduct = {
+          product_id: string;
+          product_name: string;
+          price: number | string;
+          category?: string;
+          description?: string;
+          media_urls?: string[];
+          status?: string;
+          stock?: number;
+        };
+
+        const transformedProducts = (allProductsData as ApiProduct[]).map((product, index) => {
           const productId = parseInt(product.product_id) || 0;
           const price = parseFloat(product.price.toString());
           
@@ -217,12 +228,12 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
               category: product.category || getCategoryFromName(product.product_name),
               stock: (() => {
                 // First check if there's a numeric stock field
-                if (typeof (product as any).stock === 'number') {
-                  return (product as any).stock;
+                if (typeof product.stock === 'number') {
+                  return product.stock;
                 }
                 
                 // Fallback to status field
-                const normalizedStatus = (product as any).status?.toLowerCase() || '';
+                const normalizedStatus = product.status?.toLowerCase() || '';
                 switch (normalizedStatus) {
                   case 'in stock':
                     return 10; // High stock
@@ -258,7 +269,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   }, []);
 
   // Handle sort change
-  const handleSortChange = (option: string) => {
+  const handleSortChange = useCallback((option: string) => {
     setSortOption(option);
     setSortModalOpen(false);
     let sortedProducts = [...filteredProducts];
@@ -295,7 +306,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         break;
     }
     setFilteredProducts(sortedProducts);
-  };
+  }, [filteredProducts]);
 
   // Handle view mode change
   const handleViewModeChange = (mode: 'grid' | 'list') => {
@@ -314,10 +325,10 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   };
 
   // Get maximum price from all products
-  const getMaxPrice = () => {
+  const getMaxPrice = useCallback(() => {
     if (allProducts.length === 0) return 282000; // fallback
     return Math.max(...allProducts.map(product => product.price));
-  };
+  }, [allProducts]);
 
   // Update price range when products are loaded
   useEffect(() => {
@@ -328,7 +339,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         max: maxPrice
       }));
     }
-  }, [allProducts]);
+  }, [allProducts, getMaxPrice]);
 
   // Handle category selection for header
   const handleHeaderCategorySelect = (category: string) => {
@@ -392,7 +403,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     if (filteredProducts.length > 0) {
       handleSortChange(sortOption);
     }
-  }, [sortOption]);
+  }, [sortOption, filteredProducts]);
 
   // Helper function to determine category from product name
   const getCategoryFromName = (name: string): string => {

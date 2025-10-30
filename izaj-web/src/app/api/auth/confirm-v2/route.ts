@@ -72,7 +72,7 @@ export async function GET(request: Request) {
 		// Confirm the user
 		console.log('📧 [V2] Confirming user email...');
 		const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(foundUser.id, {
-			email_confirmed_at: new Date().toISOString(),
+			email_confirm: true,
 			user_metadata: {
 				...foundUser.user_metadata,
 				confirmationToken: null,
@@ -93,8 +93,13 @@ export async function GET(request: Request) {
 		// Send welcome email
 		try {
 			const userName = foundUser.user_metadata?.name || 'Valued Customer';
-			await emailService.sendWelcomeEmail(foundUser.email, userName);
-			console.log('📧 [V2] Welcome email sent to:', foundUser.email);
+			const userEmail = foundUser.email ?? null;
+			if (userEmail) {
+				await emailService.sendWelcomeEmail(userEmail, userName);
+				console.log('📧 [V2] Welcome email sent to:', userEmail);
+			} else {
+				console.warn('⚠️ [V2] Skipped welcome email: user email is missing');
+			}
 		} catch (welcomeError) {
 			console.error('❌ [V2] Failed to send welcome email:', welcomeError);
 			// Don't fail confirmation if welcome email fails

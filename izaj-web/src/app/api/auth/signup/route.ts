@@ -88,8 +88,7 @@ export async function POST(request: Request) {
 			// Return detailed error for debugging
 			return NextResponse.json({ 
 				error: error.message || 'Signup failed',
-				details: error.status || 'Unknown error',
-				hint: error.hint || null
+				details: error.status || 'Unknown error'
 			}, { status: 400 });
 		}
 

@@ -110,9 +110,9 @@ export async function GET(request: NextRequest) {
       if (product.media_urls) {
         try {
           if (Array.isArray(product.media_urls)) {
-            mediaUrls = product.media_urls.map((entry) =>
+            mediaUrls = (product.media_urls as string[]).map((entry: string) =>
               typeof entry === 'string' && entry.startsWith('[')
-                ? JSON.parse(entry) // if stringified array, parse it
+                ? (JSON.parse(entry) as string[])
                 : entry
             ).flat();
           } else if (typeof product.media_urls === 'string') {

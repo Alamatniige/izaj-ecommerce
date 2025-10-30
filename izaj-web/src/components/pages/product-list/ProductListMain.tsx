@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Icon } from '@iconify/react';
 import Link from "next/link";
 import Image from "next/image";
-import { formatCurrency, getStockStatusFromStatus } from '../../../utils/helpers';
+// Removed unused helpers import
 
 type Product = {
   description: string;
@@ -30,19 +30,23 @@ interface ProductListMainProps {
   selectedColors: { [key: number]: string };
   isCarousel: boolean;
   handleColorSelect: (productId: number, color: string) => void;
-  handleViewModeChange: (mode: 'grid' | 'list') => void;
-  sortOption: string;
-  handleSortChange: (option: string) => void;
-  setSortModalOpen: (open: boolean) => void;
-  setFilterDrawerOpen: (open: boolean) => void;
+  // Props accepted for parent API compatibility (not used internally here)
+  handleViewModeChange?: (mode: 'grid' | 'list') => void;
+  sortOption?: string;
+  handleSortChange?: (option: string) => void;
+  setSortModalOpen?: (open: boolean) => void;
+  setFilterDrawerOpen?: (open: boolean) => void;
 }
 
 const ProductListMain: React.FC<ProductListMainProps> = ({
   filteredProducts,
   viewMode,
   selectedColors,
+  // isCarousel not used in this view but kept in props for API compatibility
   isCarousel,
   handleColorSelect,
+  // The following props are intentionally unused in this component
+  // to preserve compatibility with parent components passing them.
   handleViewModeChange,
   sortOption,
   handleSortChange,

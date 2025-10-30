@@ -189,7 +189,8 @@ const SignupPage: React.FC = () => {
         addressData = {
           address: composedAddress,
           province: formData.province.trim(),
-          city: formData.city.trim()
+          city: formData.city.trim(),
+          barangay: ''
         };
       }
 

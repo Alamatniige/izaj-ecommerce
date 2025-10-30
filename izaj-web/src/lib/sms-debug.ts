@@ -50,13 +50,12 @@ export function checkTwilioConfig() {
 
 export async function testTwilioConnection() {
   try {
-    const client = twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN
-    );
+    const accountSid = process.env.TWILIO_ACCOUNT_SID || '';
+    const authToken = process.env.TWILIO_AUTH_TOKEN || '';
+    const client = twilio(accountSid, authToken);
 
     // Test connection by fetching account info
-    const account = await client.api.accounts(process.env.TWILIO_ACCOUNT_SID).fetch();
+    const account = await client.api.accounts(accountSid).fetch();
     console.log('✅ Twilio connection successful');
     console.log('Account Status:', account.status);
     console.log('Account Name:', account.friendlyName);
