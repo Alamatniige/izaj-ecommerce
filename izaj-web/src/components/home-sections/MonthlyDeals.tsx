@@ -294,7 +294,7 @@ export default function MonthlyDeals() {
           animation: slideOutRight 0.5s ease-in-out forwards;
         }
       `}</style>
-      <section className="w-full bg-gray-50 py-12 sm:py-16 md:py-20">
+      <section className="w-full bg-gray-50 py-6 sm:py-8 md:py-10">
         <div className="container mx-auto px-0 sm:px-0 max-w-6xl relative">
         <div className="flex justify-between items-baseline mb-4">
           <h2 className="text-lg md:text-xl text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>

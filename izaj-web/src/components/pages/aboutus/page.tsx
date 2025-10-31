@@ -381,9 +381,9 @@ const AboutUs: React.FC = () => {
                         <div className="grid lg:grid-cols-2 gap-12">
                             {/* Vision */}
                             <div className="relative group">
-                                <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
+                                <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 h-full min-h-[360px]">
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-                                    <div className="relative p-8 md:p-12">
+                                    <div className="relative p-8 md:p-12 h-full">
                                         <div className="flex items-center gap-4 mb-6">
                                             <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center">
                                                 <Icon icon="mdi:eye" className="text-black" width="32" height="32" />
@@ -408,9 +408,9 @@ const AboutUs: React.FC = () => {
 
                             {/* Mission */}
                             <div className="relative group">
-                                <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
+                                <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 h-full min-h-[360px]">
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-                                    <div className="relative p-8 md:p-12">
+                                    <div className="relative p-8 md:p-12 h-full">
                                         <div className="flex items-center gap-4 mb-6">
                                             <div className="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center">
                                                 <Icon icon="mdi:rocket-launch" className="text-white" width="32" height="32" />

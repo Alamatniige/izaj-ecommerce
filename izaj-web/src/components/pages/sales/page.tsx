@@ -394,8 +394,6 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <SalesSidebar
-          availabilityFilter={availabilityFilter}
-          setAvailabilityFilter={setAvailabilityFilter}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           sortOption={sortOption}

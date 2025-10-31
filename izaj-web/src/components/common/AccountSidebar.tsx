@@ -28,7 +28,7 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ userData, profileImage,
           {`${userData.firstName} ${userData.lastName}`.trim() || 'User'}
         </div>
         <ul className="w-full space-y-2">
-          <li className={`py-2 rounded-lg transition-all duration-200 ${
+          <li className={`py-2 px-3 rounded-lg transition-all duration-200 ${
             activePage === 'profile' 
               ? 'bg-black' 
               : 'hover:bg-gray-100'
@@ -45,7 +45,7 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ userData, profileImage,
               </Link>
             )}
           </li>
-          <li className={`py-2 rounded-lg transition-all duration-200 ${
+          <li className={`py-2 px-3 rounded-lg transition-all duration-200 ${
             activePage === 'orders' 
               ? 'bg-black' 
               : 'hover:bg-gray-100'
@@ -62,7 +62,7 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ userData, profileImage,
               </Link>
             )}
           </li>
-          <li className={`py-2 rounded-lg transition-all duration-200 ${
+          <li className={`py-2 px-3 rounded-lg transition-all duration-200 ${
             activePage === 'payments' 
               ? 'bg-black' 
               : 'hover:bg-gray-100'
@@ -79,7 +79,7 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ userData, profileImage,
               </Link>
             )}
           </li>
-          <li className={`py-2 rounded-lg transition-all duration-200 ${
+          <li className={`py-2 px-3 rounded-lg transition-all duration-200 ${
             activePage === 'addresses' 
               ? 'bg-black' 
               : 'hover:bg-gray-100'
@@ -96,7 +96,7 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ userData, profileImage,
               </Link>
             )}
           </li>
-          <li className={`py-2 rounded-lg mb-2 transition-all duration-200 ${
+          <li className={`py-2 px-3 rounded-lg mb-2 transition-all duration-200 ${
             activePage === 'changepassword' 
               ? 'bg-black' 
               : 'hover:bg-gray-100'

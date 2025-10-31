@@ -44,39 +44,85 @@ const Warranty: React.FC = () => {
 
       <main className="relative">
         <section className="py-16 bg-gray-50">
-          <div className="max-w-5xl mx-auto px-6">
+          <div className="max-w-7xl mx-auto px-6">
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>Limited Warranty Overview</h2>
               <p className="text-lg text-gray-600 max-w-3xl mx-auto mt-4" style={{ fontFamily: 'Jost, sans-serif' }}>IZAJ warrants its products against defects in material and workmanship for a period of one (1) year from shipment unless otherwise stated.</p>
             </div>
 
-            <div className="prose prose-gray max-w-none text-gray-800" style={{ fontFamily: 'Jost, sans-serif' }}>
-              <h3 style={{ fontFamily: 'Jost, sans-serif' }}>Coverage</h3>
-              <p style={{ fontFamily: 'Jost, sans-serif' }}>
-                IZAJ warrants its products to be free from defects in materials and workmanship under normal use during the warranty period. If a defect arises and a valid claim is received within the Warranty Period, at its option IZAJ will (1) repair the product at no charge, using new or refurbished parts, (2) exchange the product with a product that is new or refurbished and is at least functionally equivalent to the original product, or (3) refund the purchase price for the product.
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="group relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-4">
+                  <div className="h-11 w-11 shrink-0 rounded-xl bg-black text-white flex items-center justify-center">
+                    <Icon icon="mdi:shield-check" width="22" height="22" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>Coverage</h3>
+                    <p className="mt-2 text-gray-600 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
+                      IZAJ warrants products against defects in materials and workmanship under normal use for one (1) year from shipment, unless otherwise stated. Remedies may include repair, replacement with an equivalent product, or refund.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-              <h3 style={{ fontFamily: 'Jost, sans-serif' }}>What Is Not Covered</h3>
-              <ul>
-                <li style={{ fontFamily: 'Jost, sans-serif' }}>Damage from misuse, abuse, improper installation, alteration, accident, or neglect.</li>
-                <li style={{ fontFamily: 'Jost, sans-serif' }}>Normal wear and tear, cosmetic damage, or damage caused by exposure to outdoor elements.</li>
-                <li style={{ fontFamily: 'Jost, sans-serif' }}>Products used in commercial or 24/7 applications unless otherwise specified.</li>
-                <li style={{ fontFamily: 'Jost, sans-serif' }}>Scratches, abrasions, or deterioration due to paints, solvents, chemicals, or abrasive cleaning.</li>
-              </ul>
+              <div className="group relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-4">
+                  <div className="h-11 w-11 shrink-0 rounded-xl bg-black text-white flex items-center justify-center">
+                    <Icon icon="mdi:alert-circle-outline" width="22" height="22" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>What Is Not Covered</h3>
+                    <ul className="mt-2 list-disc pl-5 text-gray-600 space-y-1 marker:text-gray-400" style={{ fontFamily: 'Jost, sans-serif' }}>
+                      <li>Misuse, abuse, improper installation, alteration, accident, or neglect.</li>
+                      <li>Normal wear, cosmetic damage, or damage from outdoor exposure.</li>
+                      <li>Commercial or 24/7 use unless explicitly specified.</li>
+                      <li>Scratches or deterioration due to chemicals or abrasive cleaning.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
 
-              <h3 style={{ fontFamily: 'Jost, sans-serif' }}>How to Obtain Warranty Service</h3>
-              <p style={{ fontFamily: 'Jost, sans-serif' }}>
-                To obtain warranty service, contact us at <a href="mailto:izajph@gmail.com" className="text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>izajph@gmail.com</a> or call +63 2 500 3729. Please be prepared to provide proof of purchase, product details, and a description of the defect.
-              </p>
+              <div className="group relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-4">
+                  <div className="h-11 w-11 shrink-0 rounded-xl bg-black text-white flex items-center justify-center">
+                    <Icon icon="mdi:headset" width="22" height="22" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>How to Obtain Service</h3>
+                    <p className="mt-2 text-gray-600 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
+                      Email <a href="mailto:izajph@gmail.com" className="text-black font-semibold underline underline-offset-4">izajph@gmail.com</a> or call +63 2 500 3729. Prepare proof of purchase, product details, and a description of the defect.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-              <h3 style={{ fontFamily: 'Jost, sans-serif' }}>Limitation of Liability</h3>
-              <p style={{ fontFamily: 'Jost, sans-serif' }}>
-                To the maximum extent permitted by law, IZAJ's liability for any claim related to the product shall be limited to the remedies set forth above. IZAJ is not responsible for incidental, special, or consequential damages.
-              </p>
+              <div className="group relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow md:col-span-2 md:max-w-2xl md:mx-auto lg:col-span-1 lg:col-start-2">
+                <div className="flex items-start gap-4">
+                  <div className="h-11 w-11 shrink-0 rounded-xl bg-black text-white flex items-center justify-center">
+                    <Icon icon="mdi:scale-balance" width="22" height="22" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>Limitation of Liability</h3>
+                    <p className="mt-2 text-gray-600 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
+                      To the maximum extent permitted by law, IZAJ’s liability is limited to the remedies above. IZAJ is not responsible for incidental, special, or consequential damages.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-              <p style={{ fontFamily: 'Jost, sans-serif' }}>
-                These terms give you specific legal rights, and you may also have other rights which vary by jurisdiction.
-              </p>
+              <div className="group relative rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow lg:col-span-3 md:col-span-2">
+                <div className="flex items-start gap-4">
+                  <div className="h-11 w-11 shrink-0 rounded-xl bg-black text-white flex items-center justify-center">
+                    <Icon icon="mdi:law" width="22" height="22" />
+                  </div>
+                  <div className="w-full">
+                    <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>Your Rights</h3>
+                    <p className="mt-2 text-gray-600 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>
+                      These terms provide specific legal rights; you may have other rights that vary by jurisdiction.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>

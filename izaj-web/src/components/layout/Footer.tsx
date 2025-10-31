@@ -6,8 +6,6 @@ import Link from 'next/link';
 
 
 const Footer: React.FC = () => {
-  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [showCookieModal, setShowCookieModal] = useState(false);
 
   // State for mobile dropdowns
@@ -26,17 +24,7 @@ const Footer: React.FC = () => {
   const [isFunctionalEnabled, setIsFunctionalEnabled] = useState(true); // Assuming enabled by default
   const [isTargetingEnabled, setIsTargetingEnabled] = useState(true); // Assuming enabled by default
 
-  const languages = [
-    { code: 'en', name: 'English' },
-    { code: 'fil', name: 'Filipino' },
-    { code: 'ja', name: '日本語' },
-    { code: 'ko', name: '한국어' }
-  ];
-
-  const handleLanguageSelect = (language: string) => {
-    setSelectedLanguage(language);
-    setIsLanguageOpen(false);
-  };
+  
 
   const handleCookieSettingsClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -296,45 +284,10 @@ const Footer: React.FC = () => {
                 <div className="rounded-lg border border-gray-200 bg-white w-14 h-10 md:w-16 md:h-12 flex items-center justify-center">
                   <img src="/paypal2.png" alt="PayPal" className="h-5 md:h-6" />
                 </div>
-                <div className="rounded-lg border border-gray-200 bg-white w-14 h-10 md:w-16 md:h-12 flex items-center justify-center">
-                  <img src="/grab.png" alt="GrabPay" className="h-5 md:h-6" />
-                </div>
               </div>
             </div>
 
-            {/* Language Selector */}
-            <div className="relative">
-              <button 
-                onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-              >
-                <Icon icon="mdi:translate" width="18" height="18" className="md:w-5 md:h-5 text-gray-700" />
-                <span className="text-sm md:text-base text-gray-700 style={{ fontFamily: 'Jost, sans-serif' }}">{selectedLanguage}</span>
-                <Icon 
-                  icon="mdi:chevron-down" 
-                  width="18" 
-                  height="18" 
-                  className={`md:w-5 md:h-5 text-gray-700 transition-transform ${isLanguageOpen ? 'rotate-180' : ''}`} 
-                />
-              </button>
-              {isLanguageOpen && (
-                <div className="absolute right-0 mt-2 w-40 md:w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-                  <div className="py-1">
-                    {languages.map((language) => (
-                      <button
-                        key={language.code}
-                        onClick={() => handleLanguageSelect(language.name)}
-                        className={`block w-full text-left px-3 md:px-4 py-2 text-sm md:text-base text-gray-700 hover:bg-gray-100 style={{ fontFamily: 'Jost, sans-serif' }} ${
-                          selectedLanguage === language.name ? 'bg-gray-50 font-medium' : ''
-                        }`}
-                      >
-                        {language.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            
           </div>
 
           {/* Divider Line */}
@@ -342,12 +295,12 @@ const Footer: React.FC = () => {
 
           {/* Bottom Footer Info */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-2">
-            <div className="text-gray-700 text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
+            <div className="text-gray-700 text-xs md:text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
               © Izaj Lighting Centre 2024
               <br />
               IZAJ (PHILIPPINES), INC. (Registration No. 123456789)
             </div>
-            <div className="flex flex-wrap gap-4 md:gap-6 text-gray-700 text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
+            <div className="flex flex-wrap gap-4 md:gap-6 text-gray-700 text-sm md:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>
               <Link href="/static/cookiepolicy" className="hover:underline">Cookie policy</Link>
               <button onClick={handleCookieSettingsClick} className="hover:underline">Cookie settings</button>
               <Link href="/static/termofuse" className="hover:underline">Terms of use</Link>
@@ -368,7 +321,7 @@ const Footer: React.FC = () => {
 
             <div className="p-4 md:p-6 mt-6">
               <h2 className="text-xl md:text-2xl mb-3 md:mb-4 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Cookie Preferences</h2>
-              <p className="text-gray-600 text-xs md:text-sm mb-4 md:mb-6 style={{ fontFamily: 'Jost, sans-serif' }}">
+              <p className="text-gray-600 text-xs md:text-sm mb-4 md:mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>
                 When you visit any website, it may store or retrieve information
                 on your browser, mostly in the form of cookies. This information
                 might be about you, your preferences or your device and is
@@ -381,7 +334,7 @@ const Footer: React.FC = () => {
                 types of cookies may impact your experience of the site and the
                 services we are able to offer.
               </p>
-              <a href="#" className="text-blue-600 hover:underline text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">More information</a>
+              <a href="#" className="text-blue-600 hover:underline text-xs md:text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>More information</a>
 
               <h3 className="text-lg md:text-xl mb-3 md:mb-4 mt-6 md:mt-8 font-semibold">Manage Cookie Settings</h3>
 
@@ -391,9 +344,9 @@ const Footer: React.FC = () => {
                 <div className="border-t border-gray-200 py-3 md:py-4 flex items-center justify-between">
                   <div className="flex items-center gap-2 cursor-pointer">
                     <Icon icon="mdi:plus" width="18" height="18" className="md:w-5 md:h-5 text-gray-700" />
-                    <span className="font-semibold text-sm md:text-base style={{ fontFamily: 'Jost, sans-serif' }}">Strictly Necessary Cookies</span>
+                    <span className="font-semibold text-sm md:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Strictly Necessary Cookies</span>
                   </div>
-                  <div className="flex items-center gap-2 text-blue-600 font-semibold text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
+                  <div className="flex items-center gap-2 text-blue-600 font-semibold text-xs md:text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
                     <Icon icon="mdi:check-circle" width="18" height="18" className="md:w-5 md:h-5 text-blue-600" />
                     Always Active
                   </div>
@@ -404,14 +357,14 @@ const Footer: React.FC = () => {
                   <div className="py-3 md:py-4 flex items-center justify-between cursor-pointer" onClick={togglePerformanceExpanded}>
                     <div className="flex items-center gap-2">
                       <Icon icon={isPerformanceExpanded ? "mdi:minus" : "mdi:plus"} width="18" height="18" className="md:w-5 md:h-5 text-gray-700" />
-                      <span className="font-semibold text-sm md:text-base style={{ fontFamily: 'Jost, sans-serif' }}">Performance Cookies</span>
+                      <span className="font-semibold text-sm md:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Performance Cookies</span>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); togglePerformanceEnabled(); }}>
                       <Icon icon={isPerformanceEnabled ? "mdi:toggle-right" : "mdi:toggle-left"} width="36" height="20" className={isPerformanceEnabled ? "text-blue-600" : "text-gray-400"} />
                     </button>
                   </div>
-                  {isPerformanceExpanded && (
-                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
+                    {isPerformanceExpanded && (
+                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
                       <p>Performance cookies are used to collect information about how visitors use the website.</p>
                     </div>
                   )}
@@ -422,14 +375,14 @@ const Footer: React.FC = () => {
                   <div className="py-3 md:py-4 flex items-center justify-between cursor-pointer" onClick={toggleFunctionalExpanded}>
                     <div className="flex items-center gap-2">
                       <Icon icon={isFunctionalExpanded ? "mdi:minus" : "mdi:plus"} width="18" height="18" className="md:w-5 md:h-5 text-gray-700" />
-                      <span className="font-semibold text-sm md:text-base style={{ fontFamily: 'Jost, sans-serif' }}">Functional Cookies</span>
+                      <span className="font-semibold text-sm md:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Functional Cookies</span>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); toggleFunctionalEnabled(); }}>
                       <Icon icon={isFunctionalEnabled ? "mdi:toggle-right" : "mdi:toggle-left"} width="36" height="20" className={isFunctionalEnabled ? "text-blue-600" : "text-gray-400"} />
                     </button>
                   </div>
                   {isFunctionalExpanded && (
-                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
+                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
                       <p>Functional cookies allow the website to remember choices you make and provide enhanced, more personal features.</p>
                     </div>
                   )}
@@ -440,14 +393,14 @@ const Footer: React.FC = () => {
                   <div className="py-3 md:py-4 flex items-center justify-between cursor-pointer" onClick={toggleTargetingExpanded}>
                     <div className="flex items-center gap-2">
                       <Icon icon={isTargetingExpanded ? "mdi:minus" : "mdi:plus"} width="18" height="18" className="md:w-5 md:h-5 text-gray-700" />
-                      <span className="font-semibold text-sm md:text-base style={{ fontFamily: 'Jost, sans-serif' }}">Targeting Cookies</span>
+                      <span className="font-semibold text-sm md:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Targeting Cookies</span>
                     </div>
                     <button onClick={(e) => { e.stopPropagation(); toggleTargetingEnabled(); }}>
                       <Icon icon={isTargetingEnabled ? "mdi:toggle-right" : "mdi:toggle-left"} width="36" height="20" className={isTargetingEnabled ? "text-blue-600" : "text-gray-400"} />
                     </button>
                   </div>
                   {isTargetingExpanded && (
-                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm style={{ fontFamily: 'Jost, sans-serif' }}">
+                    <div className="pb-3 md:pb-4 text-gray-600 text-xs md:text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
                       <p>Targeting cookies are used to deliver advertisements more relevant to you and your interests.</p>
                     </div>
                   )}
@@ -457,13 +410,15 @@ const Footer: React.FC = () => {
               {/* Buttons */}
               <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 md:gap-4">
                 <button 
-                  className="bg-black text-white text-sm md:text-base font-semibold rounded-md px-4 py-2 md:py-3 hover:bg-gray-800 transition-colors flex-1 style={{ fontFamily: 'Jost, sans-serif' }}"
+                  className="bg-black text-white text-sm md:text-base font-semibold rounded-md px-4 py-2 md:py-3 hover:bg-gray-800 transition-colors flex-1"
+                  style={{ fontFamily: 'Jost, sans-serif' }}
                   onClick={handleOnlyNecessaryClick}
                 >
                   Only Necessary Cookies
                 </button>
                 <button 
-                  className="bg-white text-black text-sm md:text-base font-semibold rounded-md px-4 py-2 md:py-3 border border-gray-300 hover:bg-gray-100 transition-colors flex-1 style={{ fontFamily: 'Jost, sans-serif' }}"
+                  className="bg-white text-black text-sm md:text-base font-semibold rounded-md px-4 py-2 md:py-3 border border-gray-300 hover:bg-gray-100 transition-colors flex-1"
+                  style={{ fontFamily: 'Jost, sans-serif' }}
                   onClick={handleConfirmChoicesClick}
                 >
                   Confirm My Choices

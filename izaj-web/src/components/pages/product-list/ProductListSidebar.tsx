@@ -15,9 +15,6 @@ interface ProductListSidebarProps {
   setFansDropdownOpen: (open: boolean) => void;
   selectedCategories: string[];
   handleCategorySelect: (category: string) => void;
-  // New filter props
-  availabilityFilter: string[];
-  setAvailabilityFilter: (filter: string[]) => void;
   priceRange: { min: number; max: number };
   setPriceRange: (range: { min: number; max: number }) => void;
   sortOption: string;
@@ -26,8 +23,6 @@ interface ProductListSidebarProps {
 }
 
 const ProductListSidebar: React.FC<ProductListSidebarProps> = ({
-  availabilityFilter,
-  setAvailabilityFilter,
   priceRange,
   setPriceRange,
   sortOption,
@@ -36,6 +31,8 @@ const ProductListSidebar: React.FC<ProductListSidebarProps> = ({
 }) => {
   const [categories, setCategories] = useState<{ category: string; count: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [minInput, setMinInput] = useState<string>('');
+  const [maxInput, setMaxInput] = useState<string>('');
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -81,20 +78,8 @@ const ProductListSidebar: React.FC<ProductListSidebarProps> = ({
   );
   
   // Minimalist sidebar UI states (for the screenshot-style design)
-  const [availabilityOpen, setAvailabilityOpen] = useState(true);
   const [priceOpen, setPriceOpen] = useState(true);
   const [sortOpen, setSortOpen] = useState(true);
-  const [inStockCount, setInStockCount] = useState<number>(0);
-  const [outOfStockCount, setOutOfStockCount] = useState<number>(0);
-
-  // Handle availability filter changes
-  const handleAvailabilityChange = (availability: string) => {
-    if (availabilityFilter.includes(availability)) {
-      setAvailabilityFilter(availabilityFilter.filter(item => item !== availability));
-    } else {
-      setAvailabilityFilter([...availabilityFilter, availability]);
-    }
-  };
 
   // Handle price range changes
   const handlePriceChange = (field: 'min' | 'max', value: number) => {
@@ -123,86 +108,46 @@ const ProductListSidebar: React.FC<ProductListSidebarProps> = ({
 
   // Handle input changes with validation
   const handleInputChange = (field: 'min' | 'max', value: string) => {
-    const numValue = parseInt(value) || 0;
-    const clampedValue = Math.max(0, Math.min(maxPrice, numValue));
+    if (field === 'min') setMinInput(value);
+    if (field === 'max') setMaxInput(value);
+    if (value === '') {
+      // Allow empty input without forcing 0
+      return;
+    }
+    const parsed = parseInt(value, 10);
+    if (Number.isNaN(parsed)) return;
+    const clampedValue = Math.max(0, Math.min(maxPrice, parsed));
     handlePriceChange(field, clampedValue);
   };
 
-  // Calculate slider positions (0-100%)
-  const minSliderPosition = maxPrice > 0 ? ((priceRange.min - 0) / (maxPrice - 0)) * 100 : 0;
-  const maxSliderPosition = maxPrice > 0 ? ((priceRange.max - 0) / (maxPrice - 0)) * 100 : 100;
-
-  useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        const all = await InternalApiService.getAllProducts();
-        let inStock = 0;
-        let outStock = 0;
-        (all || []).forEach((p: any) => {
-          // Check both status field and stock field
-          const status = (p.status || '').toLowerCase();
-          const stock = p.stock || 0;
-          
-          // If status field exists, use it
-          if (status) {
-            if (status === 'out of stock') {
-              outStock += 1;
-            } else {
-              inStock += 1;
-            }
-          } else {
-            // Fallback to stock number
-            if (stock > 0) {
-              inStock += 1;
-            } else {
-              outStock += 1;
-            }
-          }
-        });
-        setInStockCount(inStock);
-        setOutOfStockCount(outStock);
-      } catch {
-        setInStockCount(0);
-        setOutOfStockCount(0);
+  const handleInputBlur = (field: 'min' | 'max') => {
+    if (field === 'min') {
+      if (minInput === '') {
+        setMinInput('0');
+        handlePriceChange('min', 0);
       }
-    };
-    fetchCounts();
-  }, []);
+    } else {
+      if (maxInput === '') {
+        setMaxInput(String(maxPrice));
+        handlePriceChange('max', maxPrice);
+      }
+    }
+  };
+
+  // Calculate slider positions (0-100%)
+  const minSliderPosition = maxPrice > 0 ? Math.max(0, Math.min(100, ((priceRange.min - 0) / (maxPrice - 0)) * 100)) : 0;
+  const maxSliderPosition = maxPrice > 0 ? Math.max(0, Math.min(100, ((priceRange.max - 0) / (maxPrice - 0)) * 100)) : 100;
+
+  // Sync input fields with numeric range when it changes externally
+  useEffect(() => {
+    setMinInput(String(priceRange.min));
+    setMaxInput(String(priceRange.max));
+  }, [priceRange.min, priceRange.max]);
+
+  // no availability counts needed
   return (
     <aside className="hidden lg:block w-full lg:w-1/6 p-0 sm:p-4 lg:p-6 lg:pl-0 lg:pr-4 mobile-hide sticky top-4 self-start">
-      {/* Availability */}
-      <div className="pb-4 mb-4 border-b border-gray-200">
-        <button className="w-full flex items-center justify-between text-sm text-black" onClick={() => setAvailabilityOpen(!availabilityOpen)}>
-          <span style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Availability</span>
-          <Icon icon={availabilityOpen ? 'mdi:minus' : 'mdi:plus'} width="18" height="18" />
-        </button>
-        {availabilityOpen && (
-          <div className="mt-4 space-y-3 text-sm">
-            <div className="flex items-center justify-between text-gray-700 cursor-pointer" onClick={() => handleAvailabilityChange('in stock')}>
-              <div className="flex items-center">
-                <span className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                  availabilityFilter.includes('in stock') 
-                    ? 'bg-black border-black' 
-                    : 'bg-gray-200 border-gray-300'
-                }`}></span>
-                <span style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>In stock</span>
-              </div>
-              <span className="text-gray-500 text-xs">{inStockCount}</span>
-            </div>
-            <div className="flex items-center justify-between text-gray-700 cursor-pointer" onClick={() => handleAvailabilityChange('out of stock')}>
-                  <div className="flex items-center">
-                <span className={`w-4 h-4 rounded-full border-2 mr-3 ${
-                  availabilityFilter.includes('out of stock') 
-                    ? 'bg-black border-black' 
-                    : 'bg-gray-200 border-gray-300'
-                }`}></span>
-                <span style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Out of stock</span>
-              </div>
-              <span className="text-gray-500 text-xs">{outOfStockCount}</span>
-            </div>
-                  </div>
-        )}
-      </div>
+      
 
       {/* Price */}
       <div className="pb-4 mb-4 border-b border-gray-200">
@@ -216,8 +161,9 @@ const ProductListSidebar: React.FC<ProductListSidebarProps> = ({
               <div className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 flex items-center">
                 <span className="text-gray-500 mr-2">₱</span>
                 <input 
-                  value={priceRange.min} 
+                  value={minInput} 
                   onChange={e => handleInputChange('min', e.target.value)} 
+                  onBlur={() => handleInputBlur('min')}
                   className="w-full outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                   type="number" 
                   min={0} 
@@ -228,15 +174,25 @@ const ProductListSidebar: React.FC<ProductListSidebarProps> = ({
               <div className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-700 flex items-center">
                 <span className="text-gray-500 mr-2">₱</span>
                 <input 
-                  value={priceRange.max} 
+                  value={maxInput} 
                   onChange={e => handleInputChange('max', e.target.value)} 
+                  onBlur={() => handleInputBlur('max')}
                   className="w-full outline-none text-gray-900 font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" 
                   type="number" 
                   min={0} 
                   max={maxPrice}
                 />
               </div>
-                  </div>
+            </div>
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={() => { setPriceRange({ min: 0, max: maxPrice }); setMinInput('0'); setMaxInput(String(maxPrice)); }}
+                className="text-xs text-gray-600 underline hover:text-gray-800"
+              >
+                Reset to all prices
+              </button>
+            </div>
             {/* Functional range slider */}
             <div className="mt-5 relative h-4 max-w-full">
               {/* Track */}

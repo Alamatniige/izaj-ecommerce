@@ -268,45 +268,11 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     fetchProducts();
   }, []);
 
-  // Handle sort change
+  // Handle sort change (only updates option and closes modal)
   const handleSortChange = useCallback((option: string) => {
     setSortOption(option);
     setSortModalOpen(false);
-    let sortedProducts = [...filteredProducts];
-    switch(option) {
-      case 'Best selling':
-        // Sort by rating and review count (best selling approximation)
-        sortedProducts.sort((a, b) => (b.rating * b.reviewCount) - (a.rating * a.reviewCount));
-        break;
-      case 'Alphabetically, A-Z':
-      case 'Alphabetical, A-Z':
-        sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'Alphabetically, Z-A':
-      case 'Alphabetical, Z-A':
-        sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case 'Price, low to high':
-      case 'Price, Low to High':
-        sortedProducts.sort((a, b) => a.price - b.price);
-        break;
-      case 'Price, high to low':
-      case 'Price, High to Low':
-        sortedProducts.sort((a, b) => b.price - a.price);
-        break;
-      case 'Date, old to new':
-        // Sort by ID (assuming higher ID = newer)
-        sortedProducts.sort((a, b) => a.id - b.id);
-        break;
-      case 'Date, new to old':
-        // Sort by ID (assuming higher ID = newer)
-        sortedProducts.sort((a, b) => b.id - a.id);
-        break;
-      default:
-        break;
-    }
-    setFilteredProducts(sortedProducts);
-  }, [filteredProducts]);
+  }, []);
 
   // Handle view mode change
   const handleViewModeChange = (mode: 'grid' | 'list') => {
@@ -398,12 +364,40 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       setFilteredProducts(filtered);
   }, [selectedCategory, selectedCategories, availabilityFilter, priceRange, allProducts]);
 
-  // Apply sorting when sort option changes
+  // Apply sorting to displayed products whenever filters or sort option change
   useEffect(() => {
-    if (filteredProducts.length > 0) {
-      handleSortChange(sortOption);
+    let sortedProducts = [...filteredProducts];
+    switch(sortOption) {
+      case 'Best selling':
+        sortedProducts.sort((a, b) => (b.rating * b.reviewCount) - (a.rating * a.reviewCount));
+        break;
+      case 'Alphabetically, A-Z':
+      case 'Alphabetical, A-Z':
+        sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'Alphabetically, Z-A':
+      case 'Alphabetical, Z-A':
+        sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'Price, low to high':
+      case 'Price, Low to High':
+        sortedProducts.sort((a, b) => a.price - b.price);
+        break;
+      case 'Price, high to low':
+      case 'Price, High to Low':
+        sortedProducts.sort((a, b) => b.price - a.price);
+        break;
+      case 'Date, old to new':
+        sortedProducts.sort((a, b) => a.id - b.id);
+        break;
+      case 'Date, new to old':
+        sortedProducts.sort((a, b) => b.id - a.id);
+        break;
+      default:
+        break;
     }
-  }, [sortOption, filteredProducts]);
+    setDisplayedProducts(sortedProducts);
+  }, [filteredProducts, sortOption]);
 
   // Helper function to determine category from product name
   const getCategoryFromName = (name: string): string => {
@@ -426,10 +420,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     return 'Lighting';
   };
 
-  // Update displayed products - show all products since pagination is removed
-  useEffect(() => {
-    setDisplayedProducts(filteredProducts);
-  }, [filteredProducts]);
+  // displayedProducts is derived in the sorting effect above
 
 
   if (isLoading) {
@@ -545,8 +536,6 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
           setFansDropdownOpen={setFansDropdownOpen}
           selectedCategories={selectedCategories}
           handleCategorySelect={handleCategorySelect}
-          availabilityFilter={availabilityFilter}
-          setAvailabilityFilter={setAvailabilityFilter}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           sortOption={sortOption}

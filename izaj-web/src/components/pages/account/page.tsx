@@ -536,9 +536,9 @@ const MyProfile: React.FC = () => {
 
                         {/* Image Upload Section */}
                         <div className="border-t border-gray-100 my-4 sm:my-6" />
-                        <div className="mb-4">
-                          <h4 className="text-gray-900 font-semibold">Profile Picture</h4>
-                          <p className="text-gray-500 text-xs">Update your profile picture</p>
+                        <div className="mb-4 font-jost">
+                          <h4 className="text-gray-900 font-jost font-semibold">Profile Picture</h4>
+                          <p className="text-gray-500 text-xs font-jost">Update your profile picture</p>
                         </div>
                         <div className="flex flex-col items-center mb-2">
                           <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border-2 border-gray-200 mb-3 sm:mb-4 shadow-sm transition-transform duration-300 hover:scale-105 relative bg-gray-200 flex items-center justify-center">
@@ -561,7 +561,7 @@ const MyProfile: React.FC = () => {
                           </div>
                           <div className="flex gap-2">
                             <label 
-                              className={`text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                              className={`text-indigo-600 text-xs sm:text-sm font-medium hover:text-gray-700 mb-2 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} font-jost`}
                             >
                               {uploading ? 'Uploading...' : 'Change Photo'}
                               <input
@@ -578,13 +578,13 @@ const MyProfile: React.FC = () => {
                                 type="button"
                                 onClick={handleRemoveImage}
                                 disabled={uploading}
-                                className="text-red-600 text-xs sm:text-sm font-medium hover:text-red-700 mb-2 transition-colors disabled:opacity-50"
+                                className="text-red-600 text-xs sm:text-sm font-medium hover:text-red-700 mb-2 transition-colors disabled:opacity-50 font-jost"
                               >
                                 Remove
                               </button>
                             )}
                           </div>
-                          <p className="text-gray-500 text-[10px] sm:text-xs text-center">
+                          <p className="text-gray-500 text-[10px] sm:text-xs text-center font-jost">
                             File size: maximum 5 MB<br/>
                             File extension: JPEG, PNG, WebP
                           </p>
@@ -592,21 +592,21 @@ const MyProfile: React.FC = () => {
 
                         {/* Account Deletion Section - Moved to bottom */}
                         <div className="border-t border-gray-200 my-6 sm:my-8" />
-                        <div className="mb-4">
-                          <h4 className="text-red-600 font-semibold text-sm sm:text-base">Danger Zone</h4>
-                          <p className="text-gray-500 text-xs">Permanently delete your account and all associated data</p>
+                        <div className="mb-4 font-jost">
+                          <h4 className="text-red-600 font-jost font-semibold text-sm sm:text-base">Danger Zone</h4>
+                          <p className="text-gray-500 text-xs font-jost ">Permanently delete your account and all associated data</p>
                         </div>
                         <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-4">
                           <button 
                             type="button"
-                            className="text-red-500 text-xs sm:text-sm font-medium hover:text-red-600 transition-colors text-left"
+                            className="text-red-500 text-xs sm:text-sm font-medium hover:text-red-600 transition-colors text-left font-jost"
                             onClick={() => setShowDeleteModal(true)}
                           >
                             Account Deletion
                           </button>
                           <button 
                             type="button"
-                            className="px-4 sm:px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+                            className="px-4 sm:px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl font-jost"
                             onClick={() => setShowDeleteModal(true)}
                           >
                             Delete Account

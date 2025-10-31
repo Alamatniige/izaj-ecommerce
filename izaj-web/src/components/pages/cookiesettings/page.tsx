@@ -45,7 +45,7 @@ const CookieSettingsModal: React.FC<Partial<CookieSettingsModalProps>> = ({ show
             types of cookies may impact your experience of the site and the
             services we are able to offer.
           </p>
-          <a href="#" className="text-blue-600 hover:underline text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>More information</a>
+          <a href="#" className="text-blue-600 hover:underline text-xs md:text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>More information</a>
 
           <h3 className="font-bold text-xl mb-4 mt-8" style={{ fontFamily: 'Jost, sans-serif' }}>Manage Cookie Settings</h3>
 

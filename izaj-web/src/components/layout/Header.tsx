@@ -572,14 +572,14 @@ function capitalize(str: string) {
                         className="text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                       aria-label="User"
                     >
-                      <div className="w-7 h-7 flex items-center justify-center">
+                      <div className="w-7 h-7 flex items-center justify-center rounded-full overflow-hidden">
                         {user && user.profilePicture ? (
                               <Image 
                                 src={user.profilePicture} 
                                 alt="Profile" 
                                 width={28}
                                 height={28}
-                                className="rounded-full object-cover ring-2 ring-gray-200"
+                                className="object-cover ring-2 ring-gray-200"
                                 unoptimized
                               />
                         ) : user ? (
@@ -616,14 +616,14 @@ function capitalize(str: string) {
                           aria-haspopup="true"
                           aria-expanded={isAccountDropdownOpen}
                         >
-                          <div className="w-7 h-7 flex items-center justify-center">
+                          <div className="w-7 h-7 flex items-center justify-center rounded-full overflow-hidden">
                             {user.profilePicture ? (
                               <Image 
                                 src={user.profilePicture} 
                                 alt="Profile" 
                                 width={28}
                                 height={28}
-                                className="rounded-full object-cover ring-2 ring-gray-200 hover:ring-gray-400 transition-all duration-200"
+                                className="object-cover ring-2 ring-gray-200 hover:ring-gray-400 transition-all duration-200"
                                 unoptimized
                               />
                             ) : (

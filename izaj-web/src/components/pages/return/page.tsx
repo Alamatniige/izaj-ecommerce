@@ -297,10 +297,10 @@ const Return = () => {
               </div>
 
               <div className="grid md:grid-cols-2 gap-8">
-                <div className="relative group">
-                  <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
+                <div className="relative group h-full">
+                  <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 h-full flex flex-col">
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-                    <div className="relative p-8 md:p-12">
+                    <div className="relative p-8 md:p-12 flex flex-col h-full">
                       <div className="flex items-center gap-4 mb-6">
                         <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center">
                           <Icon icon="mdi:currency-usd" className="text-black" width="32" height="32" />
@@ -310,7 +310,7 @@ const Return = () => {
                       <p className="text-gray-200 leading-relaxed text-lg mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>
                         You are responsible for return shipping costs. These costs are non-refundable and will be deducted from your refund amount if applicable.
                       </p>
-                      <div className="bg-white/10 rounded-xl p-4 border border-white/20">
+                      <div className="bg-white/10 rounded-xl p-4 border border-white/20 mt-auto">
                         <p className="text-white font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Items over Php4,000</p>
                         <p className="text-gray-300 text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>Consider trackable shipping or insurance</p>
                       </div>
@@ -318,10 +318,10 @@ const Return = () => {
                   </div>
                 </div>
 
-                <div className="relative group">
-                  <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
+                <div className="relative group h-full">
+                  <div className="relative rounded-3xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 h-full flex flex-col">
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-                    <div className="relative p-8 md:p-12">
+                    <div className="relative p-8 md:p-12 flex flex-col h-full">
                       <div className="flex items-center gap-4 mb-6">
                         <div className="w-16 h-16 bg-gray-800 rounded-2xl flex items-center justify-center">
                           <Icon icon="mdi:clock" className="text-white" width="32" height="32" />
@@ -331,7 +331,7 @@ const Return = () => {
                       <p className="text-gray-200 leading-relaxed text-lg mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>
                         Processing times vary by location. We don't guarantee receipt of returned items, so use trackable shipping for valuable items.
                       </p>
-                      <div className="bg-white/10 rounded-xl p-4 border border-white/20">
+                      <div className="bg-white/10 rounded-xl p-4 border border-white/20 mt-auto">
                         <p className="text-white font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Email Notification</p>
                         <p className="text-gray-300 text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>You'll receive email updates on your return status</p>
                       </div>

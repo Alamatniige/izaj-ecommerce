@@ -385,8 +385,6 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <Sidebar
-          availabilityFilter={availabilityFilter}
-          setAvailabilityFilter={setAvailabilityFilter}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           sortOption={sortOption}

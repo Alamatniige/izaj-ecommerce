@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components';
@@ -18,9 +18,14 @@ export default function CartPage() {
   const [shippingAddress, setShippingAddress] = useState({
     street: '',
     city: '',
+    province: '',
     postalCode: '',
     country: 'Philippines'
   });
+
+  const [promoCode, setPromoCode] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [promoDiscount, setPromoDiscount] = useState(0);
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     updateQuantity(id, newQuantity);
@@ -44,8 +49,93 @@ export default function CartPage() {
   };
 
   const handleCheckout = () => {
+    try {
+      if (shippingAddress.city) {
+        localStorage.setItem('checkout_shipping_city', shippingAddress.city);
+      }
+      if (shippingAddress.province) {
+        localStorage.setItem('checkout_shipping_province', shippingAddress.province);
+      }
+      if (appliedPromo) {
+        localStorage.setItem('checkout_applied_promo', appliedPromo);
+        localStorage.setItem('checkout_promo_discount', String(promoDiscount));
+      }
+    } catch (e) {
+      // ignore storage failures
+    }
     router.push('/checkout');
   };
+
+  const hasShippingAddress = useMemo(() => {
+    return Boolean((shippingAddress.street || '').trim() || (shippingAddress.city || '').trim() || (shippingAddress.province || '').trim() || (shippingAddress.postalCode || '').trim());
+  }, [shippingAddress.street, shippingAddress.city, shippingAddress.province, shippingAddress.postalCode]);
+
+  const normalizedLocation = useMemo(() => {
+    const combined = `${shippingAddress.city || ''} ${shippingAddress.province || ''}`.toLowerCase();
+    const cleaned = combined.replace(/city/g, '').replace(/\s+/g, ' ').trim();
+    if (!cleaned) return '';
+    if (cleaned.includes('san pablo')) return 'San Pablo City';
+    if (cleaned.includes('quezon')) return 'Quezon';
+    if (cleaned.includes('laguna')) return 'Laguna';
+    if (cleaned.includes('cavite')) return 'Cavite';
+    if (cleaned.includes('batangas')) return 'Batangas';
+    if (cleaned.includes('camarines sur') || cleaned.includes('camarinesur')) return 'Camarines Sur';
+    if (cleaned.includes('sorsogon')) return 'Sorsogon';
+    if (cleaned.includes('la union') || cleaned.includes('launion')) return 'La Union';
+    return '';
+  }, [shippingAddress.city, shippingAddress.province]);
+
+  const shippingFeeMaybe = useMemo(() => {
+    if (!hasShippingAddress) return undefined;
+    return calculateShipping(normalizedLocation);
+  }, [hasShippingAddress, normalizedLocation]);
+  const shippingFee = shippingFeeMaybe ?? 0;
+  const subtotal = useMemo(() => calculateSubtotal(), [cart.items]);
+  const productDiscount = useMemo(() => calculateDiscount(), [cart.items]);
+  const tax = useMemo(() => calculateTax(subtotal), [subtotal]);
+  const computedTotal = useMemo(() => {
+    const total = subtotal - productDiscount - promoDiscount + shippingFee + tax;
+    return total < 0 ? 0 : total;
+  }, [subtotal, productDiscount, promoDiscount, shippingFee, tax]);
+
+  const applyPromo = () => {
+    const code = promoCode.trim().toUpperCase();
+    let discountValue = 0;
+    if (!code) {
+      setAppliedPromo(null);
+      setPromoDiscount(0);
+      return;
+    }
+
+    // Simple demo promo rules; extend as needed
+    if (code === 'FREESHIP') {
+      discountValue = shippingFee; // negate shipping (0 until address entered)
+    } else if (code === 'SAVE100') {
+      discountValue = 100;
+    } else if (code === 'SAVE10') {
+      discountValue = Math.round(subtotal * 0.10);
+    } else {
+      // unknown code
+      setAppliedPromo(null);
+      setPromoDiscount(0);
+      return;
+    }
+
+    setAppliedPromo(code);
+    setPromoDiscount(discountValue);
+  };
+
+  // Keep promo discount in sync if city/subtotal changes
+  useEffect(() => {
+    if (!appliedPromo) return;
+    if (appliedPromo === 'FREESHIP') {
+      setPromoDiscount(shippingFee);
+    } else if (appliedPromo === 'SAVE10') {
+      setPromoDiscount(Math.round(subtotal * 0.10));
+    } else if (appliedPromo === 'SAVE100') {
+      setPromoDiscount(100);
+    }
+  }, [appliedPromo, shippingFee, subtotal]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -166,18 +256,37 @@ export default function CartPage() {
                   <h2 className="text-lg lg:text-xl font-extrabold mb-4 lg:mb-5 text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Order Summary</h2>
                   <div className="mb-4 lg:mb-6">
                     <div className="flex gap-2">
-                      <input type="text" placeholder="Enter promo code" className="flex-1 px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }} />
-                      <button className="px-3 lg:px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-200 transition-colors text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Apply</button>
+                      <input
+                        type="text"
+                        value={promoCode}
+                        onChange={(e) => setPromoCode(e.target.value)}
+                        placeholder="Enter promo code"
+                        className="flex-1 px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black text-sm lg:text-base"
+                        style={{ fontFamily: 'Jost, sans-serif' }}
+                      />
+                      <button
+                        onClick={applyPromo}
+                        className="px-3 lg:px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-200 transition-colors text-sm lg:text-base"
+                        style={{ fontFamily: 'Jost, sans-serif' }}
+                      >Apply</button>
                     </div>
+                    {appliedPromo && (
+                      <p className="mt-2 text-xs text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>
+                        Applied: {appliedPromo}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-3 lg:space-y-4 mb-4 lg:mb-6">
-                    <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Subtotal</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(calculateSubtotal())}</span></div>
-                    <div className="flex justify-between text-gray-600 font-semibold text-sm lg:text-base"><span style={{ fontFamily: 'Jost, sans-serif' }}>Discount</span><span style={{ fontFamily: 'Jost, sans-serif' }}>-{formatCurrency(calculateDiscount())}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Shipping</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(calculateShipping(shippingAddress.city))}</span></div>
-                    <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Tax (12% VAT)</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(calculateTax(calculateSubtotal()))}</span></div>
-                    <div className="border-t border-gray-300 pt-3 lg:pt-4 flex justify-between font-extrabold text-base lg:text-lg"><span className="text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Total</span><span className="text-black" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(calculateTotal(cart.items, shippingAddress.city))}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Subtotal</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(subtotal)}</span></div>
+                    <div className="flex justify-between text-gray-600 font-semibold text-sm lg:text-base"><span style={{ fontFamily: 'Jost, sans-serif' }}>Discount</span><span style={{ fontFamily: 'Jost, sans-serif' }}>-{formatCurrency(productDiscount)}</span></div>
+                    {promoDiscount > 0 && (
+                      <div className="flex justify-between text-gray-600 font-semibold text-sm lg:text-base"><span style={{ fontFamily: 'Jost, sans-serif' }}>Promo</span><span style={{ fontFamily: 'Jost, sans-serif' }}>-{formatCurrency(promoDiscount)}</span></div>
+                    )}
+                    <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Shipping</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{hasShippingAddress ? formatCurrency(shippingFee) : '—'}</span></div>
+                    <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Tax (12% VAT)</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(tax)}</span></div>
+                    <div className="border-t border-gray-300 pt-3 lg:pt-4 flex justify-between font-extrabold text-base lg:text-lg"><span className="text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Total</span><span className="text-black" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(computedTotal)}</span></div>
                   </div>
-                  <button onClick={handleCheckout} className="w-full bg-black hover:bg-orange-500 text-white py-3 lg:py-4 rounded-xl font-bold text-base lg:text-lg shadow transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  <button onClick={handleCheckout} className="w-full bg-black hover:bg-gray-800 text-white py-3 lg:py-4 rounded-xl font-bold text-base lg:text-lg shadow transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center" style={{ fontFamily: 'Jost, sans-serif' }}>
                     <Icon icon="mdi:lock-outline" className="mr-2" />
                     PROCEED TO CHECKOUT
                   </button>
@@ -199,22 +308,25 @@ export default function CartPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Jost, sans-serif' }}>City</label>
-                        <div className="relative">
-                          <select value={shippingAddress.city} onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black bg-white text-black appearance-none text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>
-                            <option value="">Select a city</option>
-                            <option value="San Pablo City">San Pablo City</option>
-                            <option value="Quezon">Quezon</option>
-                            <option value="Laguna">Laguna</option>
-                            <option value="Cavite">Cavite</option>
-                            <option value="Batangas">Batangas</option>
-                            <option value="Camarines Sur">Camarines Sur</option>
-                            <option value="Sorsogon">Sorsogon</option>
-                            <option value="La Union">La Union</option>
-                          </select>
-                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <Icon icon="mdi:chevron-down" width="20" height="20" />
-                          </div>
-                        </div>
+                        <input
+                          type="text"
+                          value={shippingAddress.city}
+                          onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black bg-white text-black text-sm lg:text-base"
+                          placeholder="Enter city"
+                          style={{ fontFamily: 'Jost, sans-serif' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Jost, sans-serif' }}>Province</label>
+                        <input
+                          type="text"
+                          value={shippingAddress.province}
+                          onChange={(e) => setShippingAddress({ ...shippingAddress, province: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black bg-white text-black text-sm lg:text-base"
+                          placeholder="Enter province"
+                          style={{ fontFamily: 'Jost, sans-serif' }}
+                        />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Jost, sans-serif' }}>Postal Code</label>
@@ -222,7 +334,7 @@ export default function CartPage() {
                       </div>
                       <div className="pt-2">
                         <p className="text-xs lg:text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Estimated delivery: 3-5 business days</p>
-                        <p className="text-xs lg:text-sm text-gray-600 mt-1" style={{ fontFamily: 'Jost, sans-serif' }}>Shipping cost: {formatCurrency(calculateShipping(shippingAddress.city))}</p>
+                        <p className="text-xs lg:text-sm text-gray-600 mt-1" style={{ fontFamily: 'Jost, sans-serif' }}>Shipping cost: {hasShippingAddress ? formatCurrency(shippingFee) : '—'}</p>
                       </div>
                     </div>
                   )}
