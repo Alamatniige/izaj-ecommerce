@@ -37,6 +37,7 @@ export async function GET() {
         media_urls,
         publish_status,
         on_sale,
+        pickup_available,
         product_stock (
           display_quantity,
           last_sync_at
