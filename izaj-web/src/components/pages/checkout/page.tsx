@@ -186,9 +186,31 @@ const Checkout = () => {
     return 100;
   };
 
+  const calculateSubtotal = () => {
+    // Calculate subtotal using original price if available, otherwise use discounted price
+    return cart.items.reduce((sum, item) => {
+      const itemPrice = item.originalPrice !== undefined ? item.originalPrice : item.price;
+      return sum + (itemPrice * item.quantity);
+    }, 0);
+  };
+
+  const calculateDiscount = () => {
+    return cart.items.reduce((sum, item) => {
+      if (item.originalPrice !== undefined) {
+        return sum + ((item.originalPrice - item.price) * item.quantity);
+      }
+      return sum;
+    }, 0);
+  };
+
+  const getDiscountItems = () => {
+    return cart.items.filter(item => item.originalPrice !== undefined && item.originalPrice > item.price);
+  };
+
   const shippingFee = calculateShipping();
-  const subtotal = cart.totalPrice;
-  const total = subtotal + shippingFee;
+  const subtotal = calculateSubtotal(); // Use original prices for subtotal
+  const productDiscount = calculateDiscount();
+  const total = subtotal - productDiscount + shippingFee;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -304,12 +326,12 @@ const Checkout = () => {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white font-jost">
      {/* Header */}
      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
           <div className="flex items-center justify-center space-x-3">
               <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
                 <Icon icon="mdi:shield-check" className="text-white text-xl" />
               </div>
-            <span className="text-xl font-bold text-gray-900 font-jost">Secure Checkout</span>
+            <span className="text-lg md:text-xl font-bold text-gray-900 font-jost">Secure Checkout</span>
           </div>
           <p className="text-center text-sm text-gray-600 mt-2 font-jost">Complete your order in a few simple steps</p>
         </div>
@@ -348,11 +370,11 @@ const Checkout = () => {
         )}
 
         <form onSubmit={handleSubmit} className="p-4 md:p-8 max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
           {/* Left - Form */}
           <div className="lg:col-span-7 space-y-6">
             {/* Contact */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white p-5 md:p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
@@ -388,15 +410,15 @@ const Checkout = () => {
             </div>
 
             {/* Delivery */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white p-5 md:p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center mb-6">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
                     <Icon icon="mdi:truck-delivery" className="text-white text-lg" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 font-jost">Delivery Method</h2>
               </div>
-              <div className="flex items-center mb-6 space-x-4">
-                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all w-1/2 hover:border-black hover:bg-gray-50 shadow-sm hover:shadow-md" style={{ borderColor: deliveryMethod === 'ship' ? '#000000' : '#e5e7eb', backgroundColor: deliveryMethod === 'ship' ? '#f9fafb' : 'white' }}>
+              <div className="flex flex-col md:flex-row items-stretch md:items-center mb-6 space-y-4 md:space-y-0 md:space-x-4">
+                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all w-full md:w-1/2 hover:border-black hover:bg-gray-50 shadow-sm hover:shadow-md" style={{ borderColor: deliveryMethod === 'ship' ? '#000000' : '#e5e7eb', backgroundColor: deliveryMethod === 'ship' ? '#f9fafb' : 'white' }}>
                   <input 
                     type="radio" 
                     name="delivery" 
@@ -410,7 +432,7 @@ const Checkout = () => {
                   </div>
                 </label>
                   {cart.items.some(item => item.product?.pickup_available) && (
-                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all w-1/2 hover:border-black hover:bg-gray-50 shadow-sm hover:shadow-md" style={{ borderColor: deliveryMethod === 'pickup' ? '#000000' : '#e5e7eb', backgroundColor: deliveryMethod === 'pickup' ? '#f9fafb' : 'white' }}>
+                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all w-full md:w-1/2 hover:border-black hover:bg-gray-50 shadow-sm hover:shadow-md" style={{ borderColor: deliveryMethod === 'pickup' ? '#000000' : '#e5e7eb', backgroundColor: deliveryMethod === 'pickup' ? '#f9fafb' : 'white' }}>
                   <input 
                     type="radio"
                     name="delivery" 
@@ -429,7 +451,7 @@ const Checkout = () => {
               <div className="space-y-4">
                   {/* Pickup Information */}
                   {deliveryMethod === 'pickup' && (
-                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-6 mb-4 shadow-md">
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-4 md:p-6 mb-4 shadow-md">
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0 shadow-lg">
                           <Icon icon="mdi:store" className="text-white text-xl" />
@@ -505,7 +527,7 @@ const Checkout = () => {
                         </div>
                       )}
                       
-                      <div className="text-center pt-3 border-t border-gray-200">
+                  <div className="text-center pt-3 border-t border-gray-200">
                         <Link 
                           href="/addresses" 
                           className="text-sm text-black hover:underline flex items-center justify-center gap-2 font-jost"
@@ -525,7 +547,7 @@ const Checkout = () => {
                   <option>Philippines</option>
                 </select>
                   
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     <input 
                       type="text"
                       name="firstName"
@@ -653,14 +675,14 @@ const Checkout = () => {
 
             {/* Shipping Method */}
               {deliveryMethod === 'ship' && (
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white p-5 md:p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center mb-6">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
                       <Icon icon="mdi:package-variant" className="text-white text-lg" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 font-jost">Shipping Method</h2>
               </div>
-                  <div className="border-2 border-gray-200 hover:border-black hover:bg-gray-50 p-6 rounded-xl flex justify-between items-center cursor-pointer transition-all shadow-sm hover:shadow-md">
+                  <div className="border-2 border-gray-200 hover:border-black hover:bg-gray-50 p-4 md:p-6 rounded-xl flex justify-between items-center cursor-pointer transition-all shadow-sm hover:shadow-md">
                 <div>
                       <div className="font-bold text-gray-900 font-jost">Standard Shipping</div>
                   <div className="text-sm text-gray-600 font-jost mt-1">3-5 business days</div>
@@ -680,14 +702,14 @@ const Checkout = () => {
 
             {/* Pickup Method */}
               {deliveryMethod === 'pickup' && (
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white p-5 md:p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center mb-6">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
                       <Icon icon="mdi:store" className="text-white text-lg" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 font-jost">Pickup Method</h2>
               </div>
-                  <div className="border-2 border-gray-200 hover:border-black hover:bg-gray-50 p-6 rounded-xl flex justify-between items-center cursor-pointer transition-all shadow-sm hover:shadow-md">
+                  <div className="border-2 border-gray-200 hover:border-black hover:bg-gray-50 p-4 md:p-6 rounded-xl flex justify-between items-center cursor-pointer transition-all shadow-sm hover:shadow-md">
                 <div>
                       <div className="font-bold text-gray-900 font-jost">Store Pickup</div>
                   <div className="text-sm text-gray-600 font-jost mt-1">Collect from our store</div>
@@ -705,7 +727,7 @@ const Checkout = () => {
 
             {/* Payment - Only show for shipping */}
             {deliveryMethod === 'ship' && (
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white p-5 md:p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center mb-6">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
                     <Icon icon="mdi:credit-card" className="text-white text-lg" />
@@ -718,7 +740,7 @@ const Checkout = () => {
               </p>
                 
                 <div className="space-y-3 mb-4">
-                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'gcash' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'gcash' ? '#f9fafb' : 'white' }}>
+                  <label className="flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'gcash' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'gcash' ? '#f9fafb' : 'white' }}>
                     <input 
                       type="radio"
                       name="paymentMethod"
@@ -731,7 +753,7 @@ const Checkout = () => {
                     <span className="font-bold text-gray-900 font-jost">GCash</span>
                   </label>
                   
-                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'maya' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'maya' ? '#f9fafb' : 'white' }}>
+                  <label className="flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'maya' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'maya' ? '#f9fafb' : 'white' }}>
                 <input 
                   type="radio" 
                       name="paymentMethod"
@@ -744,7 +766,7 @@ const Checkout = () => {
                     <span className="font-bold text-gray-900 font-jost">Maya</span>
               </label>
                   
-                  <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'cash_on_delivery' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'cash_on_delivery' ? '#f9fafb' : 'white' }}>
+                  <label className="flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'cash_on_delivery' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'cash_on_delivery' ? '#f9fafb' : 'white' }}>
                 <input 
                   type="radio" 
                       name="paymentMethod"
@@ -762,7 +784,7 @@ const Checkout = () => {
 
             {/* Pickup Payment Information */}
             {deliveryMethod === 'pickup' && (
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white p-5 md:p-8 rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center mb-6">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-black to-gray-800 flex items-center justify-center mr-3 shadow-md">
                     <Icon icon="mdi:cash-register" className="text-white text-lg" />
@@ -797,13 +819,13 @@ const Checkout = () => {
 
           {/* Right - Summary */}
           <div className="lg:col-span-5">
-            <div className="bg-white p-8 rounded-2xl shadow-xl border-2 border-gray-200 hover:shadow-2xl transition-all duration-300 sticky top-6 self-start">
+            <div className="bg-white p-5 md:p-8 rounded-2xl shadow-xl border-2 border-gray-200 hover:shadow-2xl transition-all duration-300 md:sticky md:top-6 self-start">
               <h2 className="text-2xl font-bold text-gray-900 mb-6 font-jost">Order Summary</h2>
               
-              <div className="max-h-64 overflow-auto mb-6 space-y-4">
+              <div className="max-h-56 md:max-h-64 overflow-auto mb-6 space-y-4">
                   {cart.items.map((item) => (
                     <div key={item.id} className="flex items-start gap-4 pb-4 border-b border-gray-100">
-                  <div className="relative bg-gray-100 rounded-lg overflow-hidden w-24 h-24 flex-shrink-0">
+                  <div className="relative bg-gray-100 rounded-lg overflow-hidden w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
                     <img
                           src={item.image}
                           alt={item.name}
@@ -812,7 +834,7 @@ const Checkout = () => {
                         <span className="absolute top-0 right-0 bg-black text-white text-xs px-2 py-1 rounded-bl-lg font-jost">{item.quantity}</span>
                   </div>
                   <div className="flex-1">
-                        <p className="font-medium text-gray-800 text-sm font-jost">{item.name}</p>
+                        <p className="font-medium text-gray-800 text-sm font-jost break-words">{item.name}</p>
                     <div className="flex items-center mt-1">
                           <p className="text-sm font-medium text-black font-jost">₱{item.price.toFixed(2)}</p>
                     </div>
@@ -826,6 +848,27 @@ const Checkout = () => {
                     <span className="text-gray-600">Subtotal ({cart.totalItems} {cart.totalItems === 1 ? 'item' : 'items'})</span>
                     <span className="font-medium">₱{subtotal.toFixed(2)}</span>
                 </div>
+                
+                {/* Discount Section - Below Subtotal */}
+                {productDiscount > 0 && (
+                  <div className="flex justify-between items-center">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Icon icon="mdi:tag-outline" className="text-green-600" width="16" height="16" />
+                        <span className="text-green-700 font-semibold">Discount</span>
+                      </div>
+                      {getDiscountItems().length > 0 && (
+                        <p className="text-green-600 text-xs mt-0.5 ml-6">
+                          {getDiscountItems().length} item{getDiscountItems().length > 1 ? 's' : ''} on sale
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-green-700 font-bold">
+                      -₱{productDiscount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                
                 <div className="flex justify-between">
                   <span className="text-gray-600">{deliveryMethod === 'pickup' ? 'Pickup' : 'Shipping'}</span>
                     <span className="font-medium">{shippingFee === 0 ? 'FREE' : `₱${shippingFee.toFixed(2)}`}</span>
@@ -841,16 +884,16 @@ const Checkout = () => {
                 <button 
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-5 bg-gradient-to-r from-black to-gray-900 hover:from-gray-900 hover:to-black text-white font-bold rounded-xl transition-all flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed font-jost shadow-lg hover:shadow-xl transform hover:scale-[1.02] duration-200"
+                  className="w-full py-4 md:py-5 bg-gradient-to-r from-black to-gray-900 hover:from-gray-900 hover:to-black text-white font-bold rounded-xl transition-all flex items-center justify-center group disabled:opacity-50 disabled:cursor-not-allowed font-jost shadow-lg hover:shadow-xl transform hover:scale-[1.02] duration-200"
                 >
                   {isSubmitting ? (
                     <>
                       <Icon icon="mdi:loading" className="animate-spin mr-2 text-xl" />
-                      <span className="text-lg">Processing...</span>
+                      <span className="text-base md:text-lg">Processing...</span>
                     </>
                   ) : (
                     <>
-                <span className="text-lg">Complete Order</span>
+                <span className="text-base md:text-lg">Complete Order</span>
                 <Icon icon="mdi:arrow-right" className="ml-2 text-xl group-hover:translate-x-1 transition-transform" />
                     </>
                   )}

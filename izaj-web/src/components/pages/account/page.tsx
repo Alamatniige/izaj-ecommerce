@@ -333,64 +333,10 @@ const MyProfile: React.FC = () => {
           </div>
         </div>
       )}
-      {/* Mobile: My Account Navigation */}
-      <div className="lg:hidden bg-white px-4 pt-4 shadow-sm">
-        <div
-          className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
-          onClick={() => setIsAccountModalOpen(true)}
-          style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
-        >
-          <div className="flex items-center space-x-2">
-            <Icon icon="mdi:account-outline" className="text-black w-5 h-5" />
-            <span>My Profile</span>
-          </div>
-          <Icon icon="mdi:chevron-down" className="text-gray-400 w-6 h-6 ml-1" />
-        </div>
-      </div>
-      {/* My Account Modal for Mobile */}
-      {isAccountModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end lg:hidden bg-black bg-opacity-40 overflow-y-auto" onClick={() => setIsAccountModalOpen(false)}>
-          <div
-            className="w-full bg-white animate-slideUp relative shadow-lg max-h-screen overflow-y-auto"
-            style={{ minHeight: '240px' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
-              onClick={() => setIsAccountModalOpen(false)}
-              aria-label="Close"
-            >
-              <Icon icon="mdi:close" />
-            </button>
-            <div className="font-bold text-xl mb-4 text-black text-center mt-4" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>My Account</div>
-            <ul className="space-y-1 px-4 pb-6">
-              <li>
-                <span className="inline-flex items-center text-black font-semibold text-base" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                  My Account
-                </span>
-              </li>
-              <li className="pl-8 py-3 bg-gray-100 rounded-lg transition-colors duration-300">
-                <span className="text-black font-semibold text-base block" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Profile</span>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>My Orders</Link>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/payments" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Payment Methods</Link>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/addresses" className="text-black  hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Addresses</Link>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
-                <Link href="/changepassword" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Change Password</Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-      )}
+      {/* Mobile: My Account Navigation removed per request */}
       {/* Main Content */}
-      <main className="flex-grow py-6 md:py-12 bg-white">
-        <div className="w-full max-w-screen-xl mx-auto px-0">
+      <main className="flex-grow py-6 md:py-12 pb-24 lg:pb-12 bg-white">
+        <div className="w-full max-w-screen-xl mx-auto px-4 lg:px-0">
           {/* Header Section - Similar to ProductList */}
           <div className="mb-6 sm:mb-8 text-center">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-0 sm:mt-1 lg:mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
@@ -498,20 +444,20 @@ const MyProfile: React.FC = () => {
                         </div>
 
                         {/* Save and Edit Buttons - moved here */}
-                        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mt-2 sm:mt-4 mb-2">
+                        <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-4 sm:mt-4 mb-2">
                           {isEditMode ? (
                             <>
                               <button 
                                 type="button"
                                 onClick={handleCancelEdit}
-                                className="px-6 sm:px-8 py-2 sm:py-3 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 font-medium rounded-xl transition-all duration-200 text-xs sm:text-base"
+                                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-2 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 font-medium rounded-xl transition-all duration-200 text-sm sm:text-base"
                               >
                                 Cancel
                               </button>
                               <button 
                                 type="submit"
                                 disabled={isLoading}
-                                className={`px-6 sm:px-8 py-2 sm:py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center text-xs sm:text-base ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                                className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-2 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center text-sm sm:text-base ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
                               >
                                 {isLoading ? (
                                   <>
@@ -527,7 +473,7 @@ const MyProfile: React.FC = () => {
                             <button 
                               type="button"
                               onClick={handleEditClick}
-                              className="px-6 sm:px-8 py-2 sm:py-3 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-xs sm:text-base"
+                              className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-2 bg-black hover:bg-gray-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
                             >
                               Edit
                             </button>
@@ -594,19 +540,19 @@ const MyProfile: React.FC = () => {
                         <div className="border-t border-gray-200 my-6 sm:my-8" />
                         <div className="mb-4 font-jost">
                           <h4 className="text-red-600 font-jost font-semibold text-sm sm:text-base">Danger Zone</h4>
-                          <p className="text-gray-500 text-xs font-jost ">Permanently delete your account and all associated data</p>
+                          <p className="text-gray-500 text-xs font-jost mb-3 sm:mb-0">Permanently delete your account and all associated data</p>
                         </div>
-                        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4">
                           <button 
                             type="button"
-                            className="text-red-500 text-xs sm:text-sm font-medium hover:text-red-600 transition-colors text-left font-jost"
+                            className="text-red-500 text-sm sm:text-sm font-medium hover:text-red-600 transition-colors text-left font-jost sm:flex-1"
                             onClick={() => setShowDeleteModal(true)}
                           >
                             Account Deletion
                           </button>
                           <button 
                             type="button"
-                            className="px-4 sm:px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl font-jost"
+                            className="w-full sm:w-auto px-6 sm:px-5 py-3 sm:py-2 bg-red-500 hover:bg-red-600 text-white text-sm sm:text-sm font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl font-jost"
                             onClick={() => setShowDeleteModal(true)}
                           >
                             Delete Account
@@ -675,9 +621,9 @@ const MyProfile: React.FC = () => {
               />
             </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
               <button
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors text-sm"
+                className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg transition-colors text-sm"
                 onClick={() => {
                   setShowDeleteModal(false);
                   setDeleteConfirmationText('');
@@ -686,7 +632,7 @@ const MyProfile: React.FC = () => {
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-4 py-3 sm:py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 onClick={handleAccountDeletion}
                 disabled={isDeletingAccount || deleteConfirmationText !== 'Delete'}
               >

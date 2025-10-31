@@ -188,64 +188,10 @@ const ChangePass: React.FC = () => {
   return (
     <RequireAuth>
     <div className="flex flex-col min-h-screen bg-white font-sans">
-      {/* Mobile: My Account Navigation */}
-      <div className="lg:hidden bg-white px-4 pt-4 shadow-sm">
-        <div
-          className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
-          onClick={() => setIsAccountModalOpen(true)}
-          style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
-        >
-          <div className="flex items-center space-x-2">
-            <Icon icon="mdi:lock-outline" className="text-black w-5 h-5" />
-            <span>Change Password</span>
-          </div>
-          <Icon icon="mdi:chevron-down" className="text-gray-400 w-6 h-6 ml-1" />
-        </div>
-      </div>
-      {/* My Account Modal for Mobile */}
-      {isAccountModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end lg:hidden bg-black bg-opacity-40 overflow-y-auto" onClick={() => setIsAccountModalOpen(false)}>
-          <div
-            className="w-full bg-white animate-slideUp  relative shadow-lg max-h-screen overflow-y-auto"
-            style={{ minHeight: '240px' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
-              onClick={() => setIsAccountModalOpen(false)}
-              aria-label="Close"
-            >
-              <Icon icon="mdi:close" />
-            </button>
-            <div className="font-bold text-xl mb-4 text-black text-center mt-4" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>My Account</div>
-            <ul className="space-y-1 px-4 pb-6">
-              <li>
-                <span className="inline-flex items-center text-black font-semibold text-base" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                  My Account
-                </span>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/account" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Profile</Link>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>My Orders</Link>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/payments" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Payment Methods</Link>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/addresses" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Addresses</Link>
-              </li>
-              <li className="pl-8 py-3 bg-gray-100 rounded-lg mb-2 transition-colors duration-300">
-                <span className="text-black font-semibold text-base block" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Change Password</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      )}
+      {/* Mobile: My Account Navigation removed per request */}
       {/* Main Content */}
-      <main className="flex-grow py-6 md:py-12 bg-white">
-        <div className="w-full max-w-screen-xl mx-auto px-0">
+      <main className="flex-grow py-6 md:py-12 pb-24 lg:pb-12 bg-white">
+        <div className="w-full max-w-screen-xl mx-auto px-4 lg:px-0">
           {/* Header Section - Similar to ProductList */}
           <div className="mb-6 sm:mb-8 text-center">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-0 sm:mt-1 lg:mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
@@ -273,17 +219,17 @@ const ChangePass: React.FC = () => {
             <div className="flex-1">
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
                 <div className="p-4 sm:p-6">
-            <form onSubmit={handleSubmit} className="max-w-md space-y-4">
+            <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
               {/* Success Message */}
               {successMessage && (
-                <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
+                <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm sm:text-base">
                   {successMessage}
                 </div>
               )}
 
               {/* General Error Message */}
               {errors.general && (
-                <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm sm:text-base">
                   {errors.general}
                 </div>
               )}
@@ -297,7 +243,7 @@ const ChangePass: React.FC = () => {
                     name="currentPassword"
                     value={formData.currentPassword}
                     onChange={handleInputChange}
-                    className={`w-full p-3 pr-12 border ${errors.currentPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors`}
+                    className={`w-full p-3 pr-12 text-sm sm:text-base border ${errors.currentPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors`}
                     placeholder="Enter current password"
                   />
                   <button
@@ -311,7 +257,7 @@ const ChangePass: React.FC = () => {
                     />
                   </button>
                 </div>
-                {errors.currentPassword && <p className="text-red-500 text-sm mt-1">{errors.currentPassword}</p>}
+                {errors.currentPassword && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.currentPassword}</p>}
               </div>
 
               {/* New Password */}
@@ -323,7 +269,7 @@ const ChangePass: React.FC = () => {
                     name="newPassword"
                     value={formData.newPassword}
                     onChange={handleInputChange}
-                    className={`w-full p-3 pr-12 border ${errors.newPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors`}
+                    className={`w-full p-3 pr-12 text-sm sm:text-base border ${errors.newPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors`}
                     placeholder="Enter new password"
                   />
                   <button
@@ -337,8 +283,8 @@ const ChangePass: React.FC = () => {
                     />
                   </button>
                 </div>
-                {errors.newPassword && <p className="text-red-500 text-sm mt-1">{errors.newPassword}</p>}
-                <p className="text-gray-500 text-xs mt-1">
+                {errors.newPassword && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.newPassword}</p>}
+                <p className="text-gray-500 text-[11px] sm:text-xs mt-1">
                   Password must be at least 8 characters with uppercase, lowercase, number, and special character.
                 </p>
               </div>
@@ -352,7 +298,7 @@ const ChangePass: React.FC = () => {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className={`w-full p-3 pr-12 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors`}
+                    className={`w-full p-3 pr-12 text-sm sm:text-base border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-300 focus:border-gray-400 transition-colors`}
                     placeholder="Confirm new password"
                   />
                   <button
@@ -366,7 +312,7 @@ const ChangePass: React.FC = () => {
                     />
                   </button>
                 </div>
-                {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.confirmPassword}</p>}
               </div>
 
               {/* Save Button */}
@@ -374,7 +320,7 @@ const ChangePass: React.FC = () => {
                 <button 
                   type="submit"
                   disabled={isLoading}
-                  className={`px-6 py-3 bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                  className={`w-full sm:w-auto px-6 py-3 bg-black hover:bg-gray-800 text-white text-sm sm:text-base font-semibold transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
                   style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                 >
                   {isLoading ? (

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import { Button } from '@/components';
 import { useCartContext, useFavoritesContext } from '@/context';
@@ -36,7 +37,11 @@ export default function CartPage() {
   };
 
   const calculateSubtotal = () => {
-    return cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    // Calculate subtotal using original price if available, otherwise use discounted price
+    return cart.items.reduce((sum, item) => {
+      const itemPrice = item.originalPrice !== undefined ? item.originalPrice : item.price;
+      return sum + (itemPrice * item.quantity);
+    }, 0);
   };
 
   const calculateDiscount = () => {
@@ -46,6 +51,16 @@ export default function CartPage() {
       }
       return sum;
     }, 0);
+  };
+
+  const getDiscountItems = () => {
+    return cart.items.filter(item => item.originalPrice !== undefined && item.originalPrice > item.price);
+  };
+
+  const calculateTotalSavings = () => {
+    const discount = calculateDiscount();
+    const promo = promoDiscount;
+    return discount + promo;
   };
 
   const handleCheckout = () => {
@@ -140,14 +155,14 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-white">
       
-      <div className="max-w-[94%] mx-auto mt-8 px-5 sm:px-8 ml-6 mr-6">
+      <div className="max-w-[94%] mx-auto mt-6 px-4 sm:px-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold tracking-wider text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Your cart</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-wider text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Your cart</h1>
         </div>
         <div className="mb-2 text-gray-600 text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
           {cart.totalItems} product{cart.totalItems !== 1 ? 's' : ''} in total
         </div>
-        <hr className="border-t border-gray-200 mb-8" />
+        <hr className="border-t border-gray-200 mb-5 md:mb-8" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8">
           <div className="lg:col-span-8">
@@ -178,49 +193,52 @@ export default function CartPage() {
                 <div>
                   <div className="divide-y divide-gray-100">
                     {cart.items.map((item) => (
-                      <div key={item.id} className="flex items-start p-4 border-b border-gray-100 bg-white relative" style={{ scrollSnapAlign: 'start' }}>
-                        <div className="w-24 h-24 flex-shrink-0 mr-4 bg-white flex items-center justify-center rounded-lg border border-gray-100">
-                          <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                      <Link key={item.id} href={`/item-description/${item.productId}`} className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border-b border-gray-100 bg-white relative hover:bg-gray-50 hover:shadow-md hover:border-gray-300 transition-all duration-300 group rounded-lg" style={{ scrollSnapAlign: 'start' }}>
+                        <div className="w-20 h-20 sm:w-24 sm:h-28 flex-shrink-0 flex items-center justify-center overflow-hidden mt-1">
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                         </div>
-                        <div className="flex flex-col justify-between flex-1">
+                        <div className="flex flex-col justify-between flex-1 min-w-0">
                           <div>
-                            <p className="font-bold text-base lg:text-lg text-black hover:text-orange-500 transition-colors cursor-pointer" style={{ fontFamily: 'Jost, sans-serif' }}>{item.name}</p>
-                            <p className="text-gray-700 mt-1 text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(item.price)}{item.quantity === 10 ? '/10 pieces' : ''}</p>
-                            {item.isSale && (
-                              <span className="inline-block bg-red-600 text-white text-xs font-bold px-2 py-1 mt-2 mr-2" style={{ fontFamily: 'Jost, sans-serif' }}>SALE</span>
-                            )}
-                            {item.isNew && (
-                              <span className="inline-block bg-green-600 text-white text-xs font-bold px-2 py-1 mt-2" style={{ fontFamily: 'Jost, sans-serif' }}>NEW</span>
-                            )}
+                            <p className="font-bold text-xs sm:text-sm lg:text-lg text-black group-hover:text-gray-700 line-clamp-2" style={{ fontFamily: 'Jost, sans-serif' }}>{item.name}</p>
+                            <div className="flex flex-wrap gap-1 sm:gap-2 mt-1 sm:mt-2">
+                              {item.isSale && (
+                                <span className="inline-block bg-red-600 text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1" style={{ fontFamily: 'Jost, sans-serif' }}>SALE</span>
+                              )}
+                              {item.isNew && (
+                                <span className="inline-block bg-green-600 text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1" style={{ fontFamily: 'Jost, sans-serif' }}>NEW</span>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex flex-col lg:flex-row items-start lg:items-center mt-4 space-y-4 lg:space-y-0">
-                            <div className="flex items-center border border-gray-300 overflow-hidden">
-                              <button onClick={() => handleQuantityChange(item.id, Math.max(1, item.quantity - 1))} className="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors">
-                                <Icon icon="mdi:minus" width="20" height="20" />
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center mt-2 sm:mt-4 space-y-2 sm:space-y-0">
+                            <div className="flex items-center border border-gray-300 overflow-hidden rounded" onClick={(e) => e.stopPropagation()}>
+                              <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuantityChange(item.id, Math.max(1, item.quantity - 1)); }} className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors">
+                                <Icon icon="mdi:minus" width="18" height="18" className="sm:w-5 sm:h-5" />
                               </button>
-                              <span className="w-8 text-center text-black font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{item.quantity}</span>
-                              <button onClick={() => handleQuantityChange(item.id, Math.min(10, item.quantity + 1))} className="w-8 h-8 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors">
-                                <Icon icon="mdi:plus" width="20" height="20" />
+                              <span className="w-8 sm:w-8 text-center text-black font-medium text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>{item.quantity}</span>
+                              <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuantityChange(item.id, Math.min(10, item.quantity + 1)); }} className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-gray-700 hover:bg-gray-100 transition-colors">
+                                <Icon icon="mdi:plus" width="18" height="18" className="sm:w-5 sm:h-5" />
                               </button>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end justify-between ml-2 min-h-[96px]" style={{ minHeight: '96px' }}>
+                        <div className="flex flex-col items-end justify-between ml-1 sm:ml-2 min-h-[80px] sm:min-h-[96px]" style={{ minHeight: '80px' }}>
                           <div>
-                            <p className="font-semibold text-base lg:text-lg text-black" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(item.price * item.quantity)}</p>
+                            <p className="font-semibold text-xs sm:text-sm lg:text-lg text-black" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(item.price * item.quantity)}</p>
                             {item.originalPrice && (
-                              <p className="text-sm text-gray-500 line-through" style={{ fontFamily: 'Jost, sans-serif' }}>
+                              <p className="text-[10px] sm:text-sm text-gray-500 line-through" style={{ fontFamily: 'Jost, sans-serif' }}>
                                 {item.originalPrice !== undefined ? formatCurrency(item.originalPrice * item.quantity) : ''}
                               </p>
                             )}
                           </div>
                           <div className="flex-grow"></div>
-                          <div className="absolute bottom-2 right-2 flex flex-row space-x-2 items-end z-10">
-                            <button onClick={() => handleRemoveItem(item.id)} className="text-black hover:text-red-500 transition-colors flex items-center p-2" aria-label="Remove">
-                              <Icon icon="mdi:delete-outline" width="22" height="22" className="lg:w-6 lg:h-6 w-[22px] h-[22px]" />
+                          <div className="absolute bottom-1.5 sm:bottom-2 right-1.5 sm:right-2 flex flex-row space-x-1 sm:space-x-2 items-end z-10">
+                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleRemoveItem(item.id); }} className="text-black hover:text-red-500 transition-colors flex items-center p-1.5 sm:p-2" aria-label="Remove">
+                              <Icon icon="mdi:delete-outline" width="20" height="20" className="sm:w-6 sm:h-6" />
                             </button>
                             <button
                               onClick={async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 const originEl = e.currentTarget as HTMLElement;
                                 const heartIconElement = document.getElementById('favorites-icon') || document.querySelector('[aria-label="Favorites"]') as HTMLElement | null;
                                 if (originEl && heartIconElement) {
@@ -233,15 +251,15 @@ export default function CartPage() {
                                   addFavorite({ productId: item.productId, name: item.name, price: item.price, image: item.image });
                                 }
                               }}
-                              className="text-black hover:text-red-500 transition-colors flex items-center p-2"
+                              className="text-black hover:text-red-500 transition-colors flex items-center p-1.5 sm:p-2"
                               aria-label="Save for later"
                               title={isFavorite(item.productId) ? 'Already in favorites' : 'Save to favorites'}
                             >
-                              <Icon icon={isFavorite(item.productId) ? 'mdi:heart' : 'mdi:heart-outline'} width="22" height="22" className={`lg:w-6 lg:h-6 w-[22px] h-[22px] ${isFavorite(item.productId) ? 'text-red-500' : ''}`} />
+                              <Icon icon={isFavorite(item.productId) ? 'mdi:heart' : 'mdi:heart-outline'} width="20" height="20" className={`sm:w-6 sm:h-6 ${isFavorite(item.productId) ? 'text-red-500' : ''}`} />
                             </button>
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -278,10 +296,41 @@ export default function CartPage() {
                   </div>
                   <div className="space-y-3 lg:space-y-4 mb-4 lg:mb-6">
                     <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Subtotal</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(subtotal)}</span></div>
-                    <div className="flex justify-between text-gray-600 font-semibold text-sm lg:text-base"><span style={{ fontFamily: 'Jost, sans-serif' }}>Discount</span><span style={{ fontFamily: 'Jost, sans-serif' }}>-{formatCurrency(productDiscount)}</span></div>
-                    {promoDiscount > 0 && (
-                      <div className="flex justify-between text-gray-600 font-semibold text-sm lg:text-base"><span style={{ fontFamily: 'Jost, sans-serif' }}>Promo</span><span style={{ fontFamily: 'Jost, sans-serif' }}>-{formatCurrency(promoDiscount)}</span></div>
+                    
+                    {/* Discount Section - Below Subtotal */}
+                    {productDiscount > 0 && (
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <Icon icon="mdi:tag-outline" className="text-green-600" width="16" height="16" />
+                            <span className="text-green-700 font-semibold text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Discount</span>
+                          </div>
+                          {getDiscountItems().length > 0 && (
+                            <p className="text-green-600 text-xs mt-0.5 ml-6" style={{ fontFamily: 'Jost, sans-serif' }}>
+                              {getDiscountItems().length} item{getDiscountItems().length > 1 ? 's' : ''} on sale
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-green-700 font-bold text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>
+                          -{formatCurrency(productDiscount)}
+                        </span>
+                      </div>
                     )}
+                    
+                    {promoDiscount > 0 && (
+                      <div className="flex justify-between items-center">
+                        <div className="flex-1">
+                          <span className="text-green-700 font-semibold text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Promo Discount</span>
+                          {appliedPromo && (
+                            <p className="text-green-600 text-xs mt-0.5" style={{ fontFamily: 'Jost, sans-serif' }}>
+                              Code: {appliedPromo}
+                            </p>
+                          )}
+                        </div>
+                        <span className="text-green-700 font-bold text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>-{formatCurrency(promoDiscount)}</span>
+                      </div>
+                    )}
+                    
                     <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Shipping</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{hasShippingAddress ? formatCurrency(shippingFee) : '—'}</span></div>
                     <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Tax (12% VAT)</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(tax)}</span></div>
                     <div className="border-t border-gray-300 pt-3 lg:pt-4 flex justify-between font-extrabold text-base lg:text-lg"><span className="text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Total</span><span className="text-black" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(computedTotal)}</span></div>

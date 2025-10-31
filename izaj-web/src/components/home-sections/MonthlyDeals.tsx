@@ -79,10 +79,28 @@ export default function MonthlyDeals() {
             stock = (product as any).product_stock[0].display_quantity || 10;
           }
           
+          // Calculate sale price based on percentage or fixed_amount
+          const originalPrice = parseFloat(product.price.toString());
+          const saleDetails = (product as any).sale?.[0]; // Sale is an array, get first element
+          let salePrice = originalPrice;
+          let originalPriceFormatted = `₱${originalPrice.toLocaleString()}`;
+          
+          if (saleDetails) {
+            if (saleDetails.percentage) {
+              // Calculate discount based on percentage
+              const discountAmount = (originalPrice * saleDetails.percentage) / 100;
+              salePrice = originalPrice - discountAmount;
+            } else if (saleDetails.fixed_amount) {
+              // Calculate discount based on fixed amount
+              salePrice = Math.max(0, originalPrice - saleDetails.fixed_amount);
+            }
+          }
+          
           return {
           id: parseInt(product.product_id) || 0,
           name: product.product_name,
-          price: `₱${parseFloat(product.price.toString()).toLocaleString()}`,
+          price: `₱${salePrice.toLocaleString()}`,
+          originalPrice: saleDetails ? originalPriceFormatted : undefined,
           image: product.media_urls?.[0] || "/placeholder.jpg",
             mediaUrls: product.media_urls || [],
           colors: ["black"], // Default color
@@ -295,9 +313,9 @@ export default function MonthlyDeals() {
         }
       `}</style>
       <section className="w-full bg-gray-50 py-6 sm:py-8 md:py-10">
-        <div className="container mx-auto px-0 sm:px-0 max-w-6xl relative">
+        <div className="container mx-auto px-4 sm:px-0 max-w-6xl relative">
         <div className="flex justify-between items-baseline mb-4">
-          <h2 className="text-lg md:text-xl text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>
+          <h2 className="text-base sm:text-lg md:text-xl text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>
             Monthly Deals 
           </h2>
           <div className="flex-grow"></div>
@@ -342,18 +360,40 @@ export default function MonthlyDeals() {
         )}
 
         <div 
-          className="relative overflow-hidden"
+          className="relative overflow-visible lg:overflow-hidden"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          {(isMobile || isTablet) ? (
-            <div className="flex flex-nowrap overflow-x-auto gap-6 pb-2 px-1 -mx-1">
+          <div className="block lg:hidden">
+            <>
+            <style>{`
+              .mobile-deals-scroll {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+              }
+              .mobile-deals-scroll::-webkit-scrollbar {
+                height: 6px; /* match categories scrollbar */
+              }
+              .mobile-deals-scroll::-webkit-scrollbar-track {
+                background: rgba(0,0,0,0.06);
+                border-radius: 9999px;
+              }
+              .mobile-deals-scroll::-webkit-scrollbar-thumb {
+                background: rgba(0,0,0,0.35);
+                border-radius: 9999px;
+              }
+              .mobile-deals-scroll::-webkit-scrollbar-thumb:hover {
+                background: rgba(0,0,0,0.5);
+              }
+            `}</style>
+            <div className="mobile-deals-scroll pb-6 md:pb-2 pl-8 pr-6">
+              <div className="flex flex-nowrap gap-4 sm:gap-6 mr-6">
               {allProducts.map((product) => (
                 <div
                   key={product.id}
                   className="overflow-hidden relative flex flex-col w-full group max-w-[500px] min-w-0"
-                  style={isMobile ? { width: '70vw', minWidth: '70vw', flex: '0 0 70vw' } : isTablet ? { width: '40vw', minWidth: '40vw', flex: '0 0 40vw' } : {}}
+                  style={isMobile ? { width: '65vw', minWidth: '65vw', flex: '0 0 65vw' } : isTablet ? { width: '40vw', minWidth: '40vw', flex: '0 0 40vw' } : {}}
                   onMouseEnter={() => handleMouseEnter(product.id)}
                   onMouseLeave={() => handleMouseLeave(product.id)}
                 >
@@ -363,11 +403,11 @@ export default function MonthlyDeals() {
                       alt={product.name} 
                       width={400}
                       height={320}
-                      className={`w-full h-64 sm:h-96 object-cover transition-all duration-300 hover:scale-110 ${
+                      className={`w-full h-72 sm:h-96 object-cover transition-all duration-300 hover:scale-110 ${
                         isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
                       }`} 
                     />
-                    <span className="absolute top-3 left-3 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>SALE</span>
+                    <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>SALE</span>
                   </div>
                   <div className="pt-5 pb-0 flex flex-col">
                     <div className="space-y-1.5">
@@ -375,14 +415,19 @@ export default function MonthlyDeals() {
                         <p className="text-gray-500 text-xs text-left group-hover:opacity-0 transition-opacity duration-300" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{product.category || 'Lighting'}</p>
                         <Link
                           href={`/item-description/${product.id}`}
-                          className="absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-80 transition-all duration-300 text-sm text-center block rounded-sm border opacity-0 group-hover:opacity-100"
+                          className="hidden sm:block absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-100 transition-all duration-300 text-sm text-center rounded-sm border opacity-0 group-hover:opacity-100"
                           style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: '#423f3f', borderColor: '#423f3f', letterSpacing: '0.1em' }}
                         >
                           VIEW DETAILS
                         </Link>
                       </div>
                       <h3 className="text-gray-900 text-base text-left line-clamp-2 leading-tight" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.name}</h3>
+                      <div className="flex items-center gap-2">
                       <p className="text-gray-900 text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.price}</p>
+                        {product.originalPrice && (
+                          <p className="text-gray-400 text-sm line-through" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{product.originalPrice}</p>
+                        )}
+                      </div>
                       <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
                         (product.stock || 0) > 5 ? 'bg-green-100 text-green-800' : 
                         (product.stock || 0) > 0 ? 'bg-orange-100 text-orange-800' : 
@@ -397,10 +442,15 @@ export default function MonthlyDeals() {
                       </div>
                     </div>
                   </div>
+                  {/* Full-card link on mobile */}
+                  <Link href={`/item-description/${product.id}`} className="sm:hidden absolute inset-0 z-10" aria-label={`View ${product.name}`} />
                 </div>
               ))}
+              </div>
             </div>
-          ) : (
+            </>
+          </div>
+          <div className="hidden lg:block">
             <div 
               className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 justify-center transition-all duration-500 ease-in-out ${getSlideClass(isAnimating, slideDirection)}`}
             >
@@ -421,7 +471,7 @@ export default function MonthlyDeals() {
                         isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
                       }`} 
                     />
-                    <span className="absolute top-3 left-3 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>SALE</span>
+                    <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>SALE</span>
                   </div>
                   <div className="pt-5 pb-0 flex flex-col">
                     <div className="space-y-1.5">
@@ -429,14 +479,19 @@ export default function MonthlyDeals() {
                         <p className="text-gray-500 text-xs text-left group-hover:opacity-0 transition-opacity duration-300" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{product.category || 'Lighting'}</p>
                         <Link
                           href={`/item-description/${product.id}`}
-                          className="absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-80 transition-all duration-300 text-sm text-center block rounded-sm border opacity-0 group-hover:opacity-100"
+                          className="absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-100 transition-all duration-300 text-sm text-center block rounded-sm border opacity-0 group-hover:opacity-100"
                           style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: '#423f3f', borderColor: '#423f3f', letterSpacing: '0.1em' }}
                         >
                           VIEW DETAILS
                         </Link>
                       </div>
                       <h3 className="text-gray-900 text-base text-left line-clamp-2 leading-tight" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.name}</h3>
+                      <div className="flex items-center gap-2">
                       <p className="text-gray-900 text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.price}</p>
+                        {product.originalPrice && (
+                          <p className="text-gray-400 text-sm line-through" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{product.originalPrice}</p>
+                        )}
+                      </div>
                       <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
                         (product.stock || 0) > 5 ? 'bg-green-100 text-green-800' : 
                         (product.stock || 0) > 0 ? 'bg-orange-100 text-orange-800' : 
@@ -454,7 +509,7 @@ export default function MonthlyDeals() {
                 </div>
               ))}
             </div>
-          )}
+          </div>
         </div>
       </div>
         </div>

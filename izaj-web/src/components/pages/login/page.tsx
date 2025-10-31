@@ -196,14 +196,14 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 md:gap-12 lg:gap-16 items-start">
           {/* Left Section - Title */}
-          <div className="space-y-8">
-            <h1 className="text-4xl font-bold text-black leading-tight font-poppins">
+          <div className="space-y-6 md:space-y-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black leading-tight font-poppins">
               Log in to your account
             </h1>
-            <p className="text-lg text-gray-600 font-jost">
+            <p className="text-base md:text-lg text-gray-600 font-jost">
               New at IZAJ?{' '}
               <button
                 onClick={() => router.push('/signup')}
@@ -213,8 +213,8 @@ const LoginPage: React.FC = () => {
               </button>
             </p>
 
-            {/* Product Showcase */}
-            <div className="relative mt-12 overflow-hidden rounded-2xl shadow-2xl group">
+            {/* Product Showcase - hidden on mobile */}
+            <div className="relative mt-12 overflow-hidden rounded-2xl shadow-2xl group hidden md:block">
               {/* Background Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/60 z-10 pointer-events-none" />
               
@@ -273,8 +273,8 @@ const LoginPage: React.FC = () => {
               <div className="absolute bottom-4 right-4 w-12 h-12 border-r-2 border-b-2 border-white/30 z-20" />
             </div>
 
-            {/* Additional Info */}
-              <div className="flex items-center space-x-6 text-sm text-gray-600">
+            {/* Additional Info - hidden on mobile */}
+              <div className="hidden md:flex items-center space-x-6 text-sm text-gray-600">
                 <div className="flex items-center space-x-2">
                   <Icon icon="mdi:check-circle" className="w-5 h-5 text-green-600" />
                   <span className="font-jost">Premium Quality</span>
@@ -289,8 +289,8 @@ const LoginPage: React.FC = () => {
                 </div>
               </div>
 
-            {/* Stats Counter */}
-            <div className="mt-8 p-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+            {/* Stats Counter - hidden on mobile */}
+            <div className="hidden md:block mt-8 p-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
               <div className="grid grid-cols-3 gap-6">
                 {/* Happy Customers */}
                 <div className="text-center">
@@ -330,8 +330,8 @@ const LoginPage: React.FC = () => {
           </div>
 
           {/* Right Section - Form */}
-          <div className="bg-white max-w-lg">
-            <p className="text-black text-base mb-8 leading-relaxed font-bold font-jost">
+          <div className="bg-white w-full lg:max-w-lg">
+            <p className="hidden md:block text-black text-sm md:text-base mb-0 md:mb-8 leading-relaxed font-bold font-jost">
               Get a more personalized experience where you don't need to fill in your information every time.
             </p>
 
@@ -394,11 +394,11 @@ const LoginPage: React.FC = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
               <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-medium text-black font-jost">Email or Phone</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <div className="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none">
                     {isPhoneMode ? (
                       <span className="text-gray-600 text-sm font-medium font-jost">+63</span>
                     ) : (
@@ -415,7 +415,7 @@ const LoginPage: React.FC = () => {
                     ref={emailInputRef}
                     aria-invalid={!!errors.email}
                     aria-describedby={errors.email ? 'email-help' : undefined}
-                    className={`w-full ${isPhoneMode ? 'pl-16' : 'pl-12'} pr-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
+                    className={`w-full ${isPhoneMode ? 'pl-14 md:pl-16' : 'pl-10 md:pl-12'} pr-3 md:pr-4 py-3 md:py-4 text-sm md:text-base border-2 bg-white text-black placeholder-gray-400 ${errors.email ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                     placeholder={isPhoneMode ? '9XXXXXXXXXX' : 'Enter your email or phone'}
                   />
                   {errors.email && (
@@ -433,15 +433,15 @@ const LoginPage: React.FC = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-4 pr-12 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
+                    className={`w-full px-3 md:px-4 py-3 md:py-4 pr-10 md:pr-12 text-sm md:text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                     placeholder="Enter your password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center transition-colors duration-200 rounded-none"
+                    className="absolute inset-y-0 right-0 pr-3 md:pr-4 flex items-center transition-colors duration-200 rounded-none"
                   >
-                    <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 text-gray-600 hover:text-black transition-colors duration-200" />
+                    <Icon icon={showPassword ? "mdi:eye-off" : "mdi:eye"} className="w-5 h-5 md:w-5 md:h-5 text-gray-600 hover:text-black transition-colors duration-200" />
                   </button>
                   {errors.password && (
                     <p className="mt-1 text-sm text-red-600 font-jost">{errors.password}</p>
@@ -449,7 +449,7 @@ const LoginPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -475,7 +475,7 @@ const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-black text-white py-4 px-6 text-base font-medium hover:bg-gray-800 transition-all duration-300 flex items-center justify-center disabled:opacity-50 rounded-none font-poppins"
+                className="w-full bg-black text-white py-3 md:py-4 px-5 md:px-6 text-sm md:text-base font-medium hover:bg-gray-800 transition-all duration-300 flex items-center justify-center disabled:opacity-50 rounded-none font-poppins"
               >
                 {isLoading ? (
                   <>
@@ -493,13 +493,13 @@ const LoginPage: React.FC = () => {
                     <div className="w-full border-t border-gray-300"></div>
                   </div>
                   <div className="relative flex justify-center">
-                    <span className="px-4 bg-white text-base text-gray-600 font-jost">New at IZAJ?</span>
+                    <span className="px-4 bg-white text-sm md:text-base text-gray-600 font-jost">New at IZAJ?</span>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => router.push('/signup')}
-                  className="w-full bg-white text-black py-4 px-6 text-base border-2 border-gray-300 font-medium hover:bg-gray-50 transition-all duration-300 rounded-none mt-4 font-poppins"
+                  className="w-full bg-white text-black py-3 md:py-4 px-5 md:px-6 text-sm md:text-base border-2 border-gray-300 font-medium hover:bg-gray-50 transition-all duration-300 rounded-none mt-4 font-poppins"
                 >
                   Create account
                 </button>

@@ -292,7 +292,7 @@ export default function FreshDrops() {
         }
       `}</style>
       <section className="w-full bg-gray-50 py-6 sm:py-8 md:py-10">
-        <div className="container mx-auto px-0 sm:px-0 max-w-6xl relative">
+        <div className="container mx-auto px-4 sm:px-0 max-w-6xl relative">
         <div className="flex justify-between items-baseline mb-4">
           <h2 className="text-lg md:text-xl text-black font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>
             Fresh Drops
@@ -345,12 +345,21 @@ export default function FreshDrops() {
           onTouchEnd={onFreshDropsTouchEnd}
         >
           {(isMobile || isTablet) ? (
-            <div className="flex flex-nowrap overflow-x-auto gap-6 pb-2 px-1 -mx-1">
+            <>
+            <style>{`
+              .fresh-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+              .fresh-scroll::-webkit-scrollbar { height: 6px; }
+              .fresh-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.06); border-radius: 9999px; }
+              .fresh-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.35); border-radius: 9999px; }
+              .fresh-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.5); }
+            `}</style>
+            <div className="fresh-scroll pb-6 md:pb-2 pl-10 pr-6">
+              <div className="flex flex-nowrap gap-4 sm:gap-6 mr-6">
               {allProducts.map((product) => (
                 <div
                   key={product.id}
                   className="overflow-hidden relative flex flex-col w-full group max-w-[500px] min-w-0"
-                  style={isMobile ? { width: '70vw', minWidth: '70vw', flex: '0 0 70vw' } : isTablet ? { width: '40vw', minWidth: '40vw', flex: '0 0 40vw' } : {}}
+                  style={isMobile ? { width: '65vw', minWidth: '65vw', flex: '0 0 65vw' } : isTablet ? { width: '40vw', minWidth: '40vw', flex: '0 0 40vw' } : {}}
                   onMouseEnter={() => handleMouseEnter(product.id)}
                   onMouseLeave={() => handleMouseLeave(product.id)}
                 >
@@ -360,11 +369,11 @@ export default function FreshDrops() {
                       alt={product.name} 
                       width={400}
                       height={320}
-                      className={`w-full h-64 sm:h-96 object-cover transition-all duration-300 hover:scale-110 ${
+                      className={`w-full h-72 sm:h-96 object-cover transition-all duration-300 hover:scale-110 ${
                         isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
                       }`}
                     />
-                    <span className="absolute top-3 left-3 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#10B981' }}>NEW</span>
+                    <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#10B981' }}>NEW</span>
                   </div>
                   <div className="pt-5 pb-0 flex flex-col">
                     <div className="space-y-1.5">
@@ -372,7 +381,7 @@ export default function FreshDrops() {
                         <p className="text-gray-500 text-xs text-left group-hover:opacity-0 transition-opacity duration-300" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{product.category || 'Lighting'}</p>
                         <Link
                           href={`/item-description/${product.id}?source=new`}
-                          className="absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-80 transition-all duration-300 text-sm text-center block rounded-sm border opacity-0 group-hover:opacity-100"
+                          className="hidden sm:block absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-100 transition-all duration-300 text-sm text-center rounded-sm border opacity-0 group-hover:opacity-100"
                           style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: '#423f3f', borderColor: '#423f3f', letterSpacing: '0.1em' }}
                         >
                           VIEW DETAILS
@@ -394,9 +403,13 @@ export default function FreshDrops() {
                       </div>
                     </div>
                   </div>
+                  {/* Full-card link on mobile */}
+                  <Link href={`/item-description/${product.id}?source=new`} className="sm:hidden absolute inset-0 z-10" aria-label={`View ${product.name}`} />
                 </div>
               ))}
+              </div>
             </div>
+            </>
           ) : (
             <div 
               className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 justify-center transition-all duration-500 ease-in-out ${getSlideClass(isFreshDropsAnimating, freshDropsSlideDirection)}`}
@@ -418,7 +431,7 @@ export default function FreshDrops() {
                         isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
                       }`}
                     />
-                    <span className="absolute top-3 left-3 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#10B981' }}>NEW</span>
+                    <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#10B981' }}>NEW</span>
                   </div>
                   <div className="pt-5 pb-0 flex flex-col">
                     <div className="space-y-1.5">
@@ -426,7 +439,7 @@ export default function FreshDrops() {
                         <p className="text-gray-500 text-xs text-left group-hover:opacity-0 transition-opacity duration-300" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{product.category || 'Lighting'}</p>
                         <Link
                           href={`/item-description/${product.id}?source=new`}
-                          className="absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-80 transition-all duration-300 text-sm text-center block rounded-sm border opacity-0 group-hover:opacity-100"
+                          className="absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-100 transition-all duration-300 text-sm text-center block rounded-sm border opacity-0 group-hover:opacity-100"
                           style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: '#423f3f', borderColor: '#423f3f', letterSpacing: '0.1em' }}
                         >
                           VIEW DETAILS

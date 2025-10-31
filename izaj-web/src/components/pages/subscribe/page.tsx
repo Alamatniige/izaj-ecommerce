@@ -44,20 +44,20 @@ export default function SubscribePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+      <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-start">
           {/* Left Section */}
           <div className="space-y-8">
-            <h1 className="text-4xl font-bold text-black leading-tight tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            <h1 className="text-3xl md:text-4xl font-bold text-black leading-tight tracking-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
               Stay Updated with IZAJ
             </h1>
-            <p className="text-lg text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>
+            <p className="text-base md:text-lg text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>
               Join our exclusive community and be the first to discover new arrivals, 
               special offers, and expert styling tips.
             </p>
 
             {/* Product Showcase */}
-            <div className="relative mt-12 overflow-hidden rounded-2xl shadow-2xl">
+            <div className="hidden lg:block relative mt-12 overflow-hidden rounded-2xl shadow-2xl">
               <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/60 z-10" />
               <div className="relative h-[400px] w-full">
                 <img
@@ -77,7 +77,7 @@ export default function SubscribePage() {
             </div>
 
             {/* Stats */}
-            <div className="mt-8 p-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+            <div className="hidden lg:block mt-8 p-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
               <div className="grid grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-black mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>10,000+</div>
@@ -96,8 +96,8 @@ export default function SubscribePage() {
           </div>
 
           {/* Right Section - Form */}
-          <div className="bg-white max-w-lg">
-            <p className="text-black text-base mb-8 leading-relaxed font-bold" style={{ fontFamily: 'Jost, sans-serif' }}>
+          <div className="bg-white w-full lg:max-w-lg">
+            <p className="hidden lg:block text-black text-base mb-8 leading-relaxed font-bold" style={{ fontFamily: 'Jost, sans-serif' }}>
               Get exclusive access to our latest products, special offers, and expert styling tips delivered straight to your inbox.
             </p>
 

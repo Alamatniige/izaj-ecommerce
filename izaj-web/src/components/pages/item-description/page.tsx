@@ -7,13 +7,13 @@ import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 import CompactChat from '../../common/CompactChat';
-import { getProductById } from '../../../services/productService';
+import { getProductById, Product } from '../../../services/productService';
 import { useCartContext } from '../../../context/CartContext';
 import { useFavoritesContext } from '../../../context/FavoritesContext';
 import { useRecentlyViewed } from '../../../hooks/useRecentlyViewed';
 
 interface ItemDescriptionProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 type Review = {
@@ -26,22 +26,9 @@ type Review = {
   admin_reply_at?: string;
 };
 
-type ProductDetails = {
-  id: number;
-  name: string;
-  price: string; // formatted price like ₱32,995
-  image: string;
-  colors?: string[];
-  stock?: number;
-  status?: string;
-  pickup_available?: boolean;
-  category?: string;
-  description?: string;
-  mediaUrls?: string[];
-};
-
 const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
-  const id = params?.id;
+  const resolvedParams = React.use(params);
+  const id = resolvedParams?.id;
   const { addToCart, isLoading: cartLoading } = useCartContext();
   const { toggleFavorite, isFavorite } = useFavoritesContext();
   const { addToRecentlyViewed } = useRecentlyViewed();
@@ -67,12 +54,15 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
     one_star: 0
   });
   const [reviewsLoading, setReviewsLoading] = useState(true);
-  const [product, setProduct] = useState<ProductDetails | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState<string>('');
   // Removed unused selectedBranch state
   const [isLoading, setIsLoading] = useState(true);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [hasSwiped, setHasSwiped] = useState(false);
 
   // Stock status helper function
   const getStockStatus = (status: string) => {
@@ -152,14 +142,23 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
     const priceString = product.price.replace(/[₱,]/g, '');
     const price = parseFloat(priceString);
 
+    // Convert originalPrice from string (₱32,995) to number if it exists
+    let originalPrice: number | undefined = undefined;
+    if (product.originalPrice) {
+      const originalPriceString = product.originalPrice.replace(/[₱,]/g, '');
+      originalPrice = parseFloat(originalPriceString);
+    }
+
     addToCart({
       productId: product.id.toString(),
       name: product.name,
       price: price,
+      originalPrice: originalPrice,
       image: product.image,
       quantity: quantity,
       color: selectedColor,
       size: '120cm', // Default size since it's not in the product data
+      isSale: !!product.originalPrice, // Mark as sale if originalPrice exists
       product: {
         pickup_available: product.pickup_available,
       }
@@ -263,9 +262,55 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
     setMainImage(thumbnails[index]);
   };
 
-  // Removed unused next/prev image handlers
+  // Mobile image navigation handlers
+  const goPrevImage = () => {
+    if (thumbnails.length <= 1) return;
+    const nextIndex = (currentImageIndex - 1 + thumbnails.length) % thumbnails.length;
+    handleImageSelect(nextIndex);
+  };
+  const goNextImage = () => {
+    if (thumbnails.length <= 1) return;
+    const nextIndex = (currentImageIndex + 1) % thumbnails.length;
+    handleImageSelect(nextIndex);
+  };
+
+  // Touch/Swipe handlers for mobile
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+    setHasSwiped(false);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && thumbnails.length > 1) {
+      setHasSwiped(true);
+      goNextImage();
+    } else if (isRightSwipe && thumbnails.length > 1) {
+      setHasSwiped(true);
+      goPrevImage();
+    }
+    
+    // Reset after a short delay to allow click handler to check
+    setTimeout(() => {
+      setHasSwiped(false);
+    }, 300);
+  };
 
   const handleImageClick = (imageSrc: string) => {
+    // Prevent opening modal if user just swiped
+    if (hasSwiped) return;
     setSelectedImage(imageSrc);
     setIsImageModalOpen(true);
   };
@@ -413,14 +458,75 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
           -webkit-backdrop-filter: blur(8px);
         }
       `}</style>
-      <div className="container mx-auto px-4 py-8 md:py-12">
+      <div className="container mx-auto px-4 py-0 lg:py-12">
         {/* Main Product Layout - Lucendi Style */}
         <div className="flex flex-col lg:flex-row gap-0 max-w-7xl mx-auto">
           
-          {/* Left Column - All Images Side by Side */}
+          {/* Left Column - Images */}
           <div className="w-full lg:w-[70%] pr-0 lg:pr-8">
             <div className="space-y-4">
-              {/* Display images in pairs */}
+              {/* Mobile: single image with navigation */}
+              <div className="block lg:hidden -mx-4 lg:mx-0">
+                <div 
+                  ref={imgRef}
+                  className="relative overflow-hidden w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
+                  style={{ aspectRatio: '4/5', minHeight: '360px' }}
+                  onMouseMove={handleMouseMove}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={() => handleImageClick(mainImage)}
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onTouchEnd}
+                >
+                  <Image
+                    src={mainImage}
+                    width={800}
+                    height={600}
+                    className="max-w-full max-h-full object-contain lg:rounded-lg transition-all duration-300 group-hover:scale-105"
+                    alt={`Product Image ${currentImageIndex + 1}`}
+                    style={{ maxHeight: '100%', maxWidth: '100%' }}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.jpg';
+                    }}
+                  />
+                  {/* Zoom overlay */}
+                  {Object.keys(zoomStyle).length > 0 && (
+                    <div 
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        ...zoomStyle,
+                        backgroundRepeat: 'no-repeat',
+                        zIndex: 10
+                      }}
+                    />
+                  )}
+                  {/* Dots indicator */}
+                  {thumbnails.length > 1 && (
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                      {thumbnails.map((_, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleImageSelect(i);
+                          }}
+                          className={`transition-all duration-200 ${
+                            i === currentImageIndex 
+                              ? 'w-2 h-1.5 bg-black' 
+                              : 'w-1.5 h-1.5 bg-black/40 hover:bg-black/60'
+                          } rounded-full`}
+                          aria-label={`Go to image ${i + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Desktop: Display images in pairs */}
+              <div className="hidden lg:block space-y-4">
               {Array.from({ length: Math.ceil(thumbnails.length / 2) }, (_, pairIndex) => (
                 <div key={pairIndex} className="flex gap-4">
                   {/* First image in pair */}
@@ -485,11 +591,12 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                   )}
                 </div>
               ))}
+              </div>
             </div>
           </div>
 
           {/* Right Column - Product Details - Sticky */}
-          <div className="w-full lg:w-[30%] lg:sticky lg:top-8 lg:self-start lg:max-h-screen lg:overflow-y-auto scrollbar-hide">
+          <div className="w-full lg:w-[30%] lg:sticky lg:top-8 lg:self-start lg:max-h-screen lg:overflow-y-auto scrollbar-hide pt-4 lg:pt-0">
             {/* Product Information - Lucendi Style */}
             <div className="mb-8">
               {/* Brand/Category Line */}
@@ -503,9 +610,16 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
               </h1>
               
               {/* Price */}
-              <p className="text-2xl font-semibold text-black mb-6" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                {product.price} PHP
-              </p>
+              <div className="flex items-center gap-2 mb-6">
+                <p className="text-2xl font-semibold text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                  {product.price}
+                </p>
+                {product.originalPrice && (
+                  <p className="text-lg text-gray-400 line-through" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                    {product.originalPrice}
+                  </p>
+                )}
+              </div>
               
               {/* Color Selection */}
               <div className="mb-6">

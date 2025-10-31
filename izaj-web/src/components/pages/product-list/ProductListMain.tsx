@@ -129,7 +129,7 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
 
       {/* Product Grid/List - Responsive Design */}
       {viewMode === 'grid' ? (
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
           {filteredProducts.map((product) => (
             <div 
               key={product.id} 
@@ -137,6 +137,12 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
               onMouseEnter={() => handleMouseEnter(product.id)}
               onMouseLeave={() => handleMouseLeave(product.id)}
             >
+              {/* Mobile: make entire card clickable */}
+              <Link
+                href={`/item-description/${product.id}`}
+                className="block lg:hidden absolute inset-0 z-10"
+                aria-label={product.name}
+              />
               <div 
                 className="relative"
               >
@@ -145,18 +151,18 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
                   alt={product.name} 
                   width={400}
                   height={320}
-                  className={`w-full h-64 sm:h-96 object-cover transition-all duration-300 hover:scale-110 ${
+                  className={`w-full h-56 sm:h-96 object-cover rounded-lg transition-all duration-300 sm:hover:scale-110 ${
                     isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
                   }`} 
                 />
                 {/* Product Badges */}
-                {/* NEW badge - only show if product is new and not on sale */}
+                {/* NEW badge - mobile responsive */}
                 {product.isNew && !product.isOnSale && (
-                  <span className="absolute top-3 left-3 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#10B981' }}>NEW</span>
+                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-10" style={{ backgroundColor: '#10B981' }}>NEW</span>
                 )}
-                {/* SALE badge - only show if product is on sale */}
+                {/* SALE badge - mobile responsive */}
                 {product.isOnSale && (
-                  <span className="absolute top-3 left-3 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>SALE</span>
+                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-10" style={{ backgroundColor: '#EF4444' }}>SALE</span>
                 )}
                 
               </div>
@@ -164,18 +170,18 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
                 <div className="space-y-1.5">
                   {product.category && (
                     <div className="relative">
-                      <p className="text-gray-500 text-xs text-left group-hover:opacity-0 transition-opacity duration-300" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{product.category}</p>
+                      <p className="text-gray-500 text-[11px] sm:text-xs text-left group-hover:opacity-0 transition-opacity duration-300" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{product.category}</p>
                       <Link
                         href={`/item-description/${product.id}`}
-                        className="absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-80 transition-all duration-300 text-sm text-center block rounded-sm border opacity-0 group-hover:opacity-100"
+                        className="hidden sm:block absolute top-0 left-0 w-full text-white py-3 px-3 hover:opacity-100 transition-all duration-300 text-sm text-center rounded-sm border opacity-0 group-hover:opacity-100"
                         style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: '#423f3f', borderColor: '#423f3f', letterSpacing: '0.1em' }}
                       >
                         VIEW DETAILS
                       </Link>
                     </div>
                   )}
-                  <h3 className="text-gray-900 text-base text-left line-clamp-2 leading-tight" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.name}</h3>
-                  <p className="text-gray-900 text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>₱{product.price.toLocaleString()}</p>
+                  <h3 className="text-gray-900 text-sm sm:text-base text-left line-clamp-2 leading-snug sm:leading-tight" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.name}</h3>
+                  <p className="text-gray-900 text-base sm:text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>₱{product.price.toLocaleString()}</p>
                   <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
                     (product.stock || 0) > 5 ? 'bg-green-100 text-green-800' : 
                     (product.stock || 0) > 0 ? 'bg-orange-100 text-orange-800' : 
@@ -200,16 +206,22 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
               key={product.id}
               className="group bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-gray-200 transition-all duration-300 overflow-hidden"
             >
+              {/* Mobile: make entire list card clickable */}
+              <Link
+                href={`/item-description/${product.id}`}
+                className="block lg:hidden absolute inset-0 z-10"
+                aria-label={product.name}
+              />
               <div className="flex flex-col lg:flex-row">
                 {/* Image Section */}
-                <div className="relative w-full lg:w-72 xl:w-80 h-80 lg:h-72 flex items-center justify-center p-4 bg-white">
+                <div className="relative w-full lg:w-72 xl:w-80 h-56 lg:h-72 flex items-center justify-center p-4 bg-white">
                   <div className="w-full h-full flex items-center justify-center">
                     <Image
                       src={product.image}
                       alt={product.name}
                       width={400}
                       height={300}
-                      className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300 transform translate-y-4"
+                      className="max-w-full max-h-full object-contain sm:group-hover:scale-105 transition-transform duration-300 transform translate-y-4"
                     />
                   </div>
                 </div>

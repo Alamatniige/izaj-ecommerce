@@ -79,6 +79,7 @@ function capitalize(str: string) {
   const [ripples, setRipples] = useState<Array<{x: number; y: number; id: number}>>([]);
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [accountDropdownPosition, setAccountDropdownPosition] = useState<'right' | 'left' | 'center'>('center');
+  const [isMobileAccountDropdownOpen, setIsMobileAccountDropdownOpen] = useState(false);
   
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const productsDropdownRef = useRef<HTMLLIElement>(null);
@@ -87,10 +88,13 @@ function capitalize(str: string) {
   const cartIconRef = useRef<HTMLAnchorElement>(null);
   const cartPreviewRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+  const bannerRef = useRef<HTMLDivElement>(null);
   const dropdownCloseTimer = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const [isMobile, setIsMobile] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [headerOffsetTop, setHeaderOffsetTop] = useState(0);
   
   
     // Compute mobile breakpoint on client only to avoid SSR hydration mismatch
@@ -104,6 +108,57 @@ function capitalize(str: string) {
       return () => window.removeEventListener('resize', updateIsMobile);
     }, []);
 
+  
+    // Measure header height/offset for mobile menu placement
+    useEffect(() => {
+      const updateHeaderOffset = () => {
+        const headerBottom = headerRef.current ? headerRef.current.getBoundingClientRect().bottom : 0;
+        const bannerBottom = bannerRef.current ? bannerRef.current.getBoundingClientRect().bottom : 0;
+        // Use whichever extends lower; ensures banner + header are included when banner is visible
+        setHeaderOffsetTop(Math.max(headerBottom, bannerBottom));
+      };
+      updateHeaderOffset();
+      window.addEventListener('resize', updateHeaderOffset);
+      window.addEventListener('scroll', updateHeaderOffset, { passive: true });
+      return () => {
+        window.removeEventListener('resize', updateHeaderOffset);
+        window.removeEventListener('scroll', updateHeaderOffset);
+      };
+    }, [isMobileMenuOpen, isBannerDismissed, scrolled]);
+
+    // Ensure mobile PRODUCTS dropdown and account dropdown close when the menu closes
+    useEffect(() => {
+      if (!isMobileMenuOpen) {
+        setIsDropdownOpen(false);
+        setIsMobileAccountDropdownOpen(false);
+      }
+    }, [isMobileMenuOpen]);
+
+    // Enhance mobile menu UX: lock body scroll and close on Escape
+    useEffect(() => {
+      if (!isClient) return;
+      const originalOverflow = document.body.style.overflow;
+      if (isMobileMenuOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = originalOverflow || '';
+      }
+
+      const onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape' && isMobileMenuOpen) {
+          setIsMobileMenuOpen(false);
+        }
+      };
+      
+      if (isMobileMenuOpen) {
+        window.addEventListener('keydown', onKeyDown);
+      }
+      
+      return () => {
+        document.body.style.overflow = originalOverflow || '';
+        window.removeEventListener('keydown', onKeyDown);
+      };
+    }, [isClient, isMobileMenuOpen]);
   
     // Scroll effects
     useEffect(() => {
@@ -268,26 +323,31 @@ function capitalize(str: string) {
   
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
-        if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target as Node)) {
+        const target = event.target as Node;
+        
+        if (accountDropdownRef.current && !accountDropdownRef.current.contains(target)) {
           setIsAccountDropdownOpen(false);
         }
-        if (productsDropdownRef.current && !productsDropdownRef.current.contains(event.target as Node) &&
-            productsDropdownContentRef.current && !productsDropdownContentRef.current.contains(event.target as Node)) {
+        if (productsDropdownRef.current && !productsDropdownRef.current.contains(target) &&
+            productsDropdownContentRef.current && !productsDropdownContentRef.current.contains(target)) {
           setIsDropdownOpen(false);
         }
-        if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
-          setIsMobileMenuOpen(false);
-        }
-        if (cartPreviewRef.current && !cartPreviewRef.current.contains(event.target as Node) &&
-            cartIconRef.current && !cartIconRef.current.contains(event.target as Node)) {
+        // Don't close mobile menu on outside click when menu is open - let backdrop handle it
+        // This prevents conflicts between backdrop click and outside click handler
+        if (cartPreviewRef.current && !cartPreviewRef.current.contains(target) &&
+            cartIconRef.current && !cartIconRef.current.contains(target)) {
           setIsCartPreviewOpen(false);
         }
-        if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        if (searchRef.current && !searchRef.current.contains(target)) {
           setShowSearchSuggestions(false);
         }
       };
 
-      document.addEventListener('mousedown', handleClickOutside);
+      // Only add listener when mobile menu is closed to avoid conflicts
+      if (!isMobileMenuOpen) {
+        document.addEventListener('mousedown', handleClickOutside);
+      }
+      
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
         // Clean up timer on unmount
@@ -295,7 +355,7 @@ function capitalize(str: string) {
           clearTimeout(dropdownCloseTimer.current);
         }
       };
-    }, [setIsAccountDropdownOpen]);
+    }, [setIsAccountDropdownOpen, isMobileMenuOpen]);
   
     // Handler for Home navigation
     const handleHomeClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
@@ -331,13 +391,14 @@ function capitalize(str: string) {
           style={{ width: `${scrollProgress}%` }}
         />
 
-        {/* Promotional Banner */}
+        {/* Promotional Banner (included with header even when menu is open) */}
         {!isBannerDismissed && (
           <div 
             className={`${promoBanners[currentBannerIndex].color} text-white text-center py-2 md:py-3 flex items-center justify-center w-full relative transition-all duration-500 z-50`}
-            style={{ minHeight: '40px' }}
+            style={{ minHeight: isMobile ? '36px' : '40px' }}
+            ref={bannerRef}
           >
-            <p className="text-xs md:text-sm px-2 md:px-12 truncate whitespace-nowrap overflow-x-auto w-full animate-fade-in font-medium" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.025em', lineHeight: '1.6' }}>
+            <p className="text-xs md:text-sm px-3 md:px-12 w-full animate-fade-in font-medium" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em', lineHeight: isMobile ? '1.4' : '1.6', whiteSpace: isMobile ? 'normal' : 'nowrap' }}>
               {promoBanners[currentBannerIndex].text}
             </p>
             <button
@@ -349,7 +410,7 @@ function capitalize(str: string) {
             </button>
             
             {/* Banner indicators */}
-            <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex space-x-1 pb-1">
+            <div className="hidden md:flex absolute bottom-0 left-1/2 transform -translate-x-1/2 space-x-1 pb-1">
               {promoBanners.map((_, index) => (
                 <div
                   key={index}
@@ -363,23 +424,51 @@ function capitalize(str: string) {
         )}
 
         <header 
-          className={`bg-white px-4 lg:px-10 flex flex-col sticky top-0 z-10 transition-all duration-300 ${
+          className={`bg-white px-4 lg:px-10 flex flex-col sticky top-0 ${isMobileMenuOpen ? 'z-[60]' : 'z-10'} transition-all duration-300 ${
             scrolled ? 'py-2 shadow-lg' : 'py-3 shadow-md'
           }`}
+          ref={headerRef}
         >
              {/* Top Header Row */}
-             <div className="flex items-center justify-between w-full">
+             <div className="flex items-center justify-between w-full relative">
             {/* Mobile Menu Button and Logo Container */}
             <div className="flex items-center space-x-4">
               <button 
-                className="lg:hidden text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className={`lg:hidden relative z-[70] w-10 h-10 flex items-center justify-center text-black transition-all duration-300 rounded-lg hover:bg-gray-100 active:bg-gray-200 ${
+                  isMobileMenuOpen ? 'bg-gray-100' : ''
+                }`}
+                onClick={() => {
+                  setIsMobileMenuOpen(!isMobileMenuOpen);
+                }}
+                aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={isMobileMenuOpen}
               >
-                <Icon icon="mdi:menu" width="28" height="28" />
+                <div className="relative w-7 h-7">
+                  <Icon 
+                    icon="mdi:menu" 
+                    width="28" 
+                    height="28"
+                    className={`absolute inset-0 transition-all duration-300 ease-in-out ${
+                      isMobileMenuOpen 
+                        ? 'opacity-0 rotate-90 scale-0' 
+                        : 'opacity-100 rotate-0 scale-100'
+                    }`}
+                  />
+                  <Icon 
+                    icon="mdi:close" 
+                    width="28" 
+                    height="28"
+                    className={`absolute inset-0 transition-all duration-300 ease-in-out ${
+                      isMobileMenuOpen 
+                        ? 'opacity-100 rotate-0 scale-100' 
+                        : 'opacity-0 -rotate-90 scale-0'
+                    }`}
+                  />
+                </div>
               </button>
   
               {/* Logo with animation */}
-              <Link href="/" className="flex flex-col items-start flex-shrink-0 w-full group">
+              <Link href="/" className="flex flex-col items-center lg:items-start flex-shrink-0 w-auto lg:w-full group absolute left-[56%] -translate-x-1/2 lg:static lg:left-auto lg:translate-x-0 lg:transform-none">
                 <div
                   className={`tracking-wide flex-shrink-0 leading-tight font-semibold transition-all duration-300 font-playfair ${
                     scrolled ? 'text-2xl lg:text-4xl' : 'text-3xl lg:text-6xl'
@@ -559,44 +648,11 @@ function capitalize(str: string) {
                   </div>
                 ) : (
                   // Client-side rendering: use mobile detection and user state
-                  isMobile ? (
-                    <div className="flex items-center justify-center relative group">
-                    <button
-                      onClick={() => {
-                        if (user) {
-                          router.push('/account');
-                        } else {
-                          setIsLoginModalOpen(true);
-                        }
-                      }}
-                        className="text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
-                      aria-label="User"
-                    >
-                      <div className="w-7 h-7 flex items-center justify-center rounded-full overflow-hidden">
-                        {user && user.profilePicture ? (
-                              <Image 
-                                src={user.profilePicture} 
-                                alt="Profile" 
-                                width={28}
-                                height={28}
-                                className="object-cover ring-2 ring-gray-200"
-                                unoptimized
-                              />
-                        ) : user ? (
-                          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-xs font-bold">
-                            {getInitials(user.firstName, user.lastName)}
-                          </div>
-                        ) : (
-                          <Icon icon="lucide:user" width="28" height="28" />
-                        )}
-                      </div>
-                    </button>
-                    </div>
-                  ) : (
+                  isMobile ? null : (
                     !user ? (
                       <div className="flex items-center justify-center relative group">
                         <button
-                          onClick={() => setIsLoginModalOpen(true)}
+                          onClick={() => (isMobile ? router.push('/login') : setIsLoginModalOpen(true))}
                           className="flex items-center space-x-2 text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                           aria-label="Login"
                         >
@@ -658,13 +714,13 @@ function capitalize(str: string) {
                           </div>
                         </button>
   
-                        {/* Account Dropdown - Enhanced */}
-                        {isAccountDropdownOpen && (
-                          <div className={`absolute ${isMobile ? 'left-4 right-4 origin-top' : 
+                        {/* Account Dropdown - Enhanced - Desktop Only */}
+                        {isAccountDropdownOpen && !isMobile && (
+                          <div className={`absolute ${
                             accountDropdownPosition === 'center' ? 'left-1/2 transform -translate-x-1/2 origin-top' :
                             accountDropdownPosition === 'right' ? 'right-0 origin-top-right' :
-                            'left-0 origin-top-left'} top-full mt-1 w-64 ${isMobile ? '!w-auto max-w-none' : ''} bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-scale-in`} style={{
-                            maxWidth: isMobile ? 'none' : 'calc(100vw - 2rem)',
+                            'left-0 origin-top-left'} top-full mt-1 w-64 bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-scale-in`} style={{
+                            maxWidth: 'calc(100vw - 2rem)',
                             zIndex: 999999,
                             position: 'absolute'
                           }}>
@@ -787,24 +843,26 @@ function capitalize(str: string) {
                 </div> */}
 
                 {/* Notification Icon with Tooltip */}
+                {!(isClient && isMobile) && (
                 <div className="flex items-center justify-center relative group">
                   <div className="w-7 h-7 flex items-center justify-center">
                     <NotificationDropdown 
                       user={!isClient ? null : user} 
-                      onOpenAuthModal={() => setIsLoginModalOpen(true)}
+                      onOpenAuthModal={() => (isMobile ? router.push('/login') : setIsLoginModalOpen(true))}
                     />
                   </div>
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full mt-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-50">
                     Notifications
                   </div>
                 </div>
+                )}
   
                 {/* Cart Icon with Enhanced Badge and Preview */}
                 <div className="flex items-center justify-center relative group">
                   {!isClient ? (
                     <>
                     <button
-                      onClick={() => setIsLoginModalOpen(true)}
+                        onClick={() => (isMobile ? router.push('/login') : setIsLoginModalOpen(true))}
                         className="text-black hover:text-gray-600 transition-all duration-200 hover:scale-110"
                     >
                       <div className="w-7 h-7 flex items-center justify-center">
@@ -832,8 +890,8 @@ function capitalize(str: string) {
                         <div className="w-7 h-7 flex items-center justify-center">
                           <Icon
                             icon="mdi:cart-outline"
-                            width="28"
-                            height="28"
+                            width={isMobile ? "25" : "28"}
+                            height={isMobile ? "25" : "28"}
                           />
                         </div>
                         {cart.totalItems > 0 && (
@@ -929,8 +987,8 @@ function capitalize(str: string) {
                         <div className="w-7 h-7 flex items-center justify-center">
                           <Icon
                             icon="mdi:cart-outline"
-                            width="28"
-                            height="28"
+                            width={isMobile ? "25" : "28"}
+                            height={isMobile ? "25" : "28"}
                           />
                         </div>
                       </button>
@@ -1062,88 +1120,77 @@ function capitalize(str: string) {
           {/* Mobile Menu */}
           {isMobileMenuOpen && (
             <>
-              {/* Backdrop */}
+              {/* Backdrop (starts below header so header remains visible) */}
               <div 
-                className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30 animate-fade-in"
-                onClick={() => setIsMobileMenuOpen(false)}
+                className="lg:hidden fixed left-0 right-0 bottom-0 bg-black bg-opacity-50 z-30 animate-fade-in transition-opacity duration-300"
+                style={{ top: headerOffsetTop || 0 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMobileMenuOpen(false);
+                }}
+                onTouchStart={(e) => {
+                  e.stopPropagation();
+                }}
               />
               {/* Modal Content */}
               <div
                 ref={mobileMenuRef}
-                className="lg:hidden fixed left-0 top-0 w-[85%] max-w-sm h-screen bg-white z-50 shadow-xl overflow-y-auto animate-slide-in-left"
+                className="lg:hidden fixed left-0 w-full max-w-none h-[calc(100vh-var(--header-offset,0px))] bg-white z-50 shadow-xl overflow-y-auto menu-drop-in"
+                style={{ top: headerOffsetTop || 0, ['--header-offset' as any]: `${headerOffsetTop || 0}px` }}
+                onClick={(e) => {
+                  // Prevent menu from closing when clicking inside
+                  e.stopPropagation();
+                }}
               >
-                {/* Top Bar with Close Button */}
-                <div className="flex items-center justify-between px-4 py-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-                  <Link href="/" className="flex items-center" onClick={() => setIsMobileMenuOpen(false)}>
-                    <div
-                      className="text-3xl tracking-wide leading-tight font-semibold font-playfair"
-                      style={{
-                        color: "#000000",
-                        textShadow: "-2px 0px 2px rgba(0, 0, 0, 0.5)",
-                        letterSpacing: "10px",
-                      }}
-                    >
-                      IZAJ
-                    </div>
-                  </Link>
-                  <button
-                    className="text-black p-2 hover:bg-gray-100 rounded-full transition-all duration-200"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Icon icon="mdi:close" width="28" height="28" />
-                  </button>
-                </div>
+                {/* Main header acts as the modal header; no internal header here */}
                 {/* Navigation Menu - Scrollable */}
                 <div className="h-auto" style={{ fontFamily: 'Jost, sans-serif' }}>
-                  <nav className="px-4 py-6">
-                    <ul className="space-y-1">
+                  <nav className="pl-4 pr-8 py-6">
+                    <ul className="space-y-0 divide-y divide-gray-200 rounded-lg overflow-hidden bg-white">
                       <li>
                         <Link
                           href="/"
-                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200  font-semibold ${
+                          className={`flex items-center px-4 py-4 text-base transition-all duration-200 font-bold ${
                             isLinkActive('/') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
-                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.15em', lineHeight: '1.5', fontSize: '0.85rem' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          <Icon icon="mdi:home-outline" className="mr-3 text-gray-600" width="24" height="24" />
                           HOME
                         </Link>
                       </li>
                       <li>
                         <button
-                          className={`w-full flex items-center justify-between px-4 py-3 text-base rounded-lg transition-all duration-200 focus:outline-none  font-semibold ${
+                          className={`w-full flex items-center justify-between px-4 py-4 text-base transition-all duration-200 focus:outline-none font-bold ${
                             isDropdownOpen ? 'bg-gray-50' : 'hover:bg-gray-50'
                           }`}
-                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.15em', lineHeight: '1.5', fontSize: '0.85rem' }}
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                           aria-expanded={isDropdownOpen}
                           aria-controls="mobile-products-dropdown"
                         >
                           <div className="flex items-center text-black">
-                            <Icon icon="mdi:lightbulb-outline" className="mr-3 text-gray-600" width="24" height="24" />
                             PRODUCTS
                           </div>
                           <Icon
                             icon="mdi:chevron-down"
                             className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
-                            width="24"
-                            height="24"
+                            width="20"
+                            height="20"
                           />
                         </button>
                         <div
                           id="mobile-products-dropdown"
-                          className={`overflow-hidden transition-all duration-300 ${isDropdownOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'} bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg mt-1 ml-8`}
-                          style={{ borderLeft: isDropdownOpen ? '3px solid #000000' : '3px solid transparent' }}
+                          className={`overflow-hidden transition-all duration-300 ${isDropdownOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'} bg-white`}
                         >
-                          <ul className="py-2">
+                          <ul className="py-1 divide-y divide-gray-200">
                             <li>
                               <Link
                                 href="/product-list"
-                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200  font-semibold"
-                                style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em', lineHeight: '1.6' }}
+                                className="block px-6 py-3 text-sm text-gray-800 hover:text-black hover:bg-gray-50 transition-colors duration-200 font-medium"
+                                style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.05em', lineHeight: '1.6' }}
                                 onClick={() => setIsMobileMenuOpen(false)}
                               >
                                 All Lighting Fixtures
@@ -1152,8 +1199,8 @@ function capitalize(str: string) {
                             <li>
                               <Link
                                 href="/collection"
-                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200  font-semibold"
-                                style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em', lineHeight: '1.6' }}
+                                className="block px-6 py-3 text-sm text-gray-800 hover:text-black hover:bg-gray-50 transition-colors duration-200 font-medium"
+                                style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.05em', lineHeight: '1.6' }}
                                 onClick={() => setIsMobileMenuOpen(false)}
                               >
                                 New Arrivals
@@ -1162,8 +1209,8 @@ function capitalize(str: string) {
                             <li>
                               <Link
                                 href="/sales"
-                                className="block px-4 py-2 text-sm text-gray-700 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200  font-semibold"
-                                style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em', lineHeight: '1.6' }}
+                                className="block px-6 py-3 text-sm text-gray-800 hover:text-black hover:bg-gray-50 transition-colors duration-200 font-medium"
+                                style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.05em', lineHeight: '1.6' }}
                                 onClick={() => setIsMobileMenuOpen(false)}
                               >
                                 Special Offers
@@ -1175,100 +1222,173 @@ function capitalize(str: string) {
                       <li>
                         <Link
                           href="/collection"
-                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200  font-semibold ${
+                          className={`flex items-center px-4 py-4 text-base transition-all duration-200 font-bold ${
                             isLinkActive('/collection') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
-                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.15em', lineHeight: '1.5', fontSize: '0.85rem' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          <Icon icon="mdi:star-outline" className="mr-3 text-gray-600" width="24" height="24" />
                           NEW
                         </Link>
                       </li>
                       <li>
                         <Link
                           href="/sales"
-                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200  font-semibold ${
+                          className={`flex items-center px-4 py-4 text-base transition-all duration-200 font-bold ${
                             isLinkActive('/sales') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
-                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.15em', lineHeight: '1.5', fontSize: '0.85rem' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          <Icon icon="mdi:tag-outline" className="mr-3 text-gray-600" width="24" height="24" />
                           SALES
                         </Link>
                       </li>
                       <li>
                         <Link
                           href="/static/aboutus"
-                          className={`flex items-center px-4 py-3 text-base rounded-lg transition-all duration-200  font-semibold ${
+                          className={`flex items-center px-4 py-4 text-base transition-all duration-200 font-bold ${
                             isLinkActive('/static/aboutus') 
                               ? 'bg-gray-100 text-black' 
                               : 'text-black hover:bg-gray-50'
                           }`}
-                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.03em', lineHeight: '1.5' }}
+                          style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.15em', lineHeight: '1.5', fontSize: '0.85rem' }}
                           onClick={() => setIsMobileMenuOpen(false)}
                         >
-                          <Icon icon="mdi:information-outline" className="mr-3 text-gray-600" width="24" height="24" />
                           ABOUT US
                         </Link>
                       </li>
                     </ul>
                   </nav>
                   {/* Bottom Section */}
-                  <div className="px-4 py-6 border-t border-gray-200">
+                  <div className="pl-3 pr-4 sm:pl-4 sm:pr-8 py-4 md:py-6 border-t border-gray-200">
                     {user ? (
                       <div className="space-y-2">
-                        <div className="flex items-center px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
-                          {user.profilePicture ? (
-                              <Image 
-                                src={user.profilePicture} 
-                                alt="Profile" 
-                                width={40}
-                                height={40}
-                                className="rounded-full object-cover ring-2 ring-white"
-                                unoptimized
-                              />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-sm font-bold">
-                              {getInitials(user.firstName, user.lastName)}
+                        <button
+                          className="w-full flex items-center justify-between px-3 sm:px-4 py-3 sm:py-3.5 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg cursor-pointer active:scale-[0.98] transition-all duration-200"
+                          style={{ touchAction: 'manipulation' }}
+                          onClick={() => setIsMobileAccountDropdownOpen(!isMobileAccountDropdownOpen)}
+                          aria-label="Toggle Account Menu"
+                          aria-expanded={isMobileAccountDropdownOpen}
+                        >
+                          <div className="flex items-center flex-1 min-w-0">
+                            {user.profilePicture ? (
+                                <Image 
+                                  src={user.profilePicture} 
+                                  alt="Profile" 
+                                  width={40}
+                                  height={40}
+                                  className="rounded-full object-cover ring-2 ring-white flex-shrink-0"
+                                  unoptimized
+                                />
+                            ) : (
+                              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-xs sm:text-sm font-bold flex-shrink-0">
+                                {getInitials(user.firstName, user.lastName)}
+                              </div>
+                            )}
+                            <div className="ml-2 sm:ml-3 flex-1 min-w-0">
+                              <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.4' }}>
+                                {capitalize(user.firstName)} {capitalize(user.lastName)}
+                              </p>
+                              <p className="text-[10px] sm:text-xs text-gray-600 truncate mt-0.5" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.4' }}>{user.email}</p>
                             </div>
-                          )}
-                          <div className="ml-3">
-                            <p className="text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.015em', lineHeight: '1.5' }}>
-                              {capitalize(user.firstName)} {capitalize(user.lastName)}
-                            </p>
-                            <p className="text-xs text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: '400', letterSpacing: '0.02em', lineHeight: '1.5' }}>{user.email}</p>
+                          </div>
+                          <Icon
+                            icon="mdi:chevron-down"
+                            className={`flex-shrink-0 ml-2 transition-transform duration-300 ${isMobileAccountDropdownOpen ? 'rotate-180' : ''}`}
+                            width="20"
+                            height="20"
+                          />
+                        </button>
+                        
+                        {/* Mobile Account Dropdown */}
+                        <div
+                          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                            isMobileAccountDropdownOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+                          }`}
+                        >
+                          <div className="space-y-0.5 sm:space-y-1 pt-2">
+                            <Link
+                              href="/account"
+                              className="flex items-center px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 hover:text-black rounded-lg transition-all duration-200 group min-h-[44px]"
+                              style={{ fontFamily: 'Jost, sans-serif', fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5', touchAction: 'manipulation' }}
+                              onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                setIsMobileAccountDropdownOpen(false);
+                              }}
+                            >
+                              <Icon icon="mdi:account-circle-outline" className="h-5 w-5 sm:h-5 sm:w-5 mr-3 flex-shrink-0 group-active:scale-110 transition-transform duration-200" />
+                              <span className="flex-1">My Account</span>
+                            </Link>
+                            
+                            <Link
+                              href="/orders"
+                              className="flex items-center px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 hover:text-black rounded-lg transition-all duration-200 group min-h-[44px]"
+                              style={{ fontFamily: 'Jost, sans-serif', fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5', touchAction: 'manipulation' }}
+                              onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                setIsMobileAccountDropdownOpen(false);
+                              }}
+                            >
+                              <Icon icon="mdi:package-variant" className="h-5 w-5 sm:h-5 sm:w-5 mr-3 flex-shrink-0 group-active:scale-110 transition-transform duration-200" />
+                              <span className="flex-1">My Orders</span>
+                            </Link>
+                            
+                            <Link
+                              href="/favorites"
+                              className="flex items-center px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 hover:text-black rounded-lg transition-all duration-200 group min-h-[44px]"
+                              style={{ fontFamily: 'Jost, sans-serif', fontWeight: '500', letterSpacing: '0.015em', lineHeight: '1.5', touchAction: 'manipulation' }}
+                              onClick={() => {
+                                setIsMobileMenuOpen(false);
+                                setIsMobileAccountDropdownOpen(false);
+                              }}
+                            >
+                              <Icon icon="mdi:heart-outline" className="h-5 w-5 sm:h-5 sm:w-5 mr-3 flex-shrink-0 group-active:scale-110 transition-transform duration-200" />
+                              <span className="flex-1">My Favorites</span>
+                            </Link>
                           </div>
                         </div>
+                        
+                        {/* Logout Button - Outside Dropdown */}
                         <button
                           onClick={() => {
                             handleLogoutClick();
                             setIsMobileMenuOpen(false);
+                            setIsMobileAccountDropdownOpen(false);
                           }}
-                          className="w-full flex items-center px-4 py-3 text-base font-medium text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
-                          style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.025em', lineHeight: '1.5' }}
+                          className="w-full flex items-center px-3 sm:px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-red-500 hover:bg-red-50 active:bg-red-100 rounded-lg transition-all duration-200 group min-h-[44px] mt-2"
+                          style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.02em', lineHeight: '1.5', touchAction: 'manipulation' }}
                         >
-                          <Icon icon="mdi:logout" className="mr-3" width="24" height="24" />
-                          Logout
+                          <Icon icon="mdi:logout" className="h-5 w-5 sm:h-5 sm:w-5 mr-3 flex-shrink-0 group-active:scale-110 transition-transform duration-200" />
+                          <span className="flex-1 text-left">Logout</span>
                         </button>
                       </div>
                     ) : (
+                      <div className="space-y-3">
                       <button
                         onClick={() => {
-                          setIsLoginModalOpen(true);
+                            router.push('/login');
                           setIsMobileMenuOpen(false);
                         }}
-                        className="w-full flex items-center justify-center px-4 py-3 text-base font-medium text-white bg-gradient-to-r from-gray-800 to-black hover:from-gray-900 hover:to-gray-800 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                        style={{ fontFamily: 'Jost, sans-serif', fontWeight: '600', letterSpacing: '0.06em', lineHeight: '1.5' }}
+                          className="w-full px-5 py-3 md:py-3.5 text-sm md:text-base font-bold tracking-widest text-white bg-black hover:bg-gray-900 rounded-lg md:rounded-xl transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-black/30"
+                          style={{ fontFamily: 'Jost, sans-serif' }}
                       >
-                        <Icon icon="mdi:login" className="mr-2" width="24" height="24" />
-                        Login / Sign Up
+                          LOGIN
                       </button>
+                        <button
+                          onClick={() => {
+                            router.push('/signup');
+                            setIsMobileMenuOpen(false);
+                          }}
+                          className="w-full px-5 py-3 md:py-3.5 text-sm md:text-base font-bold tracking-widest text-black bg-white border border-gray-300 hover:border-black rounded-lg md:rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-black/10"
+                          style={{ fontFamily: 'Jost, sans-serif' }}
+                        >
+                          SIGN UP
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -1767,83 +1887,7 @@ function capitalize(str: string) {
             </ul>
           </nav>
 
-        {/* Mobile Bottom Navigation Bar */}
-        {isMobile && isClient && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-30 shadow-2xl lg:hidden">
-            <div className="flex justify-around items-center py-2">
-              <Link
-                href="/"
-                className={`flex flex-col items-center justify-center p-2 transition-all duration-200 ${
-                  isLinkActive('/') 
-                    ? 'text-black font-bold' 
-                    : 'text-gray-600 hover:text-black'
-                }`}
-              >
-                <Icon icon="mdi:home" width="24" height="24" />
-                <span className="text-xs mt-1 font-semibold" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em' }}>Home</span>
-              </Link>
-              
-              <Link
-                href="/product-list"
-                className={`flex flex-col items-center justify-center p-2 transition-all duration-200 ${
-                  isLinkActive('/product-list') 
-                    ? 'text-black font-bold' 
-                    : 'text-gray-600 hover:text-black'
-                }`}
-              >
-                <Icon icon="mdi:lightbulb" width="24" height="24" />
-                <span className="text-xs mt-1 font-semibold" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em' }}>Products</span>
-              </Link>
-              
-              <Link
-                href="/cart"
-                className={`flex flex-col items-center justify-center p-2 transition-all duration-200 relative ${
-                  isLinkActive('/cart') 
-                    ? 'text-black font-bold' 
-                    : 'text-gray-600 hover:text-black'
-                }`}
-              >
-                <Icon icon="mdi:cart" width="24" height="24" />
-                <span className="text-xs mt-1 font-semibold" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em' }}>Cart</span>
-                {cart.totalItems > 0 && (
-                  <span className="absolute top-0 right-4 bg-black text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                    {cart.totalItems}
-                  </span>
-                )}
-              </Link>
-              
-              <Link
-                href="/favorites"
-                className={`flex flex-col items-center justify-center p-2 transition-all duration-200 ${
-                  isLinkActive('/favorites') 
-                    ? 'text-black font-bold' 
-                    : 'text-gray-600 hover:text-black'
-                }`}
-              >
-                <Icon icon="mdi:heart" width="24" height="24" />
-                <span className="text-xs mt-1 font-semibold" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em' }}>Favorites</span>
-              </Link>
-              
-              <Link
-                href={user ? "/account" : "#"}
-                onClick={(e) => {
-                  if (!user) {
-                    e.preventDefault();
-                    setIsLoginModalOpen(true);
-                  }
-                }}
-                className={`flex flex-col items-center justify-center p-2 transition-all duration-200 ${
-                  isLinkActive('/account') 
-                    ? 'text-black font-bold' 
-                    : 'text-gray-600 hover:text-black'
-                }`}
-              >
-                <Icon icon="mdi:account" width="24" height="24" />
-                <span className="text-xs mt-1 font-semibold" style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.02em' }}>Account</span>
-              </Link>
-            </div>
-          </div>
-        )}
+        {/* Mobile Bottom Navigation Bar temporarily disabled */}
 
         {/* Login Modal */}
         <LoginModal 
@@ -1870,6 +1914,28 @@ function capitalize(str: string) {
             to {
               opacity: 1;
               transform: translateY(0);
+            }
+          }
+
+          @keyframes menu-drop {
+            from {
+              opacity: 0;
+              transform: translateX(-100%);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          @keyframes menu-drop-out {
+            from {
+              opacity: 1;
+              transform: translateX(0);
+            }
+            to {
+              opacity: 0;
+              transform: translateX(-100%);
             }
           }
 
@@ -1926,6 +1992,11 @@ function capitalize(str: string) {
 
           .animate-scale-in {
             animation: scale-in 0.2s ease-out;
+          }
+
+          .menu-drop-in {
+            animation: menu-drop 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
           }
 
           .custom-scrollbar::-webkit-scrollbar {

@@ -333,69 +333,15 @@ const MyPurchase: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-white font-sans">
       {/* Success Message */}
       {showSuccessMessage && (
-        <div className="fixed top-4 right-4 z-50 bg-black text-white px-6 py-4 rounded-xl shadow-2xl flex items-center space-x-3 animate-slideIn border border-gray-300">
-          <Icon icon="mdi:check-circle" className="w-6 h-6 animate-pulse" />
-          <span className="font-medium">{successMessage}</span>
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-black text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-2xl flex items-center space-x-2 sm:space-x-3 animate-slideIn border border-gray-300 max-w-[90vw] sm:max-w-md">
+          <Icon icon="mdi:check-circle" className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse flex-shrink-0" />
+          <span className="font-medium text-sm sm:text-base">{successMessage}</span>
         </div>
       )}
-      {/* Mobile: My Account Navigation */}
-      <div className="lg:hidden bg-white px-4 pt-4 shadow-sm">
-        <div
-          className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
-          onClick={() => setIsAccountModalOpen(true)}
-          style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
-        >
-          <div className="flex items-center space-x-2">
-            <Icon icon="mdi:map-marker" className="text-black w-5 h-5" />
-            <span>Addresses</span>
-          </div>
-          <Icon icon="mdi:chevron-down" className="text-gray-400 w-6 h-6 ml-1" />
-        </div>
-      </div>
-      {/* My Account Modal for Mobile */}
-      {isAccountModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end lg:hidden bg-black bg-opacity-40 overflow-y-auto" onClick={() => setIsAccountModalOpen(false)}>
-          <div
-            className="w-full bg-white animate-slideUp  relative shadow-lg max-h-screen overflow-y-auto"
-            style={{ minHeight: '240px' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
-              onClick={() => setIsAccountModalOpen(false)}
-              aria-label="Close"
-            >
-              <Icon icon="mdi:close" />
-            </button>
-            <div className="font-bold text-xl mb-4 text-black text-center mt-4" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>My Account</div>
-            <ul className="space-y-1 px-4 pb-6">
-              <li>
-                <span className="inline-flex items-center text-black font-semibold text-base" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                  My Account
-                </span>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/account" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Profile</Link>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/orders" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>My Orders</Link>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                <Link href="/payments" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Payment Methods</Link>
-              </li>
-              <li className="pl-8 py-3 bg-gray-100 rounded-lg transition-colors duration-300">
-                <span className="text-black font-semibold text-base block" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Addresses</span>
-              </li>
-              <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
-                <Link href="/changepassword" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Change Password</Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-      )}
+      {/* Mobile: My Account Navigation removed per request */}
       {/* Main Content */}
-      <main className="flex-grow py-6 md:py-12 bg-white">
-        <div className="w-full max-w-screen-xl mx-auto px-0">
+      <main className="flex-grow py-6 md:py-12 pb-24 lg:pb-12 bg-white">
+        <div className="w-full max-w-screen-xl mx-auto px-4 lg:px-0">
           {/* Header Section - Similar to ProductList */}
           <div className="mb-6 sm:mb-8 text-center">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-0 sm:mt-1 lg:mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
@@ -425,14 +371,14 @@ const MyPurchase: React.FC = () => {
               <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
                 <div className="p-4 sm:p-6">
                   {!isAddingNew && (
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2 sm:gap-0">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3 sm:gap-0">
                       <h3 className="text-base sm:text-lg font-bold flex items-center text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                        <Icon icon="mdi:map-marker" className="mr-2 text-gray-800" width="24" height="24" />
+                        <Icon icon="mdi:map-marker" className="mr-2 text-gray-800 w-5 h-5 sm:w-6 sm:h-6" />
                         Delivery Addresses
                       </h3>
                       <button 
                         onClick={handleAddNewAddress}
-                        className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-black hover:bg-gray-800 text-white text-xs sm:text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl mt-2 sm:mt-0"
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-2 bg-black hover:bg-gray-800 text-white text-sm sm:text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
                         style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                       >
                         <Icon icon="mdi:plus" className="w-4 h-4" />
@@ -449,29 +395,29 @@ const MyPurchase: React.FC = () => {
                       <p className="text-gray-400 text-sm mt-1">Please wait a moment</p>
                     </div>
                   ) : isAddingNew ? (
-                    <div className="space-y-6">
+                    <div className="space-y-4 sm:space-y-6">
                       {/* Add/Edit Mode Header */}
-                      <div className="flex items-center space-x-3 mb-6">
+                      <div className="flex items-center gap-3 mb-4 sm:mb-6">
                         <button
                           onClick={handleCancel}
-                          className="text-gray-600 hover:text-black transition-colors mr-2"
+                          className="text-gray-600 hover:text-black transition-colors flex-shrink-0"
                         >
-                          <Icon icon="mdi:arrow-left" className="w-6 h-6" />
+                          <Icon icon="mdi:arrow-left" className="w-5 h-5 sm:w-6 sm:h-6" />
                         </button>
-                        <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center">
-                          <Icon icon={editingAddress ? "mdi:pencil" : "mdi:plus"} className="w-5 h-5 text-white" />
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-black rounded-xl flex items-center justify-center flex-shrink-0">
+                          <Icon icon={editingAddress ? "mdi:pencil" : "mdi:plus"} className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                         </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg sm:text-xl font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                             {editingAddress ? 'Edit Address' : 'Add New Address'}
                           </h3>
-                          <p className="text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                          <p className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
                             {editingAddress ? 'Update your address information' : 'Add a new delivery address'}
                           </p>
                         </div>
                       </div>
-                      <div className="bg-gray-50 p-6 rounded-xl border border-gray-300">
-                      <form onSubmit={handleSubmit} className="space-y-5">
+                      <div className="bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-300">
+                      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {/* Full Name */}
                           <div>
@@ -484,9 +430,10 @@ const MyPurchase: React.FC = () => {
                               name="name"
                               value={formData.name}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                              className="w-full px-4 py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
                               placeholder="Enter your full name"
                               required
+                              style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
                             />
                           </div>
                           
@@ -501,9 +448,10 @@ const MyPurchase: React.FC = () => {
                               name="phone"
                               value={formData.phone}
                               onChange={handleInputChange}
-                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                              className="w-full px-4 py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
                               placeholder="Enter your phone number"
                               required
+                              style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
                             />
                           </div>
                         </div>
@@ -519,9 +467,10 @@ const MyPurchase: React.FC = () => {
                             name="address"
                             value={formData.address}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                            className="w-full px-4 py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
                             placeholder="e.g., 123 Sampaguita St., Brgy. 123"
                             required
+                            style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
                           />
                         </div>
 
@@ -536,9 +485,10 @@ const MyPurchase: React.FC = () => {
                             name="province"
                             value={formData.province}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                            className="w-full px-4 py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
                             placeholder="Enter your province"
                             required
+                            style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
                           />
                         </div>
 
@@ -553,9 +503,10 @@ const MyPurchase: React.FC = () => {
                             name="city"
                             value={formData.city}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                            className="w-full px-4 py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
                             placeholder="Enter your city or municipality"
                             required
+                            style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
                           />
                         </div>
 
@@ -570,16 +521,17 @@ const MyPurchase: React.FC = () => {
                             name="barangay"
                             value={formData.barangay}
                             onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                            className="w-full px-4 py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
                             placeholder="Enter your barangay"
                             required
+                            style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
                           />
                         </div>
-                        <div className="flex space-x-3 pt-4">
+                        <div className="flex flex-col sm:flex-row gap-3 pt-4">
                           <button
                             type="submit"
                             disabled={isLoading}
-                            className="px-6 py-3 bg-black hover:bg-gray-800 text-white text-sm font-semibold transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            className="w-full sm:flex-1 px-6 py-3 bg-black hover:bg-gray-800 text-white text-sm sm:text-base font-semibold transition-all duration-200 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                             style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                           >
                             {isLoading ? (
@@ -593,7 +545,7 @@ const MyPurchase: React.FC = () => {
                             type="button"
                             onClick={handleCancel}
                             disabled={isLoading}
-                            className="px-6 py-3 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 text-sm font-semibold transition-all duration-200 rounded-xl flex items-center space-x-2"
+                            className="w-full sm:flex-1 px-6 py-3 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 text-sm sm:text-base font-semibold transition-all duration-200 rounded-xl flex items-center justify-center space-x-2"
                             style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                           >
                             <Icon icon="mdi:close" className="w-4 h-4" />
@@ -604,86 +556,91 @@ const MyPurchase: React.FC = () => {
                       </div>
                     </div>
                   ) : addresses.length === 0 ? (
-                    <div className="text-center py-20 bg-gray-50 rounded-xl border border-gray-300">
-                      <div className="w-16 h-16 bg-gray-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Icon icon="mdi:map-marker-off-outline" className="text-white" width="24" height="24" />
+                    <div className="text-center py-12 sm:py-20 bg-gray-50 rounded-xl border border-gray-300">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gray-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Icon icon="mdi:map-marker-off-outline" className="text-white w-5 h-5 sm:w-6 sm:h-6" />
                       </div>
-                      <p className="text-gray-600 font-medium text-lg">No addresses yet</p>
-                      <p className="text-gray-400 text-sm mt-2">Add your first address for convenient delivery</p>
+                      <p className="text-gray-600 font-medium text-base sm:text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}>No addresses yet</p>
+                      <p className="text-gray-400 text-xs sm:text-sm mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Add your first address for convenient delivery</p>
                       <button 
                         onClick={handleAddNewAddress}
-                        className="mt-4 px-6 py-2 bg-black hover:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        className="mt-4 px-6 py-2.5 sm:py-2 bg-black hover:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 w-full sm:w-auto"
+                        style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                       >
                         Add Your First Address
                       </button>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       {addresses.map((address, index) => (
                         <div key={address.id} className="group relative bg-white border border-gray-300 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden animate-fadeIn" style={{ animationDelay: `${index * 0.1}s` }}>
                           {/* Default Badge */}
                           {address.is_default && (
-                            <div className="absolute top-3 right-3 z-10">
-                              <span className="bg-black text-white text-xs font-semibold px-3 py-1 rounded-full shadow-lg flex items-center space-x-1">
+                            <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10">
+                              <span className="bg-black text-white text-xs font-semibold px-2 sm:px-3 py-1 rounded-full shadow-lg flex items-center space-x-1">
                                 <Icon icon="mdi:star" className="w-3 h-3" />
                                 <span>Default</span>
                               </span>
                             </div>
                           )}
                           
-                          <div className="p-6">
+                          <div className="p-4 sm:p-6">
                             {/* Header */}
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
-                                  <Icon icon="mdi:map-marker" className="w-5 h-5 text-white" />
+                            <div className="flex items-start justify-between mb-3 sm:mb-4">
+                              <div className="flex items-center gap-2 sm:gap-3 pr-12 sm:pr-0">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
+                                  <Icon icon="mdi:map-marker" className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                                 </div>
                                 <div>
-                                  <h3 className="font-semibold text-gray-800 text-lg">Delivery Address</h3>
-                                  <p className="text-sm text-gray-500">Contact & Location</p>
+                                  <h3 className="font-semibold text-gray-800 text-base sm:text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Delivery Address</h3>
+                                  <p className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Contact & Location</p>
                                 </div>
                               </div>
                             </div>
                             
                             {/* Address Details */}
-                            <div className="space-y-3">
-                              <div className="flex items-center space-x-2">
-                                <Icon icon="mdi:account" className="w-4 h-4 text-gray-400" />
-                                <span className="text-gray-800 font-medium">{address.name}</span>
+                            <div className="space-y-2 sm:space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Icon icon="mdi:account" className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                <span className="text-gray-800 font-medium text-sm sm:text-base break-words" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}>{address.name}</span>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <Icon icon="mdi:phone" className="w-4 h-4 text-gray-400" />
-                                <span className="text-gray-600">{address.phone}</span>
+                              <div className="flex items-center gap-2">
+                                <Icon icon="mdi:phone" className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                                <span className="text-gray-600 text-sm sm:text-base break-all" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{address.phone}</span>
                               </div>
-                              <div className="flex items-start space-x-2">
-                                <Icon icon="mdi:map-marker-outline" className="w-4 h-4 text-gray-400 mt-0.5" />
-                                <span className="text-gray-600 leading-relaxed">{address.address}</span>
+                              <div className="flex items-start gap-2">
+                                <Icon icon="mdi:map-marker-outline" className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                                <span className="text-gray-600 leading-relaxed text-sm sm:text-base break-words" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{address.address}</span>
                               </div>
                             </div>
                             
                             {/* Action Buttons */}
-                            <div className="flex space-x-2 mt-6 pt-4 border-t border-gray-100">
+                            <div className="flex flex-wrap gap-2 mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-gray-100">
                               <button
                                 onClick={() => handleEditAddress(address)}
-                                className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center space-x-1 group"
+                                className="flex-1 min-w-[80px] px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-1 group"
+                                style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
                               >
-                                <Icon icon="mdi:pencil" className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                <Icon icon="mdi:pencil" className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" />
                                 <span>Edit</span>
                               </button>
                               {!address.is_default && (
                                 <button
                                   onClick={() => handleSetDefault(address.id)}
-                                  className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center space-x-1 group"
+                                  className="flex-1 min-w-[100px] px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-1 group"
+                                  style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
                                 >
-                                  <Icon icon="mdi:star" className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                  <span>Set Default</span>
+                                  <Icon icon="mdi:star" className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" />
+                                  <span className="hidden sm:inline">Set Default</span>
+                                  <span className="sm:hidden">Default</span>
                                 </button>
                               )}
                               <button
                                 onClick={() => handleDeleteAddress(address.id)}
-                                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center group"
+                                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center group"
+                                style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
                               >
-                                <Icon icon="mdi:delete" className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                <Icon icon="mdi:delete" className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" />
                               </button>
                             </div>
                           </div>

@@ -5,7 +5,8 @@ import { InternalApiService } from '../../../services/internalApi';
 import ProductListSidebar from './ProductListSidebar';
 import ProductListMain from './ProductListMain';
 import ProductListSortModal from './ProductListSortModal';
-import ProductListFilterDrawer from './ProductListFilterDrawer';
+import dynamic from 'next/dynamic';
+const ProductListFilterDrawer = dynamic(() => import('./ProductListFilterDrawer'), { ssr: false });
 
 type Product = {
   description: string;
@@ -437,7 +438,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
 
   return (
     <div className="bg-white min-h-screen">
-      <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24">
+      <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24 pb-24 sm:pb-16 md:pb-12">
       <style>
         {`
           @media (max-width: 767px) {
@@ -485,27 +486,42 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         `}
       </style>
 
-      {/* Header Section - Full Width */}
-      <div className="mb-8 sm:mb-12 text-center">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-8 sm:mt-12 lg:mt-16" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+      {/* Header Section - Full Width (mobile responsive) */}
+      <div className="mb-6 sm:mb-12 text-center">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-6 sm:mt-12 lg:mt-16" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
           All Products
         </h1>
         
         {/* Horizontal line under title */}
-        <div className="w-24 h-0.5 bg-gray-800 mx-auto mb-8"></div>
+        <div className="w-20 sm:w-24 h-0.5 bg-gray-800 mx-auto mb-5 sm:mb-8"></div>
         
         <div className="max-w-5xl mx-auto">
-          <p className="text-gray-700 text-base sm:text-lg mb-8 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+          <p className="text-gray-700 text-sm sm:text-lg mb-4 sm:mb-8 leading-snug sm:leading-relaxed px-2 sm:px-0" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
             Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
           </p>
           
           {/* Category Selection */}
-          <div className="mb-8">
-            <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-4 py-2 mb-4">
+          <div className="mb-6 sm:mb-8">
+            <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-3 sm:mb-4">
 
-              <span className="text-gray-700 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Choose By Categories:</span>
+              <span className="text-gray-700 font-semibold text-sm sm:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Choose By Categories:</span>
             </div>
-            <div className="flex flex-wrap justify-center gap-2">
+            {/* Mobile: horizontal scroll list; Desktop: wrap */}
+            <div className="sm:hidden -mx-4 px-4 overflow-x-auto pb-2">
+              <div className="flex flex-nowrap gap-2">
+                {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
+                  <button
+                    key={category}
+                    onClick={() => handleHeaderCategorySelect(category)}
+                    className="whitespace-nowrap px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    {category} <span className="text-gray-500">({count})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="hidden sm:flex flex-wrap justify-center gap-2">
               {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
                 <button
                   key={category}
@@ -522,6 +538,18 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         </div>
       </div>
       
+      {/* Mobile Bottom Controls: Show Filtering */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 px-4 pb-3 pt-0 bg-transparent">
+        <button
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-black text-white text-sm font-semibold uppercase active:scale-[0.99] transition hover:bg-gray-800 shadow-lg pointer-events-auto"
+          onClick={() => setFilterDrawerOpen(true)}
+          aria-label="Show Filters"
+          style={{ fontFamily: 'Jost, sans-serif' }}
+        >
+          SHOW FILTERS
+        </button>
+      </div>
+
       {/* Product Section with Sidebar */}
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
@@ -581,6 +609,11 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         setSelectCategoryOpen={setSelectCategoryOpen}
         selectedCategories={selectedCategories}
         handleCategorySelect={handleCategorySelect}
+        priceRange={priceRange}
+        setPriceRange={setPriceRange}
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+        maxPrice={getMaxPrice()}
       />
       </main>
     </div>

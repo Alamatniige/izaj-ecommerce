@@ -62,7 +62,7 @@ export const useCart = () => {
       updatedItems = [...cart.items, newItem];
     }
 
-    const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+    const totalItems = updatedItems.length; // Count of unique products, not sum of quantities
     const totalPrice = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     setCart({
@@ -86,7 +86,7 @@ export const useCart = () => {
       item.id === itemId ? { ...item, quantity } : item
     );
 
-    const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+    const totalItems = updatedItems.length; // Count of unique products, not sum of quantities
     const totalPrice = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     setCart({
@@ -100,7 +100,7 @@ export const useCart = () => {
 
   const removeFromCart = (itemId: string) => {
     const updatedItems = cart.items.filter(item => item.id !== itemId);
-    const totalItems = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+    const totalItems = updatedItems.length; // Count of unique products, not sum of quantities
     const totalPrice = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     setCart({

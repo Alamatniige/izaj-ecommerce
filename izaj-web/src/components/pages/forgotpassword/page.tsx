@@ -89,14 +89,14 @@ const ForgotPasswordPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 md:gap-12 lg:gap-16 items-start">
           {/* Left Section - Title */}
-          <div className="space-y-8">
-            <h1 className="text-4xl font-bold text-black leading-tight font-poppins">
+          <div className="space-y-6 md:space-y-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-black leading-tight font-poppins">
               Reset your password
             </h1>
-            <p className="text-lg text-gray-600 font-jost">
+            <p className="text-base md:text-lg text-gray-600 font-jost">
               Remember your password?{' '}
               <button
                 onClick={() => router.push('/login')}
@@ -108,12 +108,12 @@ const ForgotPasswordPage: React.FC = () => {
           </div>
 
           {/* Right Section - Form */}
-          <div className="bg-white max-w-lg">
-            <p className="text-black text-base mb-6 leading-relaxed font-bold font-jost">
+          <div className="bg-white w-full lg:max-w-lg mt-3 md:mt-0">
+            <p className="text-black text-sm md:text-base mb-3 md:mb-4 leading-snug md:leading-relaxed font-bold font-jost">
               Enter your email address and we'll send you a password reset link.
             </p>
 
-            <p className="text-gray-600 text-sm mb-8 font-jost">
+            <p className="text-gray-600 text-sm md:text-sm mb-6 md:mb-8 leading-snug md:leading-relaxed font-jost">
               We'll send a secure link to your email that will allow you to create a new password.
             </p>
 
@@ -127,7 +127,7 @@ const ForgotPasswordPage: React.FC = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
               {/* Email */}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-black font-jost">
@@ -139,7 +139,7 @@ const ForgotPasswordPage: React.FC = () => {
                   value={formData.email}
                   onChange={handleInputChange}
                   ref={emailInputRef}
-                  className={`w-full px-4 pr-4 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${
+                  className={`w-full px-3 md:px-4 pr-3 md:pr-4 py-3 md:py-4 text-sm md:text-base border-2 bg-white text-black placeholder-gray-400 ${
                     errors.email ? 'border-red-500' : 'border-gray-300'
                   } focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                   placeholder="Enter your email address"
@@ -153,7 +153,7 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-black text-white py-4 px-6 text-base font-medium hover:bg-gray-800 transition-all duration-300 flex items-center justify-center disabled:opacity-50 rounded-none font-poppins"
+                className="w-full bg-black text-white py-3 md:py-4 px-5 md:px-6 text-sm md:text-base font-medium hover:bg-gray-800 transition-all duration-300 flex items-center justify-center disabled:opacity-50 rounded-none font-poppins"
               >
                 {isLoading ? (
                   <>

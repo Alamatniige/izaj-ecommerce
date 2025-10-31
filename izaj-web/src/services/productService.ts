@@ -2,6 +2,7 @@ export interface Product {
   id: number;
   name: string;
   price: string;
+  originalPrice?: string;
   image: string;
   mediaUrls?: string[];
   colors?: string[];
@@ -78,25 +79,80 @@ export const getAllProducts = async (): Promise<Product[]> => {
   try {
     console.log('🔄 getAllProducts: Starting to fetch products...');
     
-    // Use getProductsWithMedia to fetch products with their actual images
-    const response = await InternalApiService.getProductsWithMedia({
-      page: 1,
-      limit: 100
-      // Remove status filter to get all products
-    });
+    // Fetch from all-products API which includes sale data
+    const response = await fetch('/api/all-products');
 
-    console.log('📦 getAllProducts: API response:', response);
-
-    if (response.success) {
-      const products = response.products.map(transformToLegacyProduct);
-      console.log('✅ getAllProducts: Successfully transformed products:', products);
-      // For testing: show all products, regardless of publish status
-      // TODO: Change back to filter for published products only when products are properly published
-      return products;
-    } else {
-      console.error('❌ getAllProducts: Failed to fetch products from internal API');
+    if (!response.ok) {
+      console.error('❌ getAllProducts: Failed to fetch from all-products API');
       return [];
     }
+
+    const allProductsData = await response.json();
+    console.log('📦 getAllProducts: Fetched products with sale data:', allProductsData?.length || 0);
+
+    // Transform products with sale price calculation
+    const products = (allProductsData || []).map((productData: any) => {
+      // Use product_id as the numeric ID, fallback to hash of UUID
+      let numericId = parseInt(productData.product_id);
+      if (isNaN(numericId)) {
+        numericId = parseInt(productData.id.replace(/[^0-9]/g, '').slice(0, 8)) || 0;
+      }
+
+      // Use first media URL if available, otherwise fallback to image_url
+      const primaryImage = productData.media_urls && productData.media_urls.length > 0 
+        ? productData.media_urls[0] 
+        : (productData.image_url || "/placeholder.jpg");
+
+      // Convert status to stock number for display logic
+      const getStockFromStatus = (status: string): number => {
+        const normalizedStatus = status?.toLowerCase() || '';
+        switch (normalizedStatus) {
+          case 'in stock':
+            return 10;
+          case 'low stock':
+            return 3;
+          case 'out of stock':
+            return 0;
+          default:
+            return 10;
+        }
+      };
+
+      // Calculate sale price based on percentage or fixed_amount
+      const originalPrice = parseFloat(productData.price.toString());
+      const saleDetails = productData.sale?.[0]; // Sale is an array, get first element
+      let salePrice = originalPrice;
+      let originalPriceFormatted = `₱${originalPrice.toLocaleString()}`;
+
+      if (saleDetails) {
+        if (saleDetails.percentage) {
+          // Calculate discount based on percentage
+          const discountAmount = (originalPrice * saleDetails.percentage) / 100;
+          salePrice = originalPrice - discountAmount;
+        } else if (saleDetails.fixed_amount) {
+          // Calculate discount based on fixed amount
+          salePrice = Math.max(0, originalPrice - saleDetails.fixed_amount);
+        }
+      }
+
+      return {
+        id: numericId,
+        name: productData.product_name,
+        price: `₱${salePrice.toLocaleString()}`,
+        originalPrice: saleDetails ? originalPriceFormatted : undefined,
+        image: primaryImage,
+        mediaUrls: productData.media_urls || [],
+        colors: ["black"], // Default color
+        description: productData.description,
+        category: productData.category,
+        stock: getStockFromStatus(productData.status),
+        status: productData.status || 'In Stock',
+        pickup_available: productData.pickup_available
+      };
+    });
+
+    console.log('✅ getAllProducts: Successfully transformed products:', products.length);
+    return products;
   } catch (error) {
     console.error('❌ getAllProducts: Error fetching products:', error);
     return [];

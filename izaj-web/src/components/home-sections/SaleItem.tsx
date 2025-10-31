@@ -14,13 +14,14 @@ interface SaleProduct {
   image_url?: string;
   media_urls?: string[];
   on_sale: boolean;
-  sale?: {
+  sale?: Array<{
     id: number;
-    sale_price: number;
-    discount_percentage: number;
+    product_id: string;
+    percentage: number | null;
+    fixed_amount: number | null;
     start_date: string;
     end_date: string;
-  };
+  }>;
 }
 
 export default function SaleItem() {
@@ -34,6 +35,22 @@ export default function SaleItem() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [saleProduct, setSaleProduct] = useState<SaleProduct | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Swipe handlers for mobile
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
+  // Derive images list for navigation (keep hooks order consistent across renders)
+  const images: string[] = (saleProduct?.media_urls && saleProduct.media_urls.length > 0)
+    ? saleProduct.media_urls
+    : [saleProduct?.image_url || "/placeholder.jpg"]; 
+
+  // Sync main image when index changes
+  useEffect(() => {
+    if (images.length > 0) {
+      setMainImage(images[(currentImageIndex + images.length) % images.length]);
+    }
+  }, [currentImageIndex, saleProduct]);
 
   // Fetch real sale products from API
   useEffect(() => {
@@ -60,6 +77,7 @@ export default function SaleItem() {
             ? product.media_urls[0] 
             : (product.image_url || "/placeholder.jpg");
           setMainImage(primaryImage);
+          setCurrentImageIndex(0);
         }
       } catch (error) {
         console.error('❌ SaleItem: Error fetching sale products:', error);
@@ -89,11 +107,28 @@ export default function SaleItem() {
     return null; // Don't render the section if no sale products
   }
 
-  // Calculate sale price and discount
+  // Calculate sale price and discount from actual database structure
   const originalPrice = saleProduct.price;
-  const salePrice = saleProduct.sale?.sale_price || originalPrice;
-  const discountPercentage = saleProduct.sale?.discount_percentage || 0;
-  const discountAmount = originalPrice - salePrice;
+  const saleDetails = saleProduct.sale?.[0]; // Sale is an array, get first element
+  
+  // Calculate sale price based on percentage or fixed_amount
+  let salePrice = originalPrice;
+  let discountPercentage = 0;
+  let discountAmount = 0;
+  
+  if (saleDetails) {
+    if (saleDetails.percentage) {
+      discountPercentage = saleDetails.percentage;
+      discountAmount = (originalPrice * discountPercentage) / 100;
+      salePrice = originalPrice - discountAmount;
+    } else if (saleDetails.fixed_amount) {
+      discountAmount = saleDetails.fixed_amount;
+      salePrice = Math.max(0, originalPrice - discountAmount);
+      discountPercentage = saleDetails.fixed_amount > 0 
+        ? Math.round((discountAmount / originalPrice) * 100) 
+        : 0;
+    }
+  }
 
   const thumbnails = saleProduct.media_urls && saleProduct.media_urls.length > 0 
     ? saleProduct.media_urls.slice(0, 2) // Only take first 2 images
@@ -122,6 +157,45 @@ export default function SaleItem() {
     setIsImageModalOpen(true);
   };
 
+  
+
+  const goPrevImage = () => {
+    if (images.length <= 1) return;
+    setCurrentImageIndex((idx) => (idx - 1 + images.length) % images.length);
+  };
+
+  const goNextImage = () => {
+    if (images.length <= 1) return;
+    setCurrentImageIndex((idx) => (idx + 1) % images.length);
+  };
+
+  // Swipe handlers for mobile
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchEndX.current = null;
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe && images.length > 1) {
+      goNextImage();
+    }
+    if (isRightSwipe && images.length > 1) {
+      goPrevImage();
+    }
+  };
+
   return (
     <>
       <style jsx>{`
@@ -142,48 +216,82 @@ export default function SaleItem() {
         }
         
         .scrolling-text {
-          animation: scroll 40s linear infinite;
+          animation: scroll 60s linear infinite;
           white-space: nowrap;
           display: inline-flex;
         }
       `}</style>
       
-      <section className="w-full bg-gray-50 pt-2 pb-2 sm:pt-4 sm:pb-4 md:pt-6 md:pb-6">
+      <section className="w-full bg-gray-50 pt-0 pb-1 sm:pt-1 sm:pb-2 md:pt-2 md:pb-4 overflow-hidden">
         {/* Scrolling Banner  */}
-        <div className="w-full py-10 overflow-hidden relative mb-8">
-          <div className="scrolling-text inline-block text-2xl font-bold text-red-600 uppercase" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Clearance Sale Up to   {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Clearance Sale Up to {discountPercentage}% OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <div className="w-full py-2 sm:py-3 overflow-hidden relative mb-1 sm:mb-2 mt-0 sm:mt-1">
+          <div className="scrolling-text inline-block text-lg sm:text-xl md:text-2xl font-bold text-red-600 uppercase pt-4 sm:pt-0" style={{ fontFamily: 'Jost, sans-serif' }}>
+            <span className="inline-block mr-8 sm:mr-12 md:mr-16">The Grand Lighting Sale - Up to {discountPercentage}% OFF</span>
+            <span className="inline-block mr-8 sm:mr-12 md:mr-16">The Grand Lighting Sale - Up to {discountPercentage}% OFF</span>
+            <span className="inline-block mr-8 sm:mr-12 md:mr-16">The Grand Lighting Sale - Up to {discountPercentage}% OFF</span>
+            <span className="inline-block mr-8 sm:mr-12 md:mr-16">The Grand Lighting Sale - Up to {discountPercentage}% OFF</span>
+            <span className="inline-block mr-8 sm:mr-12 md:mr-16">The Grand Lighting Sale - Up to {discountPercentage}% OFF</span>
+            <span className="inline-block mr-8 sm:mr-12 md:mr-16">The Grand Lighting Sale - Up to {discountPercentage}% OFF</span>
+            <span className="inline-block mr-8 sm:mr-12 md:mr-16">The Grand Lighting Sale - Up to {discountPercentage}% OFF</span>
+            <span className="inline-block mr-8 sm:mr-12 md:mr-16">The Grand Lighting Sale - Up to {discountPercentage}% OFF</span>
+            <span className="inline-block mr-8 sm:mr-12 md:mr-16">The Grand Lighting Sale - Up to {discountPercentage}% OFF</span>
           </div>
         </div>
         
-        <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16">
+        {/* Mobile: Full width image container */}
+        <div className="block lg:hidden w-full">
+          <div 
+            ref={imgRef}
+            className="relative overflow-hidden w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
+            style={{ aspectRatio: '3/4', minHeight: '360px' }}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+            onClick={() => handleImageClick(mainImage)}
+          >
+            <Image
+              src={mainImage}
+              width={800}
+              height={600}
+              className="w-full h-full object-contain transition-all duration-300"
+              alt="Sale Product"
+              style={{ maxHeight: '100%', width: '100%', height: 'auto' }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '/placeholder.jpg';
+              }}
+            />
+
+            {/* Dots navigation - enhanced */}
+            {images.length > 1 && (
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                {images.map((_, i) => {
+                  const normalizedIndex = ((currentImageIndex % images.length) + images.length) % images.length;
+                  return (
+                    <span 
+                      key={i} 
+                      className={`rounded-full transition-all duration-300 ${
+                        i === normalizedIndex 
+                          ? 'w-2.5 h-2.5 bg-white shadow-lg' 
+                          : 'w-2 h-2 bg-white/50'
+                      }`}
+                    ></span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-16">
           {/* Main Product Layout - Exact same as item-description */}
           <div className="flex flex-col lg:flex-row gap-0 max-w-7xl mx-auto">
             
             {/* Left Column - Two Images Side by Side */}
             <div className="w-full lg:w-[70%] pr-0 lg:pr-8">
               <div className="space-y-4">
-                {/* Two Images Side by Side */}
-                <div className="flex gap-4">
+                {/* Desktop: Two Images Side by Side */}
+                <div className="hidden lg:flex gap-4">
                   {/* First Image */}
                   <div className="w-1/2">
                     <div 

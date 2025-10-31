@@ -179,7 +179,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
       <style>{improvedEffects}</style>
       
       {/* Brand Messaging Section */}
-      <section className="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-12 mt-8 bg-white">
+      <section className="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-6 md:py-10 mt-2 md:mt-4 bg-white">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>
             Discover Your Perfect Lighting
@@ -191,15 +191,15 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
         </div>
       </section>
 
-      <section className="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-16 mt-8 relative bg-gray-50">
-        <div className="flex justify-between items-baseline mb-6">
-          <h2 className="text-lg md:text-xl text-black font-extrabold" style={{ fontFamily: 'Jost, sans-serif' }}>
+      <section className="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-10 md:py-16 mt-2 md:mt-8 relative bg-gray-50">
+        <div className="flex justify-between items-baseline mb-4 md:mb-6">
+          <h2 className="text-base sm:text-lg md:text-xl text-black font-extrabold" style={{ fontFamily: 'Jost, sans-serif' }}>
           Choose By Categories
           </h2>
           <div className="flex-grow"></div>
           <Link
             href="/product-list"
-            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-semibold"
+            className="text-xs sm:text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-semibold"
             style={{ fontFamily: 'Jost, sans-serif' }}
           >
             View all
@@ -210,7 +210,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
           ref={containerRef}
           className={`relative group ${isMobile || isTablet ? 'overflow-x-auto' : ''}`}
         style={{
-          minHeight: "180px",
+          minHeight: isMobile ? "140px" : "180px",
           scrollbarWidth: "none",
           msOverflowStyle: "none",
         }}
@@ -220,10 +220,24 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
       >
         <style>
           {`
-            div::-webkit-scrollbar {
-              width: 0;
-              height: 0;
-              display: none;
+            /* Visible horizontal scrollbar for the mobile carousel */
+            .show-horizontal-scroll {
+              overflow-x: auto;
+              -webkit-overflow-scrolling: touch;
+            }
+            .show-horizontal-scroll::-webkit-scrollbar {
+              height: 6px; /* horizontal bar height */
+            }
+            .show-horizontal-scroll::-webkit-scrollbar-track {
+              background: rgba(0,0,0,0.06);
+              border-radius: 9999px;
+            }
+            .show-horizontal-scroll::-webkit-scrollbar-thumb {
+              background: rgba(0,0,0,0.3);
+              border-radius: 9999px;
+            }
+            .show-horizontal-scroll::-webkit-scrollbar-thumb:hover {
+              background: rgba(0,0,0,0.45);
             }
             @media (max-width: 639px) {
               .slide-in-forward {
@@ -237,46 +251,41 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
         </style>
 
         {(isMobile || isTablet) ? (
-          <div className="flex flex-nowrap overflow-x-auto gap-6 pb-2 px-1 -mx-1">
-            {allItems.map((item, idx) => (
-              <div
-                key={item.id}
-                className="overflow-hidden relative flex flex-col w-full group max-w-[500px] min-w-0"
-                style={isMobile ? { width: '70vw', minWidth: '70vw', flex: '0 0 70vw' } : isTablet ? { width: '40vw', minWidth: '40vw', flex: '0 0 40vw' } : {}}
-                onMouseEnter={() => setHoveredIndex(idx)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
-                <div className="relative overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.name} 
-                    className={`w-full h-64 sm:h-96 object-cover transition-all duration-300 ${
-                      hoveredIndex === idx ? 'scale-110' : 'scale-100'
-                    }`}
-                  />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <h3 className={`text-white text-xl sm:text-2xl md:text-3xl font-bold text-center transition-all duration-500 mb-4 ${
-                      hoveredIndex === idx ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                    }`} style={{ 
-                      fontFamily: 'Jost, sans-serif', 
-                      fontWeight: 600,
-                      textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
-                    }}>
+          <div className="show-horizontal-scroll pb-6 md:pb-2 px-6">
+            <div className="flex flex-nowrap gap-4 sm:gap-6 -mx-6">
+              {allItems.map((item, idx) => (
+                <div
+                  key={item.id}
+                  className="overflow-hidden relative flex flex-col w-full group max-w-[500px] min-w-0"
+                  style={isMobile ? { width: '65vw', minWidth: '65vw', flex: '0 0 65vw' } : isTablet ? { width: '40vw', minWidth: '40vw', flex: '0 0 40vw' } : {}}
+                  onMouseEnter={() => setHoveredIndex(idx)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
+                  <div className="relative overflow-hidden">
+                    <img 
+                      src={item.image} 
+                      alt={item.name} 
+                      className={`w-full h-72 sm:h-80 md:h-96 object-cover transition-all duration-300 ${
+                        hoveredIndex === idx ? 'scale-110' : 'scale-100'
+                      }`}
+                    />
+                    {/* Overlay hidden; name shown below */}
+                  </div>
+                  <div className="mt-3 text-center">
+                    <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>
                       {item.name}
                     </h3>
                     <Link
                       href={`/product-list?category=${encodeURIComponent(item.name)}`}
-                      className={`text-black py-2 px-4 hover:opacity-80 transition-all duration-500 text-sm text-center block rounded-sm border ${
-                        hoveredIndex === idx ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-                      }`}
-                      style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: 'white', borderColor: 'white', letterSpacing: '0.1em' }}
+                      className="hidden sm:inline-block mt-2 text-xs sm:text-sm font-semibold text-black hover:underline"
+                      style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.05em' }}
                     >
                       VIEW
                     </Link>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         ) : (
           <div 
@@ -293,7 +302,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
                   <img 
                     src={item.image} 
                     alt={item.name} 
-                    className={`w-full h-64 sm:h-96 object-cover transition-all duration-300 ${
+                    className={`w-full h-72 sm:h-96 object-cover transition-all duration-300 ${
                       hoveredIndex === (currentPage * itemsPerPage + idx) ? 'scale-110' : 'scale-100'
                     }`}
                   />
@@ -318,6 +327,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
                     </Link>
                   </div>
                 </div>
+                {/* Name below only for mobile/tablet; desktop overlay retained */}
               </div>
             ))}
           </div>

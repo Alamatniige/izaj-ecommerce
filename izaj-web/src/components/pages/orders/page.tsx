@@ -163,6 +163,19 @@ const MyOrders: React.FC = () => {
     }
   };
 
+  const getStatusLabel = (status: Order['status'], isMobile: boolean = false) => {
+    const labels: Record<Order['status'], { full: string; mobile: string }> = {
+      pending: { full: 'Pending', mobile: 'Pending' },
+      approved: { full: 'Approved', mobile: 'Approved' },
+      in_transit: { full: 'In Transit', mobile: 'Transit' },
+      complete: { full: 'Complete', mobile: 'Complete' },
+      cancelled: { full: 'Cancelled', mobile: 'Cancel' }
+    };
+    
+    const label = labels[status] || { full: status, mobile: status };
+    return isMobile ? label.mobile : label.full;
+  };
+
   const getStatusColor = (status: Order['status']) => {
     switch (status) {
       case 'pending':
@@ -422,66 +435,11 @@ const MyOrders: React.FC = () => {
           </div>
         )}
         
-        {/* Mobile: My Account Navigation */}
-        <div className="lg:hidden bg-white px-4 pt-4 shadow-sm">
-          <div
-            className="w-full flex items-center justify-between p-0 text-black font-semibold text-lg cursor-pointer mt-4 border-b border-gray-200 pb-3 hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors"
-            onClick={() => setIsAccountModalOpen(true)}
-            style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
-          >
-            <div className="flex items-center space-x-2">
-              <Icon icon="mdi:package-variant" className="text-black w-5 h-5" />
-              <span>My Orders</span>
-            </div>
-            <Icon icon="mdi:chevron-down" className="text-gray-400 w-6 h-6 ml-1" />
-          </div>
-        </div>
-
-        {/* My Account Modal for Mobile */}
-        {isAccountModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-end lg:hidden bg-black bg-opacity-40 overflow-y-auto" onClick={() => setIsAccountModalOpen(false)}>
-            <div
-              className="w-full bg-white animate-slideUp relative shadow-lg max-h-screen overflow-y-auto"
-              style={{ minHeight: '240px' }}
-              onClick={e => e.stopPropagation()}
-            >
-              <button
-                className="absolute top-3 right-4 text-gray-400 hover:text-gray-600 text-2xl"
-                onClick={() => setIsAccountModalOpen(false)}
-                aria-label="Close"
-              >
-                <Icon icon="mdi:close" />
-              </button>
-              <div className="font-bold text-xl mb-4 text-black text-center mt-4" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>My Account</div>
-              <ul className="space-y-1 px-4 pb-6">
-                <li>
-                  <span className="inline-flex items-center text-black font-semibold text-base" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                    My Account
-                  </span>
-                </li>
-                <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                  <Link href="/account" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Profile</Link>
-                </li>
-                <li className="pl-8 py-3 bg-gray-100 rounded-lg transition-colors duration-300">
-                  <span className="text-black font-semibold text-base block" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>My Orders</span>
-                </li>
-                <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                  <Link href="/payments" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Payment Methods</Link>
-                </li>
-                <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg transition-colors duration-300">
-                  <Link href="/addresses" className="text-black  hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Addresses</Link>
-                </li>
-                <li className="pl-8 py-3 hover:bg-gray-50 rounded-lg mb-2 transition-colors duration-300">
-                  <Link href="/changepassword" className="text-black hover:text-gray-900 text-base block transition-colors" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Change Password</Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        )}
+        {/* Mobile: My Account Navigation removed per request */}
 
         {/* Main Content */}
-        <main className="flex-grow py-6 md:py-12 bg-white">
-          <div className="w-full max-w-screen-xl mx-auto px-0">
+        <main className="flex-grow py-6 md:py-12 pb-24 lg:pb-12 bg-white">
+          <div className="w-full max-w-screen-xl mx-auto px-4 lg:px-0">
             {/* Header Section - Similar to ProductList */}
             <div className="mb-6 sm:mb-8 text-center">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-0 sm:mt-1 lg:mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
@@ -511,28 +469,29 @@ const MyOrders: React.FC = () => {
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
 
                   {/* Filter Tabs */}
-                  <div className="border-b border-gray-200 bg-white">
-                    <div className="flex overflow-x-auto scrollbar-hide justify-center">
+                  <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
+                    <div className="flex overflow-x-auto scrollbar-hide lg:justify-center -mx-4 sm:mx-0 px-4 sm:px-0">
                       {[
-                        { key: 'all', label: 'All Orders', icon: 'mdi:package-variant-closed' },
-                        { key: 'pending', label: 'Pending', icon: 'mdi:clock-outline' },
-                        { key: 'approved', label: 'Approved', icon: 'mdi:check-circle' },
-                        { key: 'in_transit', label: 'In Transit', icon: 'mdi:truck-fast' },
-                        { key: 'complete', label: 'Complete', icon: 'mdi:check-all' },
-                        { key: 'cancelled', label: 'Cancelled', icon: 'mdi:close-circle' }
+                        { key: 'all', label: 'All Orders', icon: 'mdi:package-variant-closed', shortLabel: 'All' },
+                        { key: 'pending', label: 'Pending', icon: 'mdi:clock-outline', shortLabel: 'Pending' },
+                        { key: 'approved', label: 'Approved', icon: 'mdi:check-circle', shortLabel: 'Approved' },
+                        { key: 'in_transit', label: 'In Transit', icon: 'mdi:truck-fast', shortLabel: 'Transit' },
+                        { key: 'complete', label: 'Complete', icon: 'mdi:check-all', shortLabel: 'Complete' },
+                        { key: 'cancelled', label: 'Cancelled', icon: 'mdi:close-circle', shortLabel: 'Cancelled' }
                       ].map((tab) => (
                         <button
                           key={tab.key}
                           onClick={() => setSelectedStatus(tab.key)}
-                          className={`flex items-center gap-2 px-6 py-4 text-base font-medium whitespace-nowrap transition-all duration-200 ${
+                          className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-5 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm lg:text-base font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
                             selectedStatus === tab.key
-                              ? 'text-black border-b-2 border-black'
+                              ? 'text-black border-b-2 border-black bg-gray-50 sm:bg-transparent'
                               : 'text-gray-600 hover:text-black hover:bg-gray-50'
                           }`}
-                          style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
+                          style={{ fontFamily: 'Jost, sans-serif', fontWeight: selectedStatus === tab.key ? 600 : 500 }}
                         >
-                          <Icon icon={tab.icon} className="w-4 h-4" />
-                          {tab.label}
+                          <Icon icon={tab.icon} className="w-4 h-4 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="hidden sm:inline">{tab.label}</span>
+                          <span className="sm:hidden">{tab.shortLabel}</span>
                         </button>
                       ))}
                     </div>
@@ -551,7 +510,7 @@ const MyOrders: React.FC = () => {
                         <p className="text-gray-400 text-sm mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Start shopping to see your orders here</p>
                         <Link 
                           href="/product-list"
-                          className="inline-block mt-6 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 font-medium"
+                          className="inline-block mt-6 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all duration-200 font-medium text-sm sm:text-base w-full sm:w-auto text-center"
                           style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
                         >
                           Browse Products
@@ -566,29 +525,30 @@ const MyOrders: React.FC = () => {
                           >
                             {/* Order Header */}
                             <div className="mb-4">
-                              <div className="flex items-center gap-3 flex-wrap justify-between">
-                                <div className="flex items-center gap-3 flex-wrap">
-                                  <h4 className="text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{order.orderNumber}</h4>
-                                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-semibold ${getStatusColor(order.status)}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                                    <Icon icon={getStatusIcon(order.status)} className="w-4 h-4" />
-                                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 sm:justify-between">
+                                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                                  <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{order.orderNumber}</h4>
+                                  <div className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border text-xs sm:text-sm font-semibold ${getStatusColor(order.status)}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                                    <Icon icon={getStatusIcon(order.status)} className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                                    <span className="hidden sm:inline whitespace-nowrap">{getStatusLabel(order.status, false)}</span>
+                                    <span className="sm:hidden whitespace-nowrap">{getStatusLabel(order.status, true)}</span>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Total:</span>
-                                  <span className="text-lg font-bold text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{formatPrice(order.total)}</span>
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                  <span className="text-xs sm:text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Total:</span>
+                                  <span className="text-base sm:text-lg font-bold text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{formatPrice(order.total)}</span>
                                 </div>
                               </div>
-                              <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{formatDate(order.date)}</p>
+                              <p className="text-xs sm:text-sm text-gray-500 mt-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{formatDate(order.date)}</p>
                             </div>
 
                             {/* Order Items and Buttons */}
-                            <div className="flex gap-4 mb-4">
+                            <div className="flex flex-col lg:flex-row gap-4 mb-4">
                               {/* Order Items */}
                               <div className="flex-1 space-y-3">
                                 {order.items.map((item) => (
-                                  <div key={item.id} className="flex items-center gap-4">
-                                    <div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
+                                  <div key={item.id} className="flex items-center gap-3 sm:gap-4">
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
                                       <img 
                                         src={item.image} 
                                         alt={item.name}
@@ -596,7 +556,7 @@ const MyOrders: React.FC = () => {
                                       />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium text-gray-800 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}>{item.name}</p>
+                                      <p className="text-xs sm:text-sm font-medium text-gray-800 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}>{item.name}</p>
                                       <p className="text-xs text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Qty: {item.quantity}</p>
                                     </div>
                                   </div>
@@ -604,10 +564,10 @@ const MyOrders: React.FC = () => {
                               </div>
                               
                               {/* Buttons */}
-                              <div className="flex flex-col gap-2">
+                              <div className="flex flex-col sm:flex-row lg:flex-col gap-2">
                                 <button
                                   onClick={() => setSelectedOrder(order)}
-                                  className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium text-sm flex items-center gap-2 whitespace-nowrap"
+                                  className="w-full sm:w-auto lg:w-full px-4 py-2.5 sm:py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 whitespace-nowrap"
                                   style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
                                 >
                                   <Icon icon="mdi:eye-outline" className="w-4 h-4" />
@@ -621,7 +581,7 @@ const MyOrders: React.FC = () => {
                                       setReviewRating(5);
                                       setReviewComment('');
                                     }}
-                                    className="px-4 py-2 text-white rounded-lg transition-all duration-200 font-medium text-sm flex items-center gap-2 whitespace-nowrap"
+                                    className="w-full sm:w-auto lg:w-full px-4 py-2.5 sm:py-2 text-white rounded-lg transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 whitespace-nowrap"
                                     style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500, backgroundColor: '#00A86B' }}
                                     onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#009059'}
                                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#00A86B'}
@@ -631,7 +591,7 @@ const MyOrders: React.FC = () => {
                                   </button>
                                 )}
                                 {order.status === 'complete' && reviewedOrders.has(order.id) && (
-                                  <span className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg font-medium text-sm flex items-center gap-2 whitespace-nowrap">
+                                  <span className="w-full sm:w-auto lg:w-full px-4 py-2.5 sm:py-2 bg-gray-100 text-gray-600 rounded-lg font-medium text-sm flex items-center justify-center gap-2 whitespace-nowrap">
                                     <Icon icon="mdi:check-circle" className="w-4 h-4 text-green-600" />
                                     Review Submitted
                                   </span>
@@ -652,13 +612,13 @@ const MyOrders: React.FC = () => {
                           
                           {/* Review Form - Show inline for complete orders that haven't been reviewed */}
                           {order.status === 'complete' && !reviewedOrders.has(order.id) && showReviewForm && reviewOrderId === order.id && (
-                            <div className="mt-4 bg-gradient-to-br from-green-50 to-white border-2 border-green-200 rounded-2xl p-6 shadow-lg">
-                              <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl flex items-center justify-center shadow-md">
-                                    <Icon icon="mdi:star" className="w-5 h-5 text-white" />
+                            <div className="mt-4 bg-gradient-to-br from-green-50 to-white border-2 border-green-200 rounded-2xl p-4 sm:p-6 shadow-lg">
+                              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                                    <Icon icon="mdi:star" className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                                   </div>
-                                  <h3 className="text-xl font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                                  <h3 className="text-base sm:text-xl font-bold text-gray-800 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                                     Leave a Review
                                   </h3>
                                 </div>
@@ -669,10 +629,10 @@ const MyOrders: React.FC = () => {
                                     setReviewRating(5);
                                     setReviewComment('');
                                   }}
-                                  className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                                  className="p-2 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0 ml-2"
                                   disabled={isSubmittingReview}
                                 >
-                                  <Icon icon="mdi:close" className="w-5 h-5 text-gray-500" />
+                                  <Icon icon="mdi:close" className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                                 </button>
                               </div>
 
@@ -746,7 +706,7 @@ const MyOrders: React.FC = () => {
                               </div>
 
                               {/* Action Buttons */}
-                              <div className="flex gap-3">
+                              <div className="flex flex-col sm:flex-row gap-3">
                                 <button
                                   onClick={() => {
                                     setShowReviewForm(false);
@@ -754,7 +714,7 @@ const MyOrders: React.FC = () => {
                                     setReviewRating(5);
                                     setReviewComment('');
                                   }}
-                                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="w-full sm:flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                                   disabled={isSubmittingReview}
                                   style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                                 >
@@ -763,7 +723,7 @@ const MyOrders: React.FC = () => {
                                 <button
                                   onClick={() => submitReview(order)}
                                   disabled={isSubmittingReview || !reviewComment.trim()}
-                                  className="flex-1 px-4 py-3 text-white rounded-xl transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                                  className="w-full sm:flex-1 px-4 py-3 text-white rounded-xl transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
                                   style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: '#00A86B' }}
                                   onMouseEnter={(e) => !isSubmittingReview && !reviewComment.trim() && (e.currentTarget.style.backgroundColor = '#009059')}
                                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#00A86B'}
@@ -801,77 +761,77 @@ const MyOrders: React.FC = () => {
             onClick={() => setSelectedOrder(null)}
           >
             <div 
-              className="relative w-[420px] sm:w-[500px] md:w-[540px] lg:w-[580px] xl:w-[620px] bg-gradient-to-b from-gray-50 to-white h-screen shadow-2xl overflow-y-auto z-[10000]"
+              className="relative w-full sm:w-[420px] md:w-[500px] lg:w-[540px] xl:w-[580px] bg-gradient-to-b from-gray-50 to-white h-screen shadow-2xl overflow-y-auto z-[10000]"
               onClick={(e) => e.stopPropagation()}
               style={{
                 animation: 'slideInRight 0.3s ease-out'
               }}
             >
               {/* Header */}
-              <div className="sticky top-0 z-20 bg-white px-6 py-5 border-b-2 border-gray-200">
+              <div className="sticky top-0 z-20 bg-white px-4 sm:px-6 py-4 sm:py-5 border-b-2 border-gray-200">
                 <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                       Order Details
                     </h2>
-                    <p className="text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{selectedOrder.orderNumber}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{selectedOrder.orderNumber}</p>
                   </div>
                   <button
                     onClick={() => setSelectedOrder(null)}
-                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    className="p-2 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0 ml-2"
                   >
                     <Icon icon="mdi:close" width="24" height="24" className="text-gray-700" />
                   </button>
                 </div>
                 {/* Status Badge */}
                 <div>
-                  <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 text-sm font-semibold shadow-md ${getStatusColor(selectedOrder.status)}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                    <Icon icon={getStatusIcon(selectedOrder.status)} className="w-5 h-5" />
-                    {selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1)}
+                  <span className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border-2 text-xs sm:text-sm font-semibold shadow-md ${getStatusColor(selectedOrder.status)}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                    <Icon icon={getStatusIcon(selectedOrder.status)} className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span className="whitespace-nowrap">{getStatusLabel(selectedOrder.status, false)}</span>
                   </span>
                 </div>
               </div>
 
               {/* Content Container */}
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
 
               {/* Modal Content */}
               <div className="space-y-6">
                 {/* All Order Details in One Container */}
                 <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-md overflow-hidden">
                   {/* Order Items Section */}
-                  <div className="p-4 border-b-2 border-gray-200 bg-gradient-to-r from-gray-100 to-white">
+                  <div className="p-3 sm:p-4 border-b-2 border-gray-200 bg-gradient-to-r from-gray-100 to-white">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                        <Icon icon="mdi:cart-outline" className="w-5 h-5 text-white" />
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 bg-black rounded-lg flex items-center justify-center">
+                        <Icon icon="mdi:cart-outline" className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </div>
-                      <h4 className="text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Order Items</h4>
-                      <span className="ml-auto text-sm font-semibold text-gray-600 bg-gray-200 px-3 py-1 rounded-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Order Items</h4>
+                      <span className="ml-auto text-xs sm:text-sm font-semibold text-gray-600 bg-gray-200 px-2 sm:px-3 py-1 rounded-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                         {selectedOrder.items.length} {selectedOrder.items.length === 1 ? 'item' : 'items'}
                       </span>
                     </div>
                   </div>
-                  <div className="p-4 space-y-3">
+                  <div className="p-3 sm:p-4 space-y-3">
                     {selectedOrder.items.map((item, index) => (
-                      <div key={item.id} className="flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border-2 border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200">
+                      <div key={item.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border-2 border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200">
                         <div className="relative">
-                          <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-200 flex-shrink-0 shadow-sm">
+                          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 border-gray-200 flex-shrink-0 shadow-sm">
                             <img 
                               src={item.image} 
                               alt={item.name}
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div className="absolute -top-2 -right-2 bg-black text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-lg">
+                          <div className="absolute -top-2 -right-2 bg-black text-white text-xs font-bold w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-lg">
                             {item.quantity}
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-gray-800 mb-1 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{item.name}</p>
+                          <p className="text-xs sm:text-sm font-bold text-gray-800 mb-1 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{item.name}</p>
                           <p className="text-xs text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Qty: {item.quantity}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-xs sm:text-sm font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                             {formatPrice(item.price * item.quantity)}
                           </p>
                         </div>
@@ -880,27 +840,27 @@ const MyOrders: React.FC = () => {
                   </div>
 
                   {/* Shipping Details Section */}
-                  <div className="p-5 border-t-2 border-gray-200">
+                  <div className="p-4 sm:p-5 border-t-2 border-gray-200">
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Icon icon="mdi:truck-delivery" className="w-5 h-5 text-blue-600" />
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Icon icon="mdi:truck-delivery" className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                       </div>
-                      <h4 className="text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Shipping Details</h4>
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Shipping Details</h4>
                     </div>
-                    <div className="space-y-3 pl-10">
-                      <div className="flex items-start gap-3">
-                        <Icon icon="mdi:map-marker" className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                        <div>
+                    <div className="space-y-3 pl-8 sm:pl-10">
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <Icon icon="mdi:map-marker" className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
                           <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Delivery Address</p>
-                          <p className="text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{selectedOrder.shippingAddress}</p>
+                          <p className="text-xs sm:text-sm font-semibold text-gray-800 break-words" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{selectedOrder.shippingAddress}</p>
                         </div>
                       </div>
                       {selectedOrder.trackingNumber && (
-                        <div className="flex items-start gap-3 bg-blue-50 rounded-lg p-3 border-2 border-blue-200">
-                          <Icon icon="mdi:package-variant" className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <div>
+                        <div className="flex items-start gap-2 sm:gap-3 bg-blue-50 rounded-lg p-2 sm:p-3 border-2 border-blue-200">
+                          <Icon icon="mdi:package-variant" className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
                             <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Tracking Number</p>
-                            <p className="text-sm font-bold text-blue-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{selectedOrder.trackingNumber}</p>
+                            <p className="text-xs sm:text-sm font-bold text-blue-600 break-all" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{selectedOrder.trackingNumber}</p>
                           </div>
                         </div>
                       )}
@@ -908,33 +868,33 @@ const MyOrders: React.FC = () => {
                   </div>
 
                   {/* Payment & Order Info Section */}
-                  <div className="p-5 border-t-2 border-gray-200">
+                  <div className="p-4 sm:p-5 border-t-2 border-gray-200">
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                        <Icon icon="mdi:credit-card" className="w-5 h-5 text-green-600" />
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                        <Icon icon="mdi:credit-card" className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                       </div>
-                      <h4 className="text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Payment & Info</h4>
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Payment & Info</h4>
                     </div>
-                    <div className="space-y-3 pl-10">
-                      <div className="flex items-start gap-3">
-                        <Icon icon="mdi:calendar" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <div>
+                    <div className="space-y-3 pl-8 sm:pl-10">
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <Icon icon="mdi:calendar" className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
                           <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Order Date</p>
-                          <p className="text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{formatDate(selectedOrder.date)}</p>
+                          <p className="text-xs sm:text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{formatDate(selectedOrder.date)}</p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3">
-                        <Icon icon="mdi:wallet" className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <div>
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <Icon icon="mdi:wallet" className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
                           <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Payment Method</p>
-                          <p className="text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{selectedOrder.paymentMethod}</p>
+                          <p className="text-xs sm:text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{selectedOrder.paymentMethod}</p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-3 bg-green-50 rounded-lg p-3 border-2 border-green-200">
-                        <Icon icon="mdi:cash" className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1">
+                      <div className="flex items-start gap-2 sm:gap-3 bg-green-50 rounded-lg p-3 border-2 border-green-200">
+                        <Icon icon="mdi:cash" className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
                           <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Total Amount</p>
-                          <p className="text-2xl font-bold text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{formatPrice(selectedOrder.total)}</p>
+                          <p className="text-xl sm:text-2xl font-bold text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{formatPrice(selectedOrder.total)}</p>
                         </div>
                       </div>
                     </div>
@@ -945,16 +905,16 @@ const MyOrders: React.FC = () => {
 
 
               {/* Modal Footer */}
-              <div className="sticky bottom-0 bg-white border-t-2 border-gray-200 px-6 py-4 shadow-lg">
-                <div className="space-y-3">
+              <div className="sticky bottom-0 bg-white border-t-2 border-gray-200 px-4 sm:px-6 py-3 sm:py-4 shadow-lg">
+                <div className="space-y-2 sm:space-y-3">
                   {/* Cancel Button - Only for Pending Orders */}
                   {selectedOrder.status === 'pending' && (
                     <button
                       onClick={handleCancelOrder}
-                      className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-3 px-6 text-base font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center justify-center gap-2 rounded-xl shadow-md"
+                      className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 flex items-center justify-center gap-2 rounded-xl shadow-md"
                       style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                     >
-                      <Icon icon="mdi:close-circle" className="w-5 h-5" />
+                      <Icon icon="mdi:close-circle" className="w-4 h-4 sm:w-5 sm:h-5" />
                       Cancel Order
                     </button>
                   )}
@@ -962,10 +922,10 @@ const MyOrders: React.FC = () => {
                   {/* Contact Support - For Active Orders (not cancelled/complete) */}
                   {selectedOrder.status !== 'cancelled' && selectedOrder.status !== 'complete' && selectedOrder.status !== 'pending' && (
                     <button
-                      className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-3 px-6 text-base font-semibold hover:from-gray-800 hover:to-gray-900 transition-all duration-200 flex items-center justify-center gap-2 rounded-xl shadow-md"
+                      className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base font-semibold hover:from-gray-800 hover:to-gray-900 transition-all duration-200 flex items-center justify-center gap-2 rounded-xl shadow-md"
                       style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                     >
-                      <Icon icon="mdi:message-outline" className="w-5 h-5" />
+                      <Icon icon="mdi:message-outline" className="w-4 h-4 sm:w-5 sm:h-5" />
                       Contact Support
                     </button>
                   )}
@@ -1031,14 +991,14 @@ const MyOrders: React.FC = () => {
                   />
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => {
                       setShowCancelModal(false);
                       setCancelReason('');
                     }}
                     disabled={isCancelling}
-                    className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                   >
                     No, Keep Order
@@ -1046,7 +1006,7 @@ const MyOrders: React.FC = () => {
                   <button
                     onClick={confirmCancelOrder}
                     disabled={isCancelling || !cancelReason.trim()}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full sm:flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                   >
                     {isCancelling ? (
@@ -1163,7 +1123,7 @@ const MyOrders: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => {
                     if (!isSubmittingReview) {
@@ -1172,7 +1132,7 @@ const MyOrders: React.FC = () => {
                       setReviewComment('');
                     }
                   }}
-                  className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={isSubmittingReview}
                   style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                 >
@@ -1181,7 +1141,7 @@ const MyOrders: React.FC = () => {
                 <button
                   onClick={() => submitReview()}
                   disabled={isSubmittingReview || !reviewComment.trim()}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full sm:flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                 >
                   {isSubmittingReview ? (

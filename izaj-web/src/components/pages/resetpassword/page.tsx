@@ -100,27 +100,27 @@ export default function ResetPasswordPage() {
   // Show error if no token
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white" style={{ fontFamily: "'Jost', sans-serif" }}>
-        <div className="max-w-md w-full space-y-8 text-center px-4">
-          <div className="mx-auto h-16 w-16">
-            <Icon icon="mdi:alert-circle" className="w-16 h-16 text-red-600" />
+      <div className="min-h-screen flex items-center justify-center bg-white px-4 py-8" style={{ fontFamily: "'Jost', sans-serif" }}>
+        <div className="max-w-md w-full space-y-6 sm:space-y-8 text-center px-3 sm:px-4">
+          <div className="mx-auto h-12 w-12 sm:h-16 sm:w-16">
+            <Icon icon="mdi:alert-circle" className="w-12 h-12 sm:w-16 sm:h-16 text-red-600" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "'Jost', sans-serif" }}>Invalid Reset Link</h2>
-          <p className="text-gray-600" style={{ fontFamily: "'Jost', sans-serif" }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900" style={{ fontFamily: "'Jost', sans-serif" }}>Invalid Reset Link</h2>
+          <p className="text-sm sm:text-base text-gray-600 px-2" style={{ fontFamily: "'Jost', sans-serif" }}>
             This password reset link is invalid or has expired. Please request a new one.
           </p>
           <div className="space-y-3">
             <button
               onClick={() => router.push('/forgot-password')}
-              className="w-full bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors font-medium"
-              style={{ fontFamily: "'Jost', sans-serif" }}
+              className="w-full bg-black text-white px-6 py-3 sm:py-3 rounded-md hover:bg-gray-800 active:bg-gray-900 transition-colors font-medium text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
+              style={{ fontFamily: "'Jost', sans-serif", touchAction: 'manipulation' }}
             >
               Request New Reset Link
             </button>
             <button
               onClick={() => router.push('/login')}
-              className="w-full bg-gray-200 text-gray-800 px-6 py-3 rounded-md hover:bg-gray-300 transition-colors font-medium"
-              style={{ fontFamily: "'Jost', sans-serif" }}
+              className="w-full bg-gray-200 text-gray-800 px-6 py-3 sm:py-3 rounded-md hover:bg-gray-300 active:bg-gray-400 transition-colors font-medium text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
+              style={{ fontFamily: "'Jost', sans-serif", touchAction: 'manipulation' }}
             >
               Back to Login
             </button>
@@ -132,23 +132,23 @@ export default function ResetPasswordPage() {
 
   if (resetSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white" style={{ fontFamily: "'Jost', sans-serif" }}>
-        <div className="max-w-md w-full space-y-8 text-center px-4">
-          <div className="mx-auto h-16 w-16">
-            <Icon icon="mdi:check-circle" className="w-16 h-16 text-green-600" />
+      <div className="min-h-screen flex items-center justify-center bg-white px-4 py-8" style={{ fontFamily: "'Jost', sans-serif" }}>
+        <div className="max-w-md w-full space-y-6 sm:space-y-8 text-center px-3 sm:px-4">
+          <div className="mx-auto h-12 w-12 sm:h-16 sm:w-16">
+            <Icon icon="mdi:check-circle" className="w-12 h-12 sm:w-16 sm:h-16 text-green-600" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900" style={{ fontFamily: "'Jost', sans-serif" }}>Password Reset Successful!</h2>
-          <p className="text-gray-600" style={{ fontFamily: "'Jost', sans-serif" }}>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900" style={{ fontFamily: "'Jost', sans-serif" }}>Password Reset Successful!</h2>
+          <p className="text-sm sm:text-base text-gray-600 px-2" style={{ fontFamily: "'Jost', sans-serif" }}>
             Your password has been successfully reset. You can now log in with your new password.
           </p>
           <button
             onClick={() => router.push('/login')}
-            className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition-colors font-medium"
-            style={{ fontFamily: "'Jost', sans-serif" }}
+            className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 active:bg-gray-900 transition-colors font-medium text-sm sm:text-base min-h-[44px] sm:min-h-[48px]"
+            style={{ fontFamily: "'Jost', sans-serif", touchAction: 'manipulation' }}
           >
             Go to Login
           </button>
-          <p className="text-sm text-gray-500" style={{ fontFamily: "'Jost', sans-serif" }}>
+          <p className="text-xs sm:text-sm text-gray-500" style={{ fontFamily: "'Jost', sans-serif" }}>
             Redirecting to login page...
           </p>
         </div>
@@ -157,28 +157,28 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4" style={{ fontFamily: "'Jost', sans-serif" }}>
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-white py-6 sm:py-12 px-3 sm:px-4" style={{ fontFamily: "'Jost', sans-serif" }}>
+      <div className="max-w-md w-full space-y-6 sm:space-y-8">
         <div>
-          <h2 className="text-center text-3xl font-bold text-gray-900" style={{ fontFamily: "'Jost', sans-serif" }}>
+          <h2 className="text-center text-2xl sm:text-3xl font-bold text-gray-900" style={{ fontFamily: "'Jost', sans-serif" }}>
             Reset Your Password
           </h2>
-          <p className="mt-2 text-center text-gray-600" style={{ fontFamily: "'Jost', sans-serif" }}>
+          <p className="mt-2 text-center text-sm sm:text-base text-gray-600" style={{ fontFamily: "'Jost', sans-serif" }}>
             Enter your new password below
           </p>
         </div>
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-6 sm:mt-8 space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm" style={{ fontFamily: "'Jost', sans-serif" }}>
+            <div className="bg-red-50 border border-red-200 text-red-600 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm" style={{ fontFamily: "'Jost', sans-serif" }}>
               {error}
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700" style={{ fontFamily: "'Jost', sans-serif" }}>
+              <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-0" style={{ fontFamily: "'Jost', sans-serif" }}>
                 New Password
               </label>
               <div className="mt-1 relative">
@@ -189,18 +189,20 @@ export default function ResetPasswordPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none rounded-md relative block w-full px-3 py-3 pr-10 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                  className="appearance-none rounded-md relative block w-full px-3 py-2.5 sm:py-3 pr-10 border border-gray-300 placeholder-gray-400 text-sm sm:text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
                   placeholder="Enter new password"
                   style={{ fontFamily: "'Jost', sans-serif" }}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center min-h-[44px] sm:min-h-[48px]"
                   onClick={() => setShowPassword(!showPassword)}
+                  style={{ touchAction: 'manipulation' }}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   <Icon 
                     icon={showPassword ? "mdi:eye-off" : "mdi:eye"} 
-                    className="h-5 w-5 text-gray-400 hover:text-gray-600" 
+                    className="h-5 w-5 text-gray-400 hover:text-gray-600 active:text-gray-800" 
                   />
                 </button>
               </div>
@@ -208,9 +210,9 @@ export default function ResetPasswordPage() {
 
             {/* Password Requirements */}
             {password && (
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: "'Jost', sans-serif" }}>Password Requirements:</p>
-                <div className="space-y-1">
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: "'Jost', sans-serif" }}>Password Requirements:</p>
+                <div className="space-y-1 sm:space-y-1.5">
                   {[
                     { key: 'length', text: 'At least 8 characters' },
                     { key: 'uppercase', text: 'One uppercase letter' },
@@ -221,9 +223,9 @@ export default function ResetPasswordPage() {
                     <div key={key} className="flex items-center space-x-2">
                       <Icon 
                         icon={passwordValidation[key as keyof PasswordValidation] ? "mdi:check-circle" : "mdi:circle-outline"}
-                        className={`h-4 w-4 ${passwordValidation[key as keyof PasswordValidation] ? 'text-green-600' : 'text-gray-400'}`}
+                        className={`h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0 ${passwordValidation[key as keyof PasswordValidation] ? 'text-green-600' : 'text-gray-400'}`}
                       />
-                      <span className={`text-sm ${
+                      <span className={`text-xs sm:text-sm ${
                         passwordValidation[key as keyof PasswordValidation] 
                           ? 'text-green-600' 
                           : 'text-gray-600'
@@ -238,7 +240,7 @@ export default function ResetPasswordPage() {
 
             {/* Confirm Password Field */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700" style={{ fontFamily: "'Jost', sans-serif" }}>
+              <label htmlFor="confirmPassword" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-0" style={{ fontFamily: "'Jost', sans-serif" }}>
                 Confirm New Password
               </label>
               <div className="mt-1 relative">
@@ -249,24 +251,26 @@ export default function ResetPasswordPage() {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="appearance-none rounded-md relative block w-full px-3 py-3 pr-10 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
+                  className="appearance-none rounded-md relative block w-full px-3 py-2.5 sm:py-3 pr-10 border border-gray-300 placeholder-gray-400 text-sm sm:text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-black focus:border-black"
                   placeholder="Confirm new password"
                   style={{ fontFamily: "'Jost', sans-serif" }}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center min-h-[44px] sm:min-h-[48px]"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{ touchAction: 'manipulation' }}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                 >
                   <Icon 
                     icon={showConfirmPassword ? "mdi:eye-off" : "mdi:eye"} 
-                    className="h-5 w-5 text-gray-400 hover:text-gray-600" 
+                    className="h-5 w-5 text-gray-400 hover:text-gray-600 active:text-gray-800" 
                   />
                 </button>
               </div>
               {confirmPassword.length > 0 && (
-                <p className={`mt-1 text-sm ${doPasswordsMatch ? 'text-green-600' : 'text-red-600'}`} style={{ fontFamily: "'Jost', sans-serif" }}>
-                  <Icon icon={doPasswordsMatch ? "mdi:check-circle" : "mdi:alert-circle"} className="inline w-4 h-4 mr-1" />
+                <p className={`mt-1 text-xs sm:text-sm ${doPasswordsMatch ? 'text-green-600' : 'text-red-600'}`} style={{ fontFamily: "'Jost', sans-serif" }}>
+                  <Icon icon={doPasswordsMatch ? "mdi:check-circle" : "mdi:alert-circle"} className="inline w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
                   {doPasswordsMatch ? 'Passwords match' : 'Passwords do not match'}
                 </p>
               )}
@@ -276,13 +280,13 @@ export default function ResetPasswordPage() {
           <button
             type="submit"
             disabled={isLoading || !isPasswordValid || !doPasswordsMatch}
-            className="w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-            style={{ fontFamily: "'Jost', sans-serif" }}
+            className="w-full flex justify-center py-2.5 sm:py-3 px-4 border border-transparent text-sm sm:text-base font-medium rounded-md text-white bg-black hover:bg-gray-800 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors min-h-[44px] sm:min-h-[48px]"
+            style={{ fontFamily: "'Jost', sans-serif", touchAction: 'manipulation' }}
           >
             {isLoading ? (
               <div className="flex items-center" style={{ fontFamily: "'Jost', sans-serif" }}>
-                <Icon icon="mdi:loading" className="animate-spin h-5 w-5 mr-2" />
-                Resetting Password...
+                <Icon icon="mdi:loading" className="animate-spin h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                <span className="text-xs sm:text-base">Resetting Password...</span>
               </div>
             ) : (
               'Reset Password'
@@ -293,8 +297,8 @@ export default function ResetPasswordPage() {
             <button
               type="button"
               onClick={() => router.push('/login')}
-              className="text-sm text-gray-600 hover:text-black transition-colors"
-              style={{ fontFamily: "'Jost', sans-serif" }}
+              className="text-xs sm:text-sm text-gray-600 hover:text-black active:text-gray-800 transition-colors min-h-[44px] sm:min-h-[32px] flex items-center justify-center mx-auto"
+              style={{ fontFamily: "'Jost', sans-serif", touchAction: 'manipulation' }}
             >
               Back to Login
             </button>

@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import dynamic from 'next/dynamic';
 import { InternalApiService } from '../../../services/internalApi';
 import SalesSidebar from './SalesSidebar';
 import SalesProductList from './SalesProductList';
 import SalesSortModal from './SalesSortModal';
-import SalesFilterDrawer from './SalesFilterDrawer';
+const SalesFilterDrawer = dynamic(() => import('./SalesFilterDrawer'), { ssr: false });
 
 type SalesProduct = {
   description: string;
@@ -13,6 +14,7 @@ type SalesProduct = {
   name: string;
   price: number;
   originalPrice?: number;
+  originalPriceFormatted?: string;
   rating: number;
   reviewCount: number;
   image: string;
@@ -113,10 +115,13 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
             newProduct.product_id === product.product_id
           );
           
-          // Use real data only
-          
           // Product is on sale if it exists in the salesProductsData array
           const isOnSale = salesProductsData.some(saleProduct => 
+            saleProduct.product_id === product.product_id
+          );
+          
+          // Find the sale product data which contains sale information
+          const saleProductData = salesProductsData.find(saleProduct => 
             saleProduct.product_id === product.product_id
           );
           
@@ -127,27 +132,36 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
             category: product.category,
             isNew: isNew,
             isOnSale: isOnSale,
+            saleData: saleProductData ? (saleProductData as any).sale : null,
             inNewProductsList: newProductsData.some(np => np.product_id === product.product_id),
             inSalesProductsList: salesProductsData.some(sp => sp.product_id === product.product_id),
             newProductsCount: newProductsData.length,
             salesProductsCount: salesProductsData.length
           });
-          let finalPrice = price;
-          let originalPrice = price;
           
-          // Sale logic removed until sale property is available
-          // if (isOnSale) {
-          //   // Apply sale discount (placeholder logic)
-          //   const discountPercentage = 0.1; // 10% discount
-          //   originalPrice = price;
-          //   finalPrice = price * (1 - discountPercentage);
-          // }
+          // Calculate sale price based on percentage or fixed_amount
+          const originalPrice = price;
+          const saleDetails = (saleProductData as any)?.sale?.[0]; // Get sale details from salesProductsData
+          let finalPrice = originalPrice;
+          let originalPriceFormatted: string | undefined = undefined;
+          
+          if (saleDetails && isOnSale) {
+            if (saleDetails.percentage) {
+              // Calculate discount based on percentage
+              const discountAmount = (originalPrice * saleDetails.percentage) / 100;
+              finalPrice = originalPrice - discountAmount;
+            } else if (saleDetails.fixed_amount) {
+              // Calculate discount based on fixed amount
+              finalPrice = Math.max(0, originalPrice - saleDetails.fixed_amount);
+            }
+            originalPriceFormatted = `₱${originalPrice.toLocaleString()}`;
+          }
           
           return {
             id: (parseInt(product.product_id) || 0) + index, // Ensures unique ID
             name: product.product_name,
             description: product.description || '',
-            price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+            price: finalPrice,
             rating: 4.5, // Default rating
             reviewCount: 0, // Default review count
             image: product.image_url || '', // Ensures image is string
@@ -177,7 +191,8 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
                   return 10; // Default to in stock
               }
             })(),
-            originalPrice: isOnSale ? originalPrice : undefined
+            originalPrice: isOnSale && originalPriceFormatted ? originalPrice : undefined,
+            originalPriceFormatted: originalPriceFormatted
           };
         });
 
@@ -232,24 +247,30 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
 
     // Sort products
     switch (sortOption) {
+      case 'Alphabetically, A-Z':
       case 'Alphabetical, A-Z':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
+      case 'Alphabetically, Z-A':
       case 'Alphabetical, Z-A':
         filtered.sort((a, b) => b.name.localeCompare(a.name));
         break;
+      case 'Price, low to high':
       case 'Price, Low to High':
         filtered.sort((a, b) => a.price - b.price);
         break;
+      case 'Price, high to low':
       case 'Price, High to Low':
         filtered.sort((a, b) => b.price - a.price);
         break;
+      case 'Date, old to new':
+      case 'Date, Old to New':
+        filtered.sort((a, b) => a.id - b.id);
+        break;
+      case 'Date, new to old':
       case 'Date, New to Old':
         // Since we don't have date info, sort by ID (newer products have higher IDs)
         filtered.sort((a, b) => b.id - a.id);
-        break;
-      case 'Date, Old to New':
-        filtered.sort((a, b) => a.id - b.id);
         break;
       default:
         break;
@@ -303,29 +324,44 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Header Section */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 sm:mb-12 text-center">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-8 sm:mt-12 lg:mt-16" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+          <div className="mb-6 sm:mb-12 text-center pt-2">
+            <h1 className="block text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-6 sm:mt-12 lg:mt-16" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
             Exclusive Deals
             </h1>
             
             {/* Horizontal line under title */}
-            <div className="w-24 h-0.5 bg-gray-800 mx-auto mb-8"></div>
+            <div className="w-20 sm:w-24 h-0.5 bg-gray-800 mx-auto mb-5 sm:mb-8"></div>
             
             <div className="max-w-5xl mx-auto">
-              <p className="text-gray-700 text-base sm:text-lg mb-8 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+              <p className="text-gray-700 text-sm sm:text-lg mb-4 sm:mb-8 leading-snug sm:leading-relaxed px-2 sm:px-0" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
                 Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
               </p>
               
               {/* Category Selection */}
-              <div className="mb-8">
-                <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-4 py-2 mb-4">
-                  <span className="text-gray-700 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Choose By Categories:</span>
+              <div className="mb-6 sm:mb-8">
+                <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-3 sm:mb-4">
+                  <span className="text-gray-700 font-semibold text-sm sm:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Choose By Categories:</span>
                 </div>
-                <div className="flex flex-wrap justify-center gap-2">
+                {/* Mobile: horizontal scroll list; Desktop: wrap */}
+                <div className="sm:hidden -mx-4 px-4 overflow-x-auto pb-2">
+                  <div className="flex flex-nowrap gap-2">
+                    {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
+                      <button
+                        key={category}
+                        onClick={() => handleHeaderCategorySelect(category)}
+                        className="whitespace-nowrap px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                        style={{ fontFamily: 'Jost, sans-serif' }}
+                      >
+                        {category} <span className="text-gray-500">({count})</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="hidden sm:flex flex-wrap justify-center gap-2">
                   {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
                     <button
                       key={category}
@@ -343,7 +379,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         </div>
       </div>
 
-      <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24">
+      <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24 pb-24 sm:pb-16 md:pb-12">
       <style>
         {`
           @media (max-width: 767px) {
@@ -417,6 +453,18 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
       </div>
       </main>
 
+      {/* Mobile Bottom Controls: Show Filters */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 px-4 pb-3 pt-0 bg-transparent">
+        <button
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-black text-white text-sm font-semibold uppercase active:scale-[0.99] transition hover:bg-gray-800 shadow-lg pointer-events-auto"
+          onClick={() => setFilterDrawerOpen(true)}
+          aria-label="Show Filters"
+          style={{ fontFamily: 'Jost, sans-serif' }}
+        >
+          SHOW FILTERS
+        </button>
+      </div>
+
       {/* Mobile Modals */}
       <SalesSortModal
         isOpen={sortModalOpen}
@@ -440,6 +488,11 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         setSelectCategoryOpen={() => {}}
         selectedCategories={[]}
         handleCategorySelect={() => {}}
+        priceRange={priceRange}
+        setPriceRange={setPriceRange}
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+        maxPrice={maxPrice}
       />
     </div>
     );

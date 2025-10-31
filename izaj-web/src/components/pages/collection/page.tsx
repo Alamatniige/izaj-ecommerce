@@ -4,8 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { InternalApiService } from '../../../services/internalApi';
 import ProductList from '@/components/pages/collection/ProductList';
 import SortModal from '@/components/pages/collection/SortModal';
-import FilterDrawer from '@/components/pages/collection/FilterDrawer';
+import dynamic from 'next/dynamic';
 import Sidebar from '@/components/pages/collection/Sidebar';
+const FilterDrawer = dynamic(() => import('@/components/pages/collection/FilterDrawer'), { ssr: false });
  
 
 // Local product type for Collection page
@@ -104,43 +105,52 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         };
 
         // Transform service products to collection products
-        const transformedProducts: CollectionProduct[] = (serviceProducts as ApiProduct[]).map((product, index) => ({
-          id: index + 1,
-          name: product.product_name,
-          description: product.description || '',
-          price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
-          rating: 4.5, // Default rating
-          reviewCount: 0, // Default review count
-          image: product.image_url || '',
-          mediaUrls: product.media_urls || [],
-          colors: product.colors || ["black"],
-          isOnSale: false, // Default
-          isNew: (
-            product.product_name.toLowerCase().includes('new') ||
-            product.category?.toLowerCase().includes('new') ||
-            (product.description || '').toLowerCase().includes('new')
-          ),
-          category: product.category,
-          stock: (() => {
-            // First check if there's a numeric stock field
-            if (typeof product.stock === 'number') {
-              return product.stock;
-            }
-            
-            // Fallback to status field
-            const normalizedStatus = product.status?.toLowerCase() || '';
-            switch (normalizedStatus) {
-              case 'in stock':
-                return 10; // High stock
-              case 'low stock':
-                return 3; // Low stock
-              case 'out of stock':
-                return 0; // Out of stock
-              default:
-                return 10; // Default to in stock
-            }
-          })()
-        }));
+        const transformedProducts: CollectionProduct[] = (serviceProducts as any[]).map((product, index) => {
+          // Align ID generation with productService.transformToLegacyProduct
+          // Prefer numeric product_id; fallback to numeric hash from UUID `id`
+          let numericId = parseInt(product.product_id);
+          if (isNaN(numericId)) {
+            numericId = parseInt(String(product.id).replace(/[^0-9]/g, '').slice(0, 8)) || index + 1;
+          }
+
+          return {
+            id: numericId,
+            name: product.product_name,
+            description: product.description || '',
+            price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+            rating: 4.5, // Default rating
+            reviewCount: 0, // Default review count
+            image: product.image_url || '',
+            mediaUrls: product.media_urls || [],
+            colors: product.colors || ["black"],
+            isOnSale: false, // Default
+            isNew: (
+              product.product_name.toLowerCase().includes('new') ||
+              product.category?.toLowerCase().includes('new') ||
+              (product.description || '').toLowerCase().includes('new')
+            ),
+            category: product.category,
+            stock: (() => {
+              // First check if there's a numeric stock field
+              if (typeof product.stock === 'number') {
+                return product.stock;
+              }
+              
+              // Fallback to status field
+              const normalizedStatus = product.status?.toLowerCase() || '';
+              switch (normalizedStatus) {
+                case 'in stock':
+                  return 10; // High stock
+                case 'low stock':
+                  return 3; // Low stock
+                case 'out of stock':
+                  return 0; // Out of stock
+                default:
+                  return 10; // Default to in stock
+              }
+            })()
+          };
+        });
         
         setAllProducts(transformedProducts);
         setFilteredProducts(transformedProducts);
@@ -298,43 +308,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header Section - Full Width */}
-      <div className="mb-8 sm:mb-12 text-center">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-8 sm:mt-12 lg:mt-16" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-        Featured Collection
-        </h1>
-        
-        {/* Horizontal line under title */}
-        <div className="w-24 h-0.5 bg-gray-800 mx-auto mb-8"></div>
-        
-        <div className="max-w-5xl mx-auto">
-          <p className="text-gray-700 text-base sm:text-lg mb-8 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-            Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
-          </p>
-          
-          {/* Category Selection */}
-          <div className="mb-8">
-            <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-4 py-2 mb-4">
-              <span className="text-gray-700 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>Choose By Categories:</span>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
-                <button
-                  key={category}
-                  onClick={() => handleHeaderCategorySelect(category)}
-                  className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
-                  style={{ fontFamily: 'Jost, sans-serif' }}
-                >
-                  {category} <span className="text-gray-500">({count})</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24">
+    <div className="bg-white min-h-screen">
+      <main className="bg-white min-h-screen px-4 sm:px-8 md:px-16 lg:px-24 pb-24 sm:pb-16 md:pb-12">
       <style>
         {`
           @media (max-width: 767px) {
@@ -381,7 +356,71 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           }
         `}
       </style>
+
+      {/* Header Section - Full Width (mobile responsive) */}
+      <div className="mb-6 sm:mb-12 text-center">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl text-gray-800 mb-2 mt-6 sm:mt-12 lg:mt-16" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+          Featured Collection
+        </h1>
+        
+        {/* Horizontal line under title */}
+        <div className="w-20 sm:w-24 h-0.5 bg-gray-800 mx-auto mb-5 sm:mb-8"></div>
+        
+        <div className="max-w-5xl mx-auto">
+          <p className="text-gray-700 text-sm sm:text-lg mb-4 sm:mb-8 leading-snug sm:leading-relaxed px-2 sm:px-0" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+            Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
+          </p>
+          
+          {/* Category Selection */}
+          <div className="mb-6 sm:mb-8">
+            <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-3 sm:mb-4">
+              <span className="text-gray-700 font-semibold text-sm sm:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Choose By Categories:</span>
+            </div>
+            {/* Mobile: horizontal scroll list; Desktop: wrap */}
+            <div className="sm:hidden -mx-4 px-4 overflow-x-auto pb-2">
+              <div className="flex flex-nowrap gap-2">
+                {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
+                  <button
+                    key={category}
+                    onClick={() => handleHeaderCategorySelect(category)}
+                    className="whitespace-nowrap px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    {category} <span className="text-gray-500">({count})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="hidden sm:flex flex-wrap justify-center gap-2">
+              {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
+                <button
+                  key={category}
+                  onClick={() => handleHeaderCategorySelect(category)}
+                  className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                  style={{ fontFamily: 'Jost, sans-serif' }}
+                >
+                  {category} <span className="text-gray-500">({count})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          
+        </div>
+      </div>
       
+      {/* Mobile Bottom Controls: Show Filtering */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 px-4 pb-3 pt-0 bg-transparent">
+        <button
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-black text-white text-sm font-semibold uppercase active:scale-[0.99] transition hover:bg-gray-800 shadow-lg pointer-events-auto"
+          onClick={() => setFilterDrawerOpen(true)}
+          aria-label="Show Filters"
+          style={{ fontFamily: 'Jost, sans-serif' }}
+        >
+          SHOW FILTERS
+        </button>
+      </div>
+
+      {/* Product Section with Sidebar */}
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <Sidebar
@@ -429,6 +468,11 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           setSelectCategoryOpen={() => {}}
           selectedCategories={selectedCategories}
           handleCategorySelect={handleCategorySelect}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          sortOption={sortOption}
+          setSortOption={setSortOption}
+          maxPrice={maxPrice}
         />
       </main>
     </div>
