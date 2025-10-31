@@ -57,6 +57,16 @@ const jost = Jost({
 export const metadata: Metadata = {
   title: "IZAJ",
   description: "Your one-stop shop for quality products at great prices",
+  icons: {
+    icon:[ { url: "/icons/favicon.ico", sizes: "any" },
+      { url: "/icons/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({
