@@ -404,18 +404,12 @@ export default function SaleItem() {
                   </div>
                 </div>
                 
-                {/* Stock Status - Same as item-description */}
+                {/* Stock - show exact quantity from API */}
                 <div className="mb-6">
-                  <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                    {saleProduct.status}
-                  </p>
-                  
-                  {/* Stock Status Bar - Same as item-description */}
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="h-2 rounded-full bg-green-500 w-full"></div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                    100% available
+                  <p className="text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                    {typeof (saleProduct as any)?.product_stock?.display_quantity === 'number'
+                      ? `Stock: ${(saleProduct as any).product_stock.display_quantity}`
+                      : (saleProduct.status || 'In Stock')}
                   </p>
                 </div>
                 

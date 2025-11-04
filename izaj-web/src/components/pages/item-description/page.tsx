@@ -642,27 +642,8 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
               
               {/* Stock Status */}
               <div className="mb-6">
-                <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                  {product.status || 'In Stock'}
-                </p>
-                
-                {/* Stock Status Bar */}
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`h-2 rounded-full transition-all duration-300 ${
-                      getStockStatus(product.status || 'In Stock').color === 'red' 
-                        ? 'bg-red-500' 
-                        : getStockStatus(product.status || 'In Stock').color === 'orange'
-                        ? 'bg-orange-500'
-                        : 'bg-green-500'
-                    }`}
-                    style={{ 
-                      width: `${getStockStatus(product.status || 'In Stock').percentage}%` 
-                    }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                  {getStockStatus(product.status || 'In Stock').percentage}% available
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                  {typeof product.stock === 'number' ? `Stock: ${product.stock}` : (product.status || 'In Stock')}
                 </p>
               </div>
               

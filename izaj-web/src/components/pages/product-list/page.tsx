@@ -62,6 +62,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [availabilityFilter, setAvailabilityFilter] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 0 });
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [searchTerm, setSearchTerm] = useState<string>('');
 
 
 
@@ -85,8 +86,12 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   // Initialize selectedCategory from URL query param (e.g., ?category=Chandelier)
   useEffect(() => {
     const categoryFromUrl = searchParams?.get('category');
+    const searchFromUrl = searchParams?.get('search');
     if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
       setSelectedCategory(categoryFromUrl);
+    }
+    if (typeof searchFromUrl === 'string') {
+      setSearchTerm(searchFromUrl);
     }
   }, [searchParams]);
 
@@ -339,7 +344,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     });
   };
 
-  // Filter products based on selected categories, availability, and price
+  // Filter products based on selected categories, availability, price, and search term
   useEffect(() => {
     let filtered = [...allProducts];
 
@@ -371,8 +376,19 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       product.price >= priceRange.min && product.price <= priceRange.max
     );
 
+    // Filter by search term (from URL)
+    if (searchTerm.trim().length > 0) {
+      const q = searchTerm.trim().toLowerCase();
+      filtered = filtered.filter(product => {
+        const name = (product.name || '').toLowerCase();
+        const desc = (product.description || '').toLowerCase();
+        const cat = (product.category || '').toLowerCase();
+        return name.includes(q) || desc.includes(q) || cat.includes(q);
+      });
+    }
+
       setFilteredProducts(filtered);
-  }, [selectedCategory, selectedCategories, availabilityFilter, priceRange, allProducts]);
+  }, [selectedCategory, selectedCategories, availabilityFilter, priceRange, allProducts, searchTerm]);
 
   // Apply sorting to displayed products whenever filters or sort option change
   useEffect(() => {

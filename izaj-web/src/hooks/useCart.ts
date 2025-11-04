@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CartItem, Cart } from '../types';
 
 export const useCart = () => {
@@ -15,25 +15,48 @@ export const useCart = () => {
   });
 
   const [isLoading, setIsLoading] = useState(true);
+  const hasHydratedRef = useRef(false);
 
   // Load cart from localStorage on mount
   useEffect(() => {
     setIsLoading(true);
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        const parsedCart = JSON.parse(savedCart);
-        setCart({ ...parsedCart, isLoading: false });
-      } catch (error) {
-        console.error('Error parsing cart from localStorage:', error);
+    try {
+      const saved = localStorage.getItem('cart');
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<Cart>;
+        const items = Array.isArray(parsed.items) ? parsed.items : [];
+        const totalItems = items.length;
+        const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        setCart({
+          id: parsed.id || '',
+          items,
+          totalItems,
+          totalPrice,
+          createdAt: parsed.createdAt ? new Date(parsed.createdAt as unknown as string) : new Date(),
+          updatedAt: new Date(),
+          isLoading: false,
+        });
+      } else {
+        // nothing saved; ensure empty, non-loading cart
+        setCart(prev => ({ ...prev, isLoading: false }));
       }
+    } catch (error) {
+      console.error('Error parsing cart from localStorage:', error);
+      setCart(prev => ({ ...prev, isLoading: false }));
+    } finally {
+      hasHydratedRef.current = true;
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (after initial hydration)
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    if (!hasHydratedRef.current) return;
+    try {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    } catch (e) {
+      // ignore storage failures
+    }
   }, [cart]);
 
   const addToCart = (item: Omit<CartItem, 'id'>) => {

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { createClient } from '@/lib/supabase/server';
+import { createSystemNotification } from '@/services/notificationService';
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,6 +62,21 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'Failed to unsubscribe' },
         { status: 500 }
       );
+    }
+
+    // Create a user notification if authenticated
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await createSystemNotification(
+          user.id,
+          'Newsletter Unsubscribed',
+          'You have been successfully unsubscribed from our newsletter.'
+        );
+      }
+    } catch (notifyErr) {
+      console.error('Failed to create unsubscribe notification:', notifyErr);
     }
 
     return NextResponse.json({

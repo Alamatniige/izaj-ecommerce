@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { emailService } from '@/lib/email-service';
+import { createClient } from '@/lib/supabase/server';
+import { createSystemNotification } from '@/services/notificationService';
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,6 +67,21 @@ export async function POST(request: NextRequest) {
           // Don't fail the request if email fails
         }
 
+        // Create a user notification if authenticated
+        try {
+          const supabase = await createClient();
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await createSystemNotification(
+              user.id,
+              'Newsletter Subscription',
+              'Welcome back! You have been resubscribed to our newsletter.'
+            );
+          }
+        } catch (notifyErr) {
+          console.error('Failed to create subscription notification:', notifyErr);
+        }
+
         return NextResponse.json({
           success: true,
           message: 'Welcome back! You have been resubscribed to our newsletter.'
@@ -107,6 +124,21 @@ export async function POST(request: NextRequest) {
         gmailPassword: process.env.GMAIL_APP_PASSWORD ? 'Set' : 'NOT SET'
       });
       // Don't fail the request if email fails
+    }
+
+    // Create a user notification if authenticated
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await createSystemNotification(
+          user.id,
+          'Newsletter Subscription',
+          'Welcome to the IZAJ Family! You are now subscribed to our newsletter.'
+        );
+      }
+    } catch (notifyErr) {
+      console.error('Failed to create subscription notification:', notifyErr);
     }
 
     return NextResponse.json({

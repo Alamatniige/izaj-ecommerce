@@ -23,6 +23,16 @@ interface ProductListSidebarProps {
 }
 
 const ProductListSidebar: React.FC<ProductListSidebarProps> = ({
+  sidebarDropdownOpen,
+  setSidebarDropdownOpen,
+  architecturalDropdownOpen,
+  setArchitecturalDropdownOpen,
+  mirrorsDropdownOpen,
+  setMirrorsDropdownOpen,
+  fansDropdownOpen,
+  setFansDropdownOpen,
+  selectedCategories,
+  handleCategorySelect,
   priceRange,
   setPriceRange,
   sortOption,
@@ -80,6 +90,7 @@ const ProductListSidebar: React.FC<ProductListSidebarProps> = ({
   // Minimalist sidebar UI states (for the screenshot-style design)
   const [priceOpen, setPriceOpen] = useState(true);
   const [sortOpen, setSortOpen] = useState(true);
+  const [categoriesOpen, setCategoriesOpen] = useState(true);
 
   // Handle price range changes
   const handlePriceChange = (field: 'min' | 'max', value: number) => {
@@ -148,6 +159,32 @@ const ProductListSidebar: React.FC<ProductListSidebarProps> = ({
   return (
     <aside className="hidden lg:block w-full lg:w-1/6 p-0 sm:p-4 lg:p-6 lg:pl-0 lg:pr-4 mobile-hide sticky top-4 self-start">
       
+      {/* Categories */}
+      <div className="pb-4 mb-4 border-b border-gray-200">
+        <button className="w-full flex items-center justify-between text-sm text-black" onClick={() => setCategoriesOpen(!categoriesOpen)}>
+          <span style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Categories</span>
+          <Icon icon={categoriesOpen ? 'mdi:minus' : 'mdi:plus'} width="18" height="18" />
+        </button>
+        {categoriesOpen && (
+          <div className="mt-3 space-y-2 text-sm">
+            {categories.map(({ category, count }) => {
+              const selected = selectedCategories.includes(category);
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => handleCategorySelect(category)}
+                  className={`w-full flex items-center justify-between px-3 py-2 border rounded-md transition ${selected ? 'bg-black text-white border-black' : 'bg-white text-gray-800 border-gray-200 hover:border-gray-300'}`}
+                  style={{ fontFamily: 'Jost, sans-serif' }}
+                >
+                  <span>{category}</span>
+                  <span className={`text-xs ${selected ? 'text-white' : 'text-gray-500'}`}>({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Price */}
       <div className="pb-4 mb-4 border-b border-gray-200">

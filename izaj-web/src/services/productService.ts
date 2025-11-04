@@ -103,7 +103,7 @@ export const getAllProducts = async (): Promise<Product[]> => {
         ? productData.media_urls[0] 
         : (productData.image_url || "/placeholder.jpg");
 
-      // Convert status to stock number for display logic
+      // Use real stock quantity when available; fall back to status mapping
       const getStockFromStatus = (status: string): number => {
         const normalizedStatus = status?.toLowerCase() || '';
         switch (normalizedStatus) {
@@ -117,6 +117,7 @@ export const getAllProducts = async (): Promise<Product[]> => {
             return 10;
         }
       };
+      const realStockQuantity: number | undefined = productData?.product_stock?.display_quantity;
 
       // Calculate sale price based on percentage or fixed_amount
       const originalPrice = parseFloat(productData.price.toString());
@@ -145,7 +146,7 @@ export const getAllProducts = async (): Promise<Product[]> => {
         colors: ["black"], // Default color
         description: productData.description,
         category: productData.category,
-        stock: getStockFromStatus(productData.status),
+        stock: typeof realStockQuantity === 'number' ? realStockQuantity : getStockFromStatus(productData.status),
         status: productData.status || 'In Stock',
         pickup_available: productData.pickup_available
       };
