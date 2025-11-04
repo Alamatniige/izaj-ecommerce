@@ -63,7 +63,6 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   // New filter states
   const [availabilityFilter, setAvailabilityFilter] = useState<AvailabilityFilter>([]);
   const [priceRange, setPriceRange] = useState<PriceRange>({ min: 0, max: 0 });
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<number>(0);
   const searchParams = useSearchParams();
 
@@ -168,11 +167,11 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     fetchProducts();
   }, []);
 
-  // Initialize selectedCategory from URL query param (e.g., ?category=Chandelier)
+  // Initialize selectedCategories from URL query param (e.g., ?category=Chandelier)
   useEffect(() => {
     const categoryFromUrl = searchParams?.get('category');
-    if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
-      setSelectedCategory(categoryFromUrl);
+    if (categoryFromUrl) {
+      setSelectedCategories([categoryFromUrl]);
     }
   }, [searchParams]);
 
@@ -194,25 +193,6 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     }
   }, [allProducts, getMaxPrice]);
 
-  // Get categories with counts
-  const getCategoriesWithCounts = () => {
-    const categoryCounts: { [key: string]: number } = {};
-    allProducts.forEach(product => {
-      if (product.category) {
-        categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
-      }
-    });
-    return categoryCounts;
-  };
-
-  // Handle header category selection
-  const handleHeaderCategorySelect = (category: string) => {
-    if (selectedCategory === category) {
-      setSelectedCategory('');
-    } else {
-      setSelectedCategory(category);
-    }
-  };
 
   // Handle sort change
   const handleSortChange = useCallback((option: string) => {
@@ -260,11 +240,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
       product.price >= priceRange.min && product.price <= priceRange.max
     );
 
-    // Filter by header category selection (takes priority)
-    if (selectedCategory) {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    } else if (selectedCategories.length > 0) {
-      // Filter by sidebar categories if no header category selected
+    // Filter by selected categories
+    if (selectedCategories.length > 0) {
       filtered = filtered.filter(product => 
         product.category && selectedCategories.includes(product.category)
       );
@@ -295,7 +272,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     }
 
     setFilteredProducts(filtered);
-  }, [allProducts, availabilityFilter, priceRange, selectedCategory, selectedCategories, sortOption]);
+  }, [allProducts, availabilityFilter, priceRange, selectedCategories, sortOption]);
 
 
 
@@ -381,40 +358,6 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
             Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
           </p>
           
-          {/* Category Selection */}
-          <div className="mb-6 sm:mb-8">
-            <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-3 sm:mb-4">
-              <span className="text-gray-700 font-semibold text-sm sm:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Choose By Categories:</span>
-            </div>
-            {/* Mobile: horizontal scroll list; Desktop: wrap */}
-            <div className="sm:hidden -mx-4 px-4 overflow-x-auto pb-2">
-              <div className="flex flex-nowrap gap-2">
-                {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
-                  <button
-                    key={category}
-                    onClick={() => handleHeaderCategorySelect(category)}
-                    className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
-                    style={{ fontFamily: 'Jost, sans-serif' }}
-                  >
-                    {category} <span className="text-gray-500">({count})</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="hidden sm:flex flex-wrap justify-center gap-2">
-              {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
-                <button
-                  key={category}
-                  onClick={() => handleHeaderCategorySelect(category)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
-                  style={{ fontFamily: 'Jost, sans-serif' }}
-                >
-                  {category} <span className="text-gray-500">({count})</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          
         </div>
       </div>
       
@@ -434,11 +377,14 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <Sidebar
+          selectedCategories={selectedCategories}
+          handleCategorySelect={handleCategorySelect}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           sortOption={sortOption}
           setSortOption={setSortOption}
           maxPrice={maxPrice}
+          allProducts={allProducts}
         />
 
         {/* Product List */}
@@ -483,6 +429,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           sortOption={sortOption}
           setSortOption={setSortOption}
           maxPrice={maxPrice}
+          allProducts={allProducts}
         />
       </main>
     </div>

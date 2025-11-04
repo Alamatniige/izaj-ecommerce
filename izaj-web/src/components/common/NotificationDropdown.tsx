@@ -112,9 +112,9 @@ export default function NotificationDropdown({ user, onOpenAuthModal }: Notifica
         />
 
         {user && unreadCount > 0 && (
-          <span className={`absolute -top-1 -right-1 bg-gradient-to-r from-gray-800 to-black text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg font-jost ${
+          <span className={`absolute -top-1 -right-1 bg-gradient-to-r from-gray-800 to-black text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg ${
             unreadCount > 9 ? 'px-1' : ''
-          }`}>
+          }`} style={{ fontFamily: 'Jost, sans-serif' }}>
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}

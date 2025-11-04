@@ -25,23 +25,38 @@ export const useCart = () => {
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<Cart>;
         const items = Array.isArray(parsed.items) ? parsed.items : [];
-        const totalItems = items.length;
-        const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        // Calculate totalItems as sum of all quantities, not count of unique items
+        const totalItems = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const totalPrice = items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
+        
+        // Ensure dates are properly handled
+        const createdAt = parsed.createdAt 
+          ? (typeof parsed.createdAt === 'string' ? new Date(parsed.createdAt) : new Date(parsed.createdAt as any))
+          : new Date();
+        
         setCart({
           id: parsed.id || '',
           items,
           totalItems,
           totalPrice,
-          createdAt: parsed.createdAt ? new Date(parsed.createdAt as unknown as string) : new Date(),
+          createdAt,
           updatedAt: new Date(),
           isLoading: false,
         });
+        console.log('✅ Cart loaded from localStorage:', { items: items.length, totalItems, totalPrice });
       } else {
         // nothing saved; ensure empty, non-loading cart
         setCart(prev => ({ ...prev, isLoading: false }));
+        console.log('ℹ️ No cart found in localStorage');
       }
     } catch (error) {
-      console.error('Error parsing cart from localStorage:', error);
+      console.error('❌ Error parsing cart from localStorage:', error);
+      // Clear corrupted data
+      try {
+        localStorage.removeItem('cart');
+      } catch (e) {
+        // ignore
+      }
       setCart(prev => ({ ...prev, isLoading: false }));
     } finally {
       hasHydratedRef.current = true;
@@ -53,9 +68,28 @@ export const useCart = () => {
   useEffect(() => {
     if (!hasHydratedRef.current) return;
     try {
-      localStorage.setItem('cart', JSON.stringify(cart));
+      // Create a serializable version of cart (convert Date objects to ISO strings)
+      const cartToSave = {
+        ...cart,
+        createdAt: cart.createdAt instanceof Date ? cart.createdAt.toISOString() : cart.createdAt,
+        updatedAt: cart.updatedAt instanceof Date ? cart.updatedAt.toISOString() : cart.updatedAt,
+        // Remove isLoading from saved data
+        isLoading: undefined,
+      };
+      delete (cartToSave as any).isLoading;
+      localStorage.setItem('cart', JSON.stringify(cartToSave));
+      console.log('💾 Cart saved to localStorage:', { items: cart.items.length, totalItems: cart.totalItems, totalPrice: cart.totalPrice });
     } catch (e) {
-      // ignore storage failures
+      console.error('❌ Error saving cart to localStorage:', e);
+      // If storage is full, try to clear old data
+      if (e instanceof Error && e.name === 'QuotaExceededError') {
+        console.warn('⚠️ localStorage quota exceeded, clearing old cart data');
+        try {
+          localStorage.removeItem('cart');
+        } catch (clearError) {
+          // ignore
+        }
+      }
     }
   }, [cart]);
 
@@ -85,8 +119,9 @@ export const useCart = () => {
       updatedItems = [...cart.items, newItem];
     }
 
-    const totalItems = updatedItems.length; // Count of unique products, not sum of quantities
-    const totalPrice = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    // Calculate totalItems as sum of all quantities, not count of unique items
+    const totalItems = updatedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const totalPrice = updatedItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
 
     setCart({
       ...cart,
@@ -109,8 +144,9 @@ export const useCart = () => {
       item.id === itemId ? { ...item, quantity } : item
     );
 
-    const totalItems = updatedItems.length; // Count of unique products, not sum of quantities
-    const totalPrice = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    // Calculate totalItems as sum of all quantities, not count of unique items
+    const totalItems = updatedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const totalPrice = updatedItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
 
     setCart({
       ...cart,
@@ -123,8 +159,9 @@ export const useCart = () => {
 
   const removeFromCart = (itemId: string) => {
     const updatedItems = cart.items.filter(item => item.id !== itemId);
-    const totalItems = updatedItems.length; // Count of unique products, not sum of quantities
-    const totalPrice = updatedItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    // Calculate totalItems as sum of all quantities, not count of unique items
+    const totalItems = updatedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const totalPrice = updatedItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
 
     setCart({
       ...cart,

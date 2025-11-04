@@ -52,6 +52,13 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         if (storedUser && rememberMe === 'true') {
           try {
             const userData = JSON.parse(storedUser);
+            // Check for profile picture in separate localStorage key as fallback
+            if (!userData.profilePicture && userData.id) {
+              const storedProfileImage = localStorage.getItem(`profileImage_${userData.id}`);
+              if (storedProfileImage) {
+                userData.profilePicture = storedProfileImage;
+              }
+            }
             console.log('✅ UserContext: Found user in localStorage (remember me):', userData);
             setUser(userData);
             setIsLoading(false);
@@ -69,6 +76,13 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         if (sessionUser) {
           try {
             const userData = JSON.parse(sessionUser);
+            // Check for profile picture in separate localStorage key as fallback
+            if (!userData.profilePicture && userData.id) {
+              const storedProfileImage = localStorage.getItem(`profileImage_${userData.id}`);
+              if (storedProfileImage) {
+                userData.profilePicture = storedProfileImage;
+              }
+            }
             console.log('✅ UserContext: Found user in sessionStorage:', userData);
             setUser(userData);
             setIsLoading(false);
@@ -124,6 +138,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         const firstName = explicitFirst || splitFirst || '';
         const lastName = explicitLast || splitLast || '';
         const phone: string = (supabaseUser.user_metadata?.phone as string) || '';
+        const profilePicture: string | undefined = (supabaseUser.user_metadata?.profile_picture as string) || undefined;
 
         const userData: User = {
           id: supabaseUser.id,
@@ -131,6 +146,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           firstName: firstName || '',
           lastName: lastName || '',
           phone,
+          profilePicture,
           role: 'customer',
           isEmailVerified: Boolean(supabaseUser.email_confirmed_at) || Boolean(supabaseUser.user_metadata?.emailConfirmed),
           createdAt: new Date(supabaseUser.created_at || Date.now()),
@@ -172,6 +188,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       const firstName = explicitFirst || splitFirst || '';
       const lastName = explicitLast || splitLast || '';
       const phone: string = (supabaseUser.user_metadata?.phone as string) || '';
+      const profilePicture: string | undefined = (supabaseUser.user_metadata?.profile_picture as string) || undefined;
 
       const userData: User = {
         id: supabaseUser.id || 'unknown',
@@ -179,6 +196,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
         firstName: firstName || '',
         lastName: lastName || '',
         phone,
+        profilePicture,
         role: 'customer',
         isEmailVerified: Boolean(supabaseUser.email_confirmed_at) || Boolean(supabaseUser.user_metadata?.emailConfirmed),
         createdAt: new Date(supabaseUser.created_at || Date.now()),

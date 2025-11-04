@@ -24,6 +24,7 @@ function capitalize(str: string) {
   import { useCartContext } from '../../context/CartContext';
   
   interface User {
+    id?: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -80,6 +81,7 @@ function capitalize(str: string) {
   const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const [accountDropdownPosition, setAccountDropdownPosition] = useState<'right' | 'left' | 'center'>('center');
   const [isMobileAccountDropdownOpen, setIsMobileAccountDropdownOpen] = useState(false);
+  const [profileImageError, setProfileImageError] = useState(false);
   
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const productsDropdownRef = useRef<HTMLLIElement>(null);
@@ -95,11 +97,18 @@ function capitalize(str: string) {
   const [isMobile, setIsMobile] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [headerOffsetTop, setHeaderOffsetTop] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
   
   
+    // Reset profile image error when user or profilePicture changes
+    useEffect(() => {
+      setProfileImageError(false);
+    }, [user?.profilePicture, user?.id]);
+
     // Compute mobile breakpoint on client only to avoid SSR hydration mismatch
     useEffect(() => {
       setIsClient(true);
+      setIsMounted(true);
       const updateIsMobile = () => {
         setIsMobile(window.innerWidth <= 767);
       };
@@ -385,15 +394,18 @@ function capitalize(str: string) {
   
     return (
       <>
-        {/* Scroll Progress Bar */}
-        <div 
-          className="fixed top-0 left-0 h-1 bg-gradient-to-r from-black via-gray-800 to-gray-600 z-[100] transition-all duration-300"
-          style={{ width: `${scrollProgress}%` }}
-        />
+        {/* Scroll Progress Bar - Only render on client to avoid hydration mismatch */}
+        {isClient && (
+          <div 
+            className="fixed top-0 left-0 h-1 bg-gradient-to-r from-black via-gray-800 to-gray-600 z-[100] transition-all duration-300"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        )}
 
         {/* Promotional Banner (included with header even when menu is open) */}
-        {!isBannerDismissed && (
+        {isMounted && !isBannerDismissed && (
           <div 
+            key="promo-banner"
             className={`${promoBanners[currentBannerIndex].color} text-white text-center py-2 md:py-3 flex items-center justify-center w-full relative transition-all duration-500 z-50`}
             style={{ minHeight: isMobile ? '36px' : '40px' }}
             ref={bannerRef}
@@ -419,15 +431,16 @@ function capitalize(str: string) {
                   }`}
                 />
               ))}
-        </div>
+            </div>
           </div>
         )}
 
         <header 
           className={`bg-white px-4 lg:px-10 flex flex-col sticky top-0 ${isMobileMenuOpen ? 'z-[60]' : 'z-10'} transition-all duration-300 ${
-            scrolled ? 'py-2 shadow-lg' : 'py-3 shadow-md'
+            isClient && scrolled ? 'py-2 shadow-lg' : 'py-3 shadow-md'
           }`}
           ref={headerRef}
+          suppressHydrationWarning
         >
              {/* Top Header Row */}
              <div className="flex items-center justify-between w-full relative">
@@ -672,18 +685,23 @@ function capitalize(str: string) {
                           aria-haspopup="true"
                           aria-expanded={isAccountDropdownOpen}
                         >
-                          <div className="w-7 h-7 flex items-center justify-center rounded-full overflow-hidden">
-                            {user.profilePicture ? (
+                          <div className="w-7 h-7 flex items-center justify-center rounded-full overflow-hidden flex-shrink-0 relative">
+                            {user.profilePicture && user.profilePicture.trim() !== '' && !profileImageError ? (
                               <Image 
                                 src={user.profilePicture} 
                                 alt="Profile" 
                                 width={28}
                                 height={28}
-                                className="object-cover ring-2 ring-gray-200 hover:ring-gray-400 transition-all duration-200"
+                                className="w-full h-full object-cover rounded-full ring-2 ring-gray-200 hover:ring-gray-400 transition-all duration-200"
                                 unoptimized
+                                onError={() => {
+                                  console.error('Profile picture failed to load:', user.profilePicture);
+                                  setProfileImageError(true);
+                                }}
+                                onLoad={() => setProfileImageError(false)}
                               />
                             ) : (
-                              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-xs font-bold hover:shadow-lg transition-all duration-200">
+                              <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-xs font-bold hover:shadow-lg transition-all duration-200">
                                 {getInitials(user.firstName, user.lastName)}
                               </div>
                             )}
@@ -727,17 +745,24 @@ function capitalize(str: string) {
                             {/* User Info Header */}
                             <div className="px-4 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
                               <div className="flex items-center space-x-3">
-                                {user.profilePicture ? (
-                                  <Image 
-                                    src={user.profilePicture} 
-                                    alt="Profile" 
-                                    width={48}
-                                    height={48}
-                                    className="rounded-full object-cover ring-2 ring-white shadow-md"
-                                    unoptimized
-                                  />
+                                {user.profilePicture && user.profilePicture.trim() !== '' && !profileImageError ? (
+                                  <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 relative ring-2 ring-white shadow-md">
+                                    <Image 
+                                      src={user.profilePicture} 
+                                      alt="Profile" 
+                                      width={48}
+                                      height={48}
+                                      className="w-full h-full object-cover rounded-full"
+                                      unoptimized
+                                      onError={() => {
+                                        console.error('Profile picture failed to load:', user.profilePicture);
+                                        setProfileImageError(true);
+                                      }}
+                                      onLoad={() => setProfileImageError(false)}
+                                    />
+                                  </div>
                                 ) : (
-                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-lg font-bold shadow-md">
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-lg font-bold shadow-md flex-shrink-0">
                                     {getInitials(user.firstName, user.lastName)}
                                   </div>
                                 )}
@@ -897,7 +922,7 @@ function capitalize(str: string) {
                         {cart.totalItems > 0 && (
                             <span className={`absolute -top-1 -right-1 bg-gradient-to-r from-gray-800 to-black text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-bold shadow-lg ${
                               cartBadgePulse ? 'animate-bounce' : ''
-                            }`}>
+                            }`} style={{ fontFamily: 'Jost, sans-serif' }}>
                             {cart.totalItems}
                           </span>
                         )}
@@ -1275,15 +1300,22 @@ function capitalize(str: string) {
                           aria-expanded={isMobileAccountDropdownOpen}
                         >
                           <div className="flex items-center flex-1 min-w-0">
-                            {user.profilePicture ? (
+                            {user.profilePicture && user.profilePicture.trim() !== '' && !profileImageError ? (
+                              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden flex-shrink-0 relative ring-2 ring-white">
                                 <Image 
                                   src={user.profilePicture} 
                                   alt="Profile" 
-                                  width={40}
-                                  height={40}
-                                  className="rounded-full object-cover ring-2 ring-white flex-shrink-0"
+                                  width={44}
+                                  height={44}
+                                  className="w-full h-full object-cover rounded-full"
                                   unoptimized
+                                  onError={() => {
+                                    console.error('Profile picture failed to load:', user.profilePicture);
+                                    setProfileImageError(true);
+                                  }}
+                                  onLoad={() => setProfileImageError(false)}
                                 />
+                              </div>
                             ) : (
                               <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center text-white text-xs sm:text-sm font-bold flex-shrink-0">
                                 {getInitials(user.firstName, user.lastName)}

@@ -294,17 +294,6 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     setViewMode(mode);
   };
 
-  // Get unique categories with counts
-  const getCategoriesWithCounts = () => {
-    const categoryCounts: { [key: string]: number } = {};
-    allProducts.forEach(product => {
-      if (product.category) {
-        categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
-      }
-    });
-    return categoryCounts;
-  };
-
   // Get maximum price from all products
   const getMaxPrice = useCallback(() => {
     if (allProducts.length === 0) return 282000; // fallback
@@ -321,15 +310,6 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
       }));
     }
   }, [allProducts, getMaxPrice]);
-
-  // Handle category selection for header
-  const handleHeaderCategorySelect = (category: string) => {
-    if (selectedCategory === category) {
-      setSelectedCategory(''); // Deselect if same category
-    } else {
-      setSelectedCategory(category); // Select new category
-    }
-  };
 
   // Handle category selection for sidebar
   const handleCategorySelect = (category: string) => {
@@ -525,41 +505,6 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
             Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
           </p>
           
-          {/* Category Selection */}
-          <div className="mb-6 sm:mb-8">
-            <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-3 sm:mb-4">
-
-              <span className="text-gray-700 font-semibold text-sm sm:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Choose By Categories:</span>
-            </div>
-            {/* Mobile: horizontal scroll list; Desktop: wrap */}
-            <div className="sm:hidden -mx-4 px-4 overflow-x-auto pb-2">
-              <div className="flex flex-nowrap gap-2">
-                {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
-                  <button
-                    key={category}
-                    onClick={() => handleHeaderCategorySelect(category)}
-                    className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
-                    style={{ fontFamily: 'Jost, sans-serif' }}
-                  >
-                    {category} <span className="text-gray-500">({count})</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="hidden sm:flex flex-wrap justify-center gap-2">
-              {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
-                <button
-                  key={category}
-                  onClick={() => handleHeaderCategorySelect(category)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
-                  style={{ fontFamily: 'Jost, sans-serif' }}
-                >
-                  {category} <span className="text-gray-500">({count})</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          
         </div>
       </div>
       
@@ -639,6 +584,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         sortOption={sortOption}
         setSortOption={setSortOption}
         maxPrice={getMaxPrice()}
+        allProducts={allProducts}
       />
       </main>
     </div>

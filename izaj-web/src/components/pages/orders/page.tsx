@@ -469,7 +469,7 @@ const MyOrders: React.FC = () => {
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-300">
 
                   {/* Filter Tabs */}
-                  <div className="border-b border-gray-200 bg-white sticky top-0 z-10">
+                  <div className="border-b border-gray-200 bg-white sticky top-0 z-0">
                     <div className="flex overflow-x-auto scrollbar-hide lg:justify-center -mx-4 sm:mx-0 px-4 sm:px-0">
                       {[
                         { key: 'all', label: 'All Orders', icon: 'mdi:package-variant-closed', shortLabel: 'All' },

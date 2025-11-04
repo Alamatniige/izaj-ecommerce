@@ -49,7 +49,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
   const [isCarousel, setIsCarousel] = useState(false);
   const [sortModalOpen, setSortModalOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const searchParams = useSearchParams();
   
   // Product data states
@@ -227,8 +227,8 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
   // Initialize selectedCategory from URL query param (e.g., ?category=Chandelier)
   useEffect(() => {
     const categoryFromUrl = searchParams?.get('category');
-    if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
-      setSelectedCategory(categoryFromUrl);
+    if (categoryFromUrl) {
+      setSelectedCategories([categoryFromUrl]);
     }
   }, [searchParams]);
 
@@ -236,9 +236,11 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
   useEffect(() => {
     let filtered = [...allProducts];
 
-    // Filter by header category selection (takes priority)
-    if (selectedCategory) {
-      filtered = filtered.filter(product => product.category === selectedCategory);
+    // Filter by selected categories
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter(product => 
+        product.category && selectedCategories.includes(product.category)
+      );
     }
 
     // Filter by availability
@@ -293,26 +295,19 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
     }
 
     setFilteredProducts(filtered);
-  }, [allProducts, availabilityFilter, priceRange, sortOption, maxPrice, selectedCategory]);
+  }, [allProducts, availabilityFilter, priceRange, sortOption, maxPrice, selectedCategories]);
 
-  // Get categories with counts
-  const getCategoriesWithCounts = () => {
-    const categoryCounts: { [key: string]: number } = {};
-    allProducts.forEach(product => {
-      if (product.category) {
-        categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
+  // Handle category selection for sidebar
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(category)) {
+        // Remove category if already selected
+        return prev.filter(cat => cat !== category);
+      } else {
+        // Add category if not selected
+        return [...prev, category];
       }
     });
-    return categoryCounts;
-  };
-
-  // Handle category selection from header
-  const handleHeaderCategorySelect = (category: string) => {
-    if (selectedCategory === category) {
-      setSelectedCategory('');
-    } else {
-      setSelectedCategory(category);
-    }
   };
 
   const handleColorSelect = (productId: number, color: string) => {
@@ -359,40 +354,6 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
               <p className="text-gray-700 text-sm sm:text-lg mb-4 sm:mb-8 leading-snug sm:leading-relaxed px-2 sm:px-0" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
                 Welcome to IZAJ! Choose from a wide range of high quality decorative lighting products.
               </p>
-              
-              {/* Category Selection */}
-              <div className="mb-6 sm:mb-8">
-                <div className="inline-flex items-center gap-2 bg-gray-50 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-3 sm:mb-4">
-                  <span className="text-gray-700 font-semibold text-sm sm:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Choose By Categories:</span>
-                </div>
-                {/* Mobile: horizontal scroll list; Desktop: wrap */}
-                <div className="sm:hidden -mx-4 px-4 overflow-x-auto pb-2">
-                  <div className="flex flex-nowrap gap-2">
-                    {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
-                      <button
-                        key={category}
-                        onClick={() => handleHeaderCategorySelect(category)}
-                        className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
-                        style={{ fontFamily: 'Jost, sans-serif' }}
-                      >
-                        {category} <span className="text-gray-500">({count})</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="hidden sm:flex flex-wrap justify-center gap-2">
-                  {Object.entries(getCategoriesWithCounts()).map(([category, count]) => (
-                    <button
-                      key={category}
-                      onClick={() => handleHeaderCategorySelect(category)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
-                      style={{ fontFamily: 'Jost, sans-serif' }}
-                    >
-                      {category} <span className="text-gray-500">({count})</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -449,11 +410,14 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <SalesSidebar
+          selectedCategories={selectedCategories}
+          handleCategorySelect={handleCategorySelect}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           sortOption={sortOption}
           setSortOption={setSortOption}
           maxPrice={maxPrice}
+          allProducts={allProducts}
         />
 
         {/* Product List */}
@@ -505,13 +469,14 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         setFansDropdownOpen={() => {}}
         selectCategoryOpen={true}
         setSelectCategoryOpen={() => {}}
-        selectedCategories={[]}
-        handleCategorySelect={() => {}}
+        selectedCategories={selectedCategories}
+        handleCategorySelect={handleCategorySelect}
         priceRange={priceRange}
         setPriceRange={setPriceRange}
         sortOption={sortOption}
         setSortOption={setSortOption}
         maxPrice={maxPrice}
+        allProducts={allProducts}
       />
     </div>
     );

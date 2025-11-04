@@ -23,6 +23,7 @@ interface SalesFilterDrawerProps {
   sortOption: string;
   setSortOption: (option: string) => void;
   maxPrice: number;
+  allProducts: Array<{ category?: string }>;
 }
 
 const SalesFilterDrawer: React.FC<SalesFilterDrawerProps> = ({
@@ -47,10 +48,29 @@ const SalesFilterDrawer: React.FC<SalesFilterDrawerProps> = ({
   sortOption,
   setSortOption,
   maxPrice,
+  allProducts,
 }) => {
   // Local inputs to mirror numeric range fields
   const [minInput, setMinInput] = useState<string>('');
   const [maxInput, setMaxInput] = useState<string>('');
+  const [categories, setCategories] = useState<{ category: string; count: number }[]>([]);
+
+  // Calculate categories from available products
+  useEffect(() => {
+    const categoryCounts: { [key: string]: number } = {};
+    allProducts.forEach(product => {
+      if (product.category) {
+        categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
+      }
+    });
+    
+    const categoriesWithCounts = Object.entries(categoryCounts).map(([category, count]) => ({
+      category,
+      count,
+    }));
+    
+    setCategories(categoriesWithCounts);
+  }, [allProducts]);
 
   // Capture initial values to determine if there are changes
   const initialPriceRef = useRef<{ min: number; max: number } | null>(null);
@@ -126,6 +146,30 @@ const SalesFilterDrawer: React.FC<SalesFilterDrawerProps> = ({
         {/* Content */}
         <div className="flex-1 overflow-y-auto px-4 pb-28 pt-6">
           <div className="origin-top scale-[1.05] sm:scale-100 transition-transform mx-3 sm:mx-0">
+            {/* Categories */}
+            <div className="pb-4 mb-4 border-b border-gray-200">
+              <div className="w-full flex items-center justify-between text-sm text-black">
+                <span style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Categories</span>
+              </div>
+              <div className="mt-3 space-y-2 text-sm">
+                {categories.map(({ category, count }) => {
+                  const selected = selectedCategories.includes(category);
+                  return (
+                    <button
+                      key={category}
+                      type="button"
+                      onClick={() => handleCategorySelect(category)}
+                      className={`w-full flex items-center justify-between px-3 py-2 border rounded-md transition ${selected ? 'bg-black text-white border-black' : 'bg-white text-gray-800 border-gray-200 hover:border-gray-300'}`}
+                      style={{ fontFamily: 'Jost, sans-serif' }}
+                    >
+                      <span>{category}</span>
+                      <span className={`text-xs ${selected ? 'text-white' : 'text-gray-500'}`}>({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Price */}
             <div className="pb-4 mb-4 border-b border-gray-200">
               <div className="w-full flex items-center justify-between text-sm text-black">

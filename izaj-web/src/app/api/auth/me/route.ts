@@ -10,15 +10,19 @@ export async function GET() {
             return NextResponse.json({ user: null }, { status: 200 });
         }
 
-        // Merge profile phone into user metadata so client always sees phone
+        // Merge profile phone and profile_picture into user metadata so client always sees them
         try {
             const { data: prof } = await supabaseAdmin
                 .from('profiles')
-                .select('phone')
+                .select('phone, profile_picture')
                 .eq('id', user.id)
                 .maybeSingle();
-            if (prof?.phone) {
-                (user as any).user_metadata = { ...(user as any).user_metadata, phone: prof.phone };
+            if (prof) {
+                (user as any).user_metadata = { 
+                    ...(user as any).user_metadata, 
+                    phone: prof.phone || (user as any).user_metadata?.phone,
+                    profile_picture: prof.profile_picture || (user as any).user_metadata?.profile_picture
+                };
             }
         } catch {}
 

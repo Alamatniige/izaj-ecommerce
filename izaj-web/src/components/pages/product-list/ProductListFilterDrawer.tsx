@@ -24,6 +24,7 @@ interface ProductListFilterDrawerProps {
   sortOption: string;
   setSortOption: (option: string) => void;
   maxPrice: number;
+  allProducts: Array<{ category?: string }>;
 }
 
 const ProductListFilterDrawer: React.FC<ProductListFilterDrawerProps> = ({
@@ -46,10 +47,29 @@ const ProductListFilterDrawer: React.FC<ProductListFilterDrawerProps> = ({
   sortOption,
   setSortOption,
   maxPrice,
+  allProducts,
 }) => {
   // Local inputs to mirror desktop sidebar behavior
   const [minInput, setMinInput] = useState<string>('');
   const [maxInput, setMaxInput] = useState<string>('');
+  const [categories, setCategories] = useState<{ category: string; count: number }[]>([]);
+
+  // Calculate categories from available products
+  useEffect(() => {
+    const categoryCounts: { [key: string]: number } = {};
+    allProducts.forEach(product => {
+      if (product.category) {
+        categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
+      }
+    });
+    
+    const categoriesWithCounts = Object.entries(categoryCounts).map(([category, count]) => ({
+      category,
+      count,
+    }));
+    
+    setCategories(categoriesWithCounts);
+  }, [allProducts]);
 
   // Track initial values when modal opens to know if user changed anything
   const initialPriceRangeRef = useRef<{ min: number; max: number } | null>(null);
@@ -141,6 +161,30 @@ const ProductListFilterDrawer: React.FC<ProductListFilterDrawerProps> = ({
         {/* Filter Content (scrollable) */}
         <div className="flex-1 overflow-y-auto px-4 pb-28 pt-6">
           <div className="origin-top scale-[1.05] sm:scale-100 transition-transform mx-3 sm:mx-0">
+          {/* Categories */}
+          <div className="pb-4 mb-4 border-b border-gray-200">
+            <div className="w-full flex items-center justify-between text-sm text-black">
+              <span style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Categories</span>
+            </div>
+            <div className="mt-3 space-y-2 text-sm">
+              {categories.map(({ category, count }) => {
+                const selected = selectedCategories.includes(category);
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => handleCategorySelect(category)}
+                    className={`w-full flex items-center justify-between px-3 py-2 border rounded-md transition ${selected ? 'bg-black text-white border-black' : 'bg-white text-gray-800 border-gray-200 hover:border-gray-300'}`}
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    <span>{category}</span>
+                    <span className={`text-xs ${selected ? 'text-white' : 'text-gray-500'}`}>({count})</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Price (match desktop) */}
           <div className="pb-4 mb-4 border-b border-gray-200">
             <div className="w-full flex items-center justify-between text-sm text-black">
@@ -236,8 +280,6 @@ const ProductListFilterDrawer: React.FC<ProductListFilterDrawerProps> = ({
               ))}
             </div>
           </div>
-
-          {/* Categories removed in mobile modal to match desktop sidebar content only */}
           </div>
         </div>
         {/* Sticky View Results Button */}
