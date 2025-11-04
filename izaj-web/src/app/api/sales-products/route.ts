@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
     // Create Supabase client
     const supabase = createClient(SUPABASE_PRODUCT_URL, SUPABASE_PRODUCT_KEY);
     
-    // Get products that are currently on sale with active sale periods
+    // Get all products that are marked as on sale
+    // Using left join so products with on_sale=true are included even without sale table entry
     const { data, error } = await supabase
       .from('products')
       .select(`
@@ -41,12 +42,10 @@ export async function GET(request: NextRequest) {
           display_quantity,
           last_sync_at
         ),
-        sale!inner(*)
+        sale(*)
       `)
       .eq('on_sale', true)
-      .eq('publish_status', true)
-      .lte('sale.start_date', new Date().toISOString())
-      .gte('sale.end_date', new Date().toISOString());
+      .eq('publish_status', true);
 
     if (error) {
       console.error('❌ /api/sales-products: Supabase error:', error);
