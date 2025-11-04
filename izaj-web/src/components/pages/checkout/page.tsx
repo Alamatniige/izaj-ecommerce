@@ -237,7 +237,8 @@ const Checkout = () => {
           items: cart.items.map(item => ({
             product_id: item.productId,
             name: item.name,
-            price: item.price,
+            price: item.price, // This is the sale price (discounted price)
+            originalPrice: item.originalPrice, // Original price if on sale
             image: item.image,
             quantity: item.quantity
           })),
@@ -258,7 +259,8 @@ const Checkout = () => {
           items: cart.items.map(item => ({
             product_id: item.productId,
             name: item.name,
-            price: item.price,
+            price: item.price, // This is the sale price (discounted price)
+            originalPrice: item.originalPrice, // Original price if on sale
             image: item.image,
             quantity: item.quantity
           })),

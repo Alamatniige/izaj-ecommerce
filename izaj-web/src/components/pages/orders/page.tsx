@@ -16,7 +16,9 @@ interface Order {
     name: string;
     image: string;
     quantity: number;
-    price: number;
+    price: number; // Sale price (discounted price)
+    originalPrice?: number; // Original price if on sale
+    discount?: number; // Total discount amount
     productId?: string;
   }>;
   total: number;
@@ -113,14 +115,23 @@ const MyOrders: React.FC = () => {
               orderNumber: order.order_number,
               date: order.created_at,
               status: status,
-              items: order.items?.map((item: any) => ({
-                id: item.id,
-                name: item.product_name,
-                image: item.product_image || '/placeholder.jpg',
-                quantity: item.quantity,
-                price: parseFloat(item.unit_price),
-                productId: item.product_id
-              })) || [],
+              items: order.items?.map((item: any) => {
+                const unitPrice = parseFloat(item.unit_price); // Sale price
+                const discount = parseFloat(item.discount || 0); // Total discount amount
+                const discountPerUnit = item.quantity > 0 ? discount / item.quantity : 0;
+                const originalPrice = discount > 0 ? unitPrice + discountPerUnit : undefined;
+                
+                return {
+                  id: item.id,
+                  name: item.product_name,
+                  image: item.product_image || '/placeholder.jpg',
+                  quantity: item.quantity,
+                  price: unitPrice, // Sale price (discounted price)
+                  originalPrice: originalPrice, // Calculated from unit_price + discount
+                  discount: discount, // Total discount amount
+                  productId: item.product_id
+                };
+              }) || [],
               total: parseFloat(order.total_amount),
               shippingAddress: `${order.shipping_city}, ${order.shipping_province}`,
               paymentMethod: order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 
@@ -280,14 +291,23 @@ const MyOrders: React.FC = () => {
                 orderNumber: order.order_number,
                 date: order.created_at,
                 status: status,
-                items: order.items?.map((item: any) => ({
-                  id: item.id,
-                  name: item.product_name,
-                  image: item.product_image || '/placeholder.jpg',
-                  quantity: item.quantity,
-                  price: parseFloat(item.unit_price),
-                  productId: item.product_id
-                })) || [],
+                items: order.items?.map((item: any) => {
+                  const unitPrice = parseFloat(item.unit_price); // Sale price
+                  const discount = parseFloat(item.discount || 0); // Total discount amount
+                  const discountPerUnit = item.quantity > 0 ? discount / item.quantity : 0;
+                  const originalPrice = discount > 0 ? unitPrice + discountPerUnit : undefined;
+                  
+                  return {
+                    id: item.id,
+                    name: item.product_name,
+                    image: item.product_image || '/placeholder.jpg',
+                    quantity: item.quantity,
+                    price: unitPrice, // Sale price (discounted price)
+                    originalPrice: originalPrice, // Calculated from unit_price + discount
+                    discount: discount, // Total discount amount
+                    productId: item.product_id
+                  };
+                }) || [],
                 total: parseFloat(order.total_amount),
                 shippingAddress: `${order.shipping_city}, ${order.shipping_province}`,
                 paymentMethod: order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 
@@ -831,9 +851,23 @@ const MyOrders: React.FC = () => {
                           <p className="text-xs text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Qty: {item.quantity}</p>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <p className="text-xs sm:text-sm font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                            {formatPrice(item.price * item.quantity)}
-                          </p>
+                          {item.originalPrice && item.originalPrice > item.price && item.discount && item.discount > 0 ? (
+                            <div>
+                              <p className="text-xs text-gray-400 line-through" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                                {formatPrice(item.originalPrice * item.quantity)}
+                              </p>
+                              <p className="text-xs sm:text-sm font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                                {formatPrice(item.price * item.quantity)}
+                              </p>
+                              <p className="text-xs text-green-600 font-semibold mt-0.5" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                                -{formatPrice(item.discount)} discount
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-xs sm:text-sm font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                              {formatPrice(item.price * item.quantity)}
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}

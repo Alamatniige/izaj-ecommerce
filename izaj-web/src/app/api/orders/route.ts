@@ -179,7 +179,22 @@ export async function POST(request: Request) {
         );
       }
 
-      const itemTotal = parseFloat(item.price) * item.quantity;
+      // item.price is the sale price (discounted price)
+      const salePrice = parseFloat(item.price);
+      const originalPrice = item.originalPrice !== undefined ? parseFloat(item.originalPrice.toString()) : undefined;
+      
+      // Calculate discount amount per unit (original price - sale price)
+      const discountPerUnit = originalPrice && originalPrice > salePrice ? originalPrice - salePrice : 0;
+      const totalDiscount = discountPerUnit * item.quantity;
+      
+      console.log(`💰 Item: ${item.name}`);
+      console.log(`  - Original Price: ${originalPrice || 'N/A'}`);
+      console.log(`  - Sale Price: ${salePrice}`);
+      console.log(`  - Discount per unit: ${discountPerUnit}`);
+      console.log(`  - Quantity: ${item.quantity}`);
+      console.log(`  - Total Discount: ${totalDiscount}`);
+      
+      const itemTotal = salePrice * item.quantity;
       subtotal += itemTotal;
 
       orderItems.push({
@@ -187,10 +202,10 @@ export async function POST(request: Request) {
         product_name: item.name,
         product_image: item.image || '/placeholder.jpg',
         product_sku: item.sku || null,
-        unit_price: parseFloat(item.price),
+        unit_price: salePrice, // Sale price (discounted price)
         quantity: item.quantity,
         subtotal: itemTotal,
-        discount: 0,
+        discount: totalDiscount, // Total discount amount for this item
         total: itemTotal,
         product_variant: item.variant || null
       });

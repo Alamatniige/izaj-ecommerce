@@ -27,10 +27,10 @@ export interface OrderItem {
   product_name: string;
   product_image?: string;
   product_sku?: string;
-  unit_price: number;
+  unit_price: number; // Sale price (discounted price)
   quantity: number;
   subtotal: number;
-  discount: number;
+  discount: number; // Total discount amount (original price - sale price) * quantity
   total: number;
   product_variant?: string;
   created_at: string;
@@ -102,7 +102,8 @@ export interface CreateOrderRequest {
   items: Array<{
     product_id: string;
     name: string;
-    price: number;
+    price: number; // Sale price (discounted price)
+    originalPrice?: number; // Original price if on sale
     image?: string;
     quantity: number;
     variant?: string;

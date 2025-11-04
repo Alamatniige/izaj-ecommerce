@@ -207,6 +207,11 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
             saleProduct.product_id === product.product_id
           );
           
+          // Find the sale product data which contains sale information
+          const saleProductData = salesProductsData.find(saleProduct => 
+            saleProduct.product_id === product.product_id
+          );
+          
           // Debug logging for all products to check badge logic
           console.log(`🔍 Product ${index}: ${product.product_name}`, {
             productId: product.product_id,
@@ -219,20 +224,31 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
             newProductsCount: newProductsData.length,
             salesProductsCount: salesProductsData.length
           });
-          let finalPrice = price;
-          let originalPrice = price;
           
-          // Sale logic removed until sale property is available
-          // if (isOnSale) {
-          //   // Sale calculation logic will be added when sale property is available
-          // }
+          // Calculate sale price based on percentage or fixed_amount
+          const originalPrice = price;
+          const saleDetails = (saleProductData as any)?.sale?.[0]; // Get sale details from salesProductsData
+          let finalPrice = originalPrice;
+          let originalPriceForDisplay: number | undefined = undefined;
+          
+          if (saleDetails && isOnSale) {
+            if (saleDetails.percentage) {
+              // Calculate discount based on percentage
+              const discountAmount = (originalPrice * saleDetails.percentage) / 100;
+              finalPrice = originalPrice - discountAmount;
+            } else if (saleDetails.fixed_amount) {
+              // Calculate discount based on fixed amount
+              finalPrice = Math.max(0, originalPrice - saleDetails.fixed_amount);
+            }
+            originalPriceForDisplay = originalPrice;
+          }
           
           return {
               id: productId,
               name: product.product_name,
               description: product.description || '',
             price: finalPrice,
-            originalPrice: isOnSale ? originalPrice : undefined,
+            originalPrice: originalPriceForDisplay,
               rating: 4.5, // Default rating
               reviewCount: 0, // Default review count
               image: product.media_urls?.[0] || "/placeholder.jpg",
