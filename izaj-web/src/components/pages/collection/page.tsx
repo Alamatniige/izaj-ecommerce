@@ -174,7 +174,6 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
       setSelectedCategory(categoryFromUrl);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // Get maximum price from all products

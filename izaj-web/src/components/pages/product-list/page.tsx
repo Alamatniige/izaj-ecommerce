@@ -88,7 +88,6 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
       setSelectedCategory(categoryFromUrl);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
 

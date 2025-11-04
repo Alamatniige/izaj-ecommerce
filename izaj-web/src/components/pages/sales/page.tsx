@@ -230,7 +230,6 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
     if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
       setSelectedCategory(categoryFromUrl);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // Filter products based on current filters
