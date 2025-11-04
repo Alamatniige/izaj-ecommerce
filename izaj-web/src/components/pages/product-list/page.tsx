@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from 'next/navigation';
 import { InternalApiService } from '../../../services/internalApi';
 import ProductListSidebar from './ProductListSidebar';
 import ProductListMain from './ProductListMain';
@@ -55,6 +56,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectCategoryOpen, setSelectCategoryOpen] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const searchParams = useSearchParams();
 
   // New filter states for sidebar
   const [availabilityFilter, setAvailabilityFilter] = useState<string[]>([]);
@@ -80,6 +82,14 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
+  // Initialize selectedCategory from URL query param (e.g., ?category=Chandelier)
+  useEffect(() => {
+    const categoryFromUrl = searchParams?.get('category');
+    if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
+      setSelectedCategory(categoryFromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
 
   // Sample deals data
@@ -513,7 +523,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
                   <button
                     key={category}
                     onClick={() => handleHeaderCategorySelect(category)}
-                    className="whitespace-nowrap px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                    className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
                     style={{ fontFamily: 'Jost, sans-serif' }}
                   >
                     {category} <span className="text-gray-500">({count})</span>
@@ -526,7 +536,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
                 <button
                   key={category}
                   onClick={() => handleHeaderCategorySelect(category)}
-                  className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
                   style={{ fontFamily: 'Jost, sans-serif' }}
                 >
                   {category} <span className="text-gray-500">({count})</span>

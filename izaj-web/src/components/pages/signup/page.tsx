@@ -168,6 +168,11 @@ const SignupPage: React.FC = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
+    // Require Privacy Policy agreement
+    if (!formData.agreeToPrivacy) {
+      newErrors.agreeToPrivacy = 'You must agree to the Privacy Policy to create an account';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -627,6 +632,9 @@ const SignupPage: React.FC = () => {
                   </button>
                 </div>
               </div>
+              {errors.agreeToPrivacy && (
+                <p className="mt-1 text-sm text-red-600 font-jost">{errors.agreeToPrivacy}</p>
+              )}
 
               {/* Submit Button */}
               <button

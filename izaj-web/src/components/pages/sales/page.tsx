@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { InternalApiService } from '../../../services/internalApi';
 import SalesSidebar from './SalesSidebar';
@@ -48,6 +49,8 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
   const [isCarousel, setIsCarousel] = useState(false);
   const [sortModalOpen, setSortModalOpen] = useState(false);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const searchParams = useSearchParams();
   
   // Product data states
   const [allProducts, setAllProducts] = useState<SalesProduct[]>([]);
@@ -221,9 +224,23 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
     fetchProducts();
   }, []);
 
+  // Initialize selectedCategory from URL query param (e.g., ?category=Chandelier)
+  useEffect(() => {
+    const categoryFromUrl = searchParams?.get('category');
+    if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
+      setSelectedCategory(categoryFromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   // Filter products based on current filters
   useEffect(() => {
     let filtered = [...allProducts];
+
+    // Filter by header category selection (takes priority)
+    if (selectedCategory) {
+      filtered = filtered.filter(product => product.category === selectedCategory);
+    }
 
     // Filter by availability
     if (availabilityFilter.length > 0) {
@@ -277,7 +294,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
     }
 
     setFilteredProducts(filtered);
-  }, [allProducts, availabilityFilter, priceRange, sortOption, maxPrice]);
+  }, [allProducts, availabilityFilter, priceRange, sortOption, maxPrice, selectedCategory]);
 
   // Get categories with counts
   const getCategoriesWithCounts = () => {
@@ -292,8 +309,11 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
 
   // Handle category selection from header
   const handleHeaderCategorySelect = (category: string) => {
-    // For now, just log the selection - you can implement filtering logic here
-    console.log('Selected category from header:', category);
+    if (selectedCategory === category) {
+      setSelectedCategory('');
+    } else {
+      setSelectedCategory(category);
+    }
   };
 
   const handleColorSelect = (productId: number, color: string) => {
@@ -353,7 +373,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
                       <button
                         key={category}
                         onClick={() => handleHeaderCategorySelect(category)}
-                        className="whitespace-nowrap px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                        className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
                         style={{ fontFamily: 'Jost, sans-serif' }}
                       >
                         {category} <span className="text-gray-500">({count})</span>
@@ -366,7 +386,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
                     <button
                       key={category}
                       onClick={() => handleHeaderCategorySelect(category)}
-                      className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
                       style={{ fontFamily: 'Jost, sans-serif' }}
                     >
                       {category} <span className="text-gray-500">({count})</span>

@@ -76,7 +76,8 @@ export async function GET(request: Request) {
 			user_metadata: {
 				...foundUser.user_metadata,
 				confirmationToken: null,
-				confirmationExpiry: null
+				confirmationExpiry: null,
+				emailConfirmed: true
 			}
 		});
 

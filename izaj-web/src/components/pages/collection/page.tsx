@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from 'next/navigation';
 import { InternalApiService } from '../../../services/internalApi';
 import ProductList from '@/components/pages/collection/ProductList';
 import SortModal from '@/components/pages/collection/SortModal';
@@ -64,6 +65,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   const [priceRange, setPriceRange] = useState<PriceRange>({ min: 0, max: 0 });
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<number>(0);
+  const searchParams = useSearchParams();
 
 
   const handleColorSelect = (productId: number, color: string) => {
@@ -165,6 +167,15 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
 
     fetchProducts();
   }, []);
+
+  // Initialize selectedCategory from URL query param (e.g., ?category=Chandelier)
+  useEffect(() => {
+    const categoryFromUrl = searchParams?.get('category');
+    if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
+      setSelectedCategory(categoryFromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Get maximum price from all products
   const getMaxPrice = useCallback(() => {
@@ -383,7 +394,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
                   <button
                     key={category}
                     onClick={() => handleHeaderCategorySelect(category)}
-                    className="whitespace-nowrap px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                    className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
                     style={{ fontFamily: 'Jost, sans-serif' }}
                   >
                     {category} <span className="text-gray-500">({count})</span>
@@ -396,7 +407,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
                 <button
                   key={category}
                   onClick={() => handleHeaderCategorySelect(category)}
-                  className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md ${selectedCategory === category ? 'bg-black text-white border border-black' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
                   style={{ fontFamily: 'Jost, sans-serif' }}
                 >
                   {category} <span className="text-gray-500">({count})</span>

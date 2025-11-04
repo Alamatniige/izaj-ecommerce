@@ -11,20 +11,45 @@ export async function GET(request: NextRequest) {
     }
 
     // Find user with this deletion token
-    const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({
-      page: 1,
-      perPage: 1000
-    });
-
-    if (listError) {
-      console.error('Error listing users:', listError);
-      return NextResponse.json({ error: 'Failed to verify token' }, { status: 500 });
+    let user = undefined as any;
+    try {
+      const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000
+      });
+      if (!listError) {
+        user = users?.find(u => 
+          u.user_metadata?.deletionToken === token &&
+          u.user_metadata?.deletionTokenExpiry
+        );
+      }
+    } catch (e) {
+      // ignore, will fallback below
     }
 
-    const user = users?.find(u => 
-      u.user_metadata?.deletionToken === token &&
-      u.user_metadata?.deletionTokenExpiry
-    );
+    // Fallback: scan profile IDs and fetch admin user one-by-one (works even if listUsers is restricted)
+    if (!user) {
+      try {
+        const { data: profiles } = await supabaseAdmin
+          .from('profiles')
+          .select('id')
+          .limit(500);
+        if (profiles && profiles.length > 0) {
+          for (const p of profiles) {
+            try {
+              const { data: adminUserData } = await supabaseAdmin.auth.admin.getUserById(p.id);
+              const u = adminUserData?.user as any;
+              if (u?.user_metadata?.deletionToken === token && u?.user_metadata?.deletionTokenExpiry) {
+                user = u;
+                break;
+              }
+            } catch {}
+          }
+        }
+      } catch (fallbackErr) {
+        console.error('Deletion token fallback query failed:', fallbackErr);
+      }
+    }
 
     if (!user) {
       return NextResponse.json({ error: 'Invalid or expired deletion token' }, { status: 400 });

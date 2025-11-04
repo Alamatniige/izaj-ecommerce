@@ -54,20 +54,25 @@ const MyProfile: React.FC = () => {
       try {
         const res = await fetch('/api/auth/me', { cache: 'no-store' });
         const data = await res.json();
-        const name = (data?.user?.user_metadata?.name || '').toString();
-        const [firstName, ...rest] = name.trim().split(' ');
-        const lastName = rest.join(' ');
-        const phone = (data?.user?.user_metadata?.phone || '').toString();
+        const meta = data?.user?.user_metadata || {};
+        const name = (meta.name || '').toString();
+        const explicitFirst = (meta.firstName || '').toString();
+        const explicitLast = (meta.lastName || '').toString();
+        const [splitFirst, ...splitRest] = name.trim().split(' ');
+        const splitLast = splitRest.join(' ');
+        const resolvedFirst = explicitFirst || splitFirst || '';
+        const resolvedLast = explicitLast || splitLast || '';
+        const phone = (meta.phone || '').toString();
         setFormData(prev => ({
           ...prev,
-          firstName: firstName || prev.firstName,
-          lastName: lastName || prev.lastName,
+          firstName: resolvedFirst || prev.firstName,
+          lastName: resolvedLast || prev.lastName,
           phone: phone || prev.phone,
         }));
         const merged = {
           ...(storedUser ? JSON.parse(storedUser) : {}),
-          firstName: firstName || undefined,
-          lastName: lastName || undefined,
+          firstName: resolvedFirst || undefined,
+          lastName: resolvedLast || undefined,
           phone: phone || undefined,
         };
         localStorage.setItem('user', JSON.stringify(merged));

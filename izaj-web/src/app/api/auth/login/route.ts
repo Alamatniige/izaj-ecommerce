@@ -86,6 +86,21 @@ export async function POST(request: Request) {
 			email = foundEmail;
 		}
 
+		// Hard pre-check using admin API: block unconfirmed users before sign-in
+		try {
+			const { data: users } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 2000 });
+			const candidate = users?.users?.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
+			if (candidate) {
+				const preConfirmed = Boolean(candidate.email_confirmed_at) || Boolean(candidate.user_metadata?.emailConfirmed);
+				if (!preConfirmed) {
+					return NextResponse.json({
+						error: 'Please confirm your email address to log in.',
+						needsConfirmation: true
+					}, { status: 403 });
+				}
+			}
+		} catch {}
+
 		// Sign in with Supabase
 		const supabase = await getSupabaseServerClient();
 		const { data, error } = await supabase.auth.signInWithPassword({
@@ -98,6 +113,38 @@ export async function POST(request: Request) {
 			return NextResponse.json({ 
 				error: 'Invalid credentials' 
 			}, { status: 401 });
+		}
+
+		// Require email confirmation before allowing login (use admin fetch to avoid stale metadata)
+		let isEmailConfirmed = false;
+		try {
+			const { data: adminUserData } = await supabaseAdmin.auth.admin.getUserById(data.user.id);
+			const adminUser = adminUserData?.user as any;
+			isEmailConfirmed = Boolean(adminUser?.email_confirmed_at) || Boolean(adminUser?.user_metadata?.emailConfirmed);
+		} catch {}
+		if (!isEmailConfirmed) {
+			// Ensure no session cookies are persisted for unconfirmed users
+			try { await supabase.auth.signOut(); } catch {}
+			const denyResponse = NextResponse.json({
+				error: 'Please confirm your email address to log in.',
+				needsConfirmation: true
+			}, { status: 403 });
+			// Explicitly clear Supabase cookies that may have been set by the SSR client
+			denyResponse.cookies.set('sb-access-token', '', {
+				maxAge: 0,
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+				path: '/'
+			});
+			denyResponse.cookies.set('sb-refresh-token', '', {
+				maxAge: 0,
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+				path: '/'
+			});
+			return denyResponse;
 		}
 
 		// Get user profile data

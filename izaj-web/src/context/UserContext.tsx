@@ -117,8 +117,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
         console.log('✅ UserContext: Found user on server:', supabaseUser);
         const name: string = (supabaseUser.user_metadata?.name as string) || '';
-        const [firstName, ...rest] = name.trim().split(' ');
-        const lastName = rest.join(' ');
+        const explicitFirst = (supabaseUser.user_metadata?.firstName as string) || '';
+        const explicitLast = (supabaseUser.user_metadata?.lastName as string) || '';
+        const [splitFirst, ...splitRest] = name.trim().split(' ');
+        const splitLast = splitRest.join(' ');
+        const firstName = explicitFirst || splitFirst || '';
+        const lastName = explicitLast || splitLast || '';
         const phone: string = (supabaseUser.user_metadata?.phone as string) || '';
 
         const userData: User = {
@@ -161,8 +165,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
       const supabaseUser = result.user || {};
       const name: string = (supabaseUser.user_metadata?.name as string) || '';
-      const [firstName, ...rest] = name.trim().split(' ');
-      const lastName = rest.join(' ');
+      const explicitFirst = (supabaseUser.user_metadata?.firstName as string) || '';
+      const explicitLast = (supabaseUser.user_metadata?.lastName as string) || '';
+      const [splitFirst, ...splitRest] = name.trim().split(' ');
+      const splitLast = splitRest.join(' ');
+      const firstName = explicitFirst || splitFirst || '';
+      const lastName = explicitLast || splitLast || '';
       const phone: string = (supabaseUser.user_metadata?.phone as string) || '';
 
       const userData: User = {

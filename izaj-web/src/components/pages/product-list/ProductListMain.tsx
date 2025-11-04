@@ -140,7 +140,7 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
               {/* Mobile: make entire card clickable */}
               <Link
                 href={`/item-description/${product.id}`}
-                className="block lg:hidden absolute inset-0 z-10"
+                className="block lg:hidden absolute inset-0 z-0"
                 aria-label={product.name}
               />
               <div 
@@ -158,11 +158,11 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
                 {/* Product Badges */}
                 {/* NEW badge - mobile responsive */}
                 {product.isNew && !product.isOnSale && (
-                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-10" style={{ backgroundColor: '#10B981' }}>NEW</span>
+                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#10B981' }}>NEW</span>
                 )}
                 {/* SALE badge - mobile responsive */}
                 {product.isOnSale && (
-                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-10" style={{ backgroundColor: '#EF4444' }}>SALE</span>
+                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>SALE</span>
                 )}
                 
               </div>

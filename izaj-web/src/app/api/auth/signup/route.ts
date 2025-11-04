@@ -68,7 +68,10 @@ export async function POST(request: Request) {
 				emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
 				data: {
 					name: fullName,
+					firstName: (body.firstName || '').trim(),
+					lastName: (body.lastName || '').trim(),
 					phone: normalizedPhone,
+					emailConfirmed: false,
 				}
 			}
 		});
@@ -186,7 +189,10 @@ export async function POST(request: Request) {
 			const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
 				user_metadata: {
 					name: fullName,
+					firstName: (body.firstName || '').trim(),
+					lastName: (body.lastName || '').trim(),
 					phone: normalizedPhone,
+					emailConfirmed: false,
 					confirmationToken,
 					confirmationExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 				}
