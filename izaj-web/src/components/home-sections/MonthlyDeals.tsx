@@ -281,7 +281,7 @@ export default function MonthlyDeals() {
           <div className="flex-grow"></div>
           <Link
             href="/sales"
-            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-semibold"
+            className="text-sm text-gray-500 hover:underline mt-1 flex items-center font-semibold"
             style={{ fontFamily: 'Jost, sans-serif' }}
           >
             View all
@@ -321,7 +321,7 @@ export default function MonthlyDeals() {
           <div className="flex-grow"></div>
           <Link
             href="/sales"
-            className="text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-semibold"
+            className="text-sm text-gray-500 hover:underline mt-1 flex items-center font-semibold"
             style={{ fontFamily: 'Jost, sans-serif' }}
           >
             View all
