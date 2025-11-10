@@ -1539,7 +1539,7 @@ function capitalize(str: string) {
                     className="fixed top-0 left-0 right-0 bg-white shadow-2xl border-t border-gray-100 transition-all duration-500"
                     style={{ 
                       zIndex: 9999,
-                      top: '200px',
+                      top: '220px',
                       opacity: isDropdownOpen ? 1 : 0,
                       transform: isDropdownOpen ? 'translateY(0)' : 'translateY(-20px)'
                     }}
@@ -1558,19 +1558,19 @@ function capitalize(str: string) {
                       }, 200);
                     }}
                   >
-                    <div className="max-w-7xl mx-auto px-8 py-12">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {/* Featured Categories */}
+                    <div className="max-w-7xl mx-auto px-4 py-12">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
+                        {/* All Categories - Scrollable */}
                         <div className="space-y-6">
                           <div className="border-b border-gray-200 pb-4">
                             <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
                               fontFamily: 'Jost, sans-serif',
                               letterSpacing: '0.2em'
                             }}>
-                              Categories
+                              All Categories
                             </h3>
                           </div>
-                          <div className="space-y-2">
+                          <div className="space-y-2 overflow-y-auto custom-scrollbar pr-2" style={{ maxHeight: 'calc(100vh - 300px)', scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch', paddingBottom: '4rem', paddingTop: '0.5rem' }}>
                             <Link
                               href="/product-list"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
@@ -1583,7 +1583,7 @@ function capitalize(str: string) {
                               All Products
                             </Link>
                             <Link
-                              href="/product-list?category=ceiling"
+                              href="/product-list?category=Chandelier"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
                                 fontFamily: 'Jost, sans-serif',
@@ -1591,10 +1591,10 @@ function capitalize(str: string) {
                               }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Ceiling Lights
+                              Chandelier
                             </Link>
                             <Link
-                              href="/product-list?category=chandelier"
+                              href="/product-list?category=Bulb"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
                                 fontFamily: 'Jost, sans-serif',
@@ -1602,10 +1602,10 @@ function capitalize(str: string) {
                               }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Chandeliers
+                              Bulb
                             </Link>
                             <Link
-                              href="/product-list?category=pendant"
+                              href="/product-list?category=Pendant Light"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
                                 fontFamily: 'Jost, sans-serif',
@@ -1613,24 +1613,10 @@ function capitalize(str: string) {
                               }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Pendant Lights
+                              Pendant Light
                             </Link>
-                          </div>
-                        </div>
-
-                        {/* Additional Categories */}
-                        <div className="space-y-6">
-                          <div className="border-b border-gray-200 pb-4">
-                            <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
-                              fontFamily: 'Jost, sans-serif',
-                              letterSpacing: '0.2em'
-                            }}>
-                              Lighting Types
-                            </h3>
-                          </div>
-                          <div className="space-y-2">
                             <Link
-                              href="/product-list?category=floor"
+                              href="/product-list?category=Ceiling Light"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
                                 fontFamily: 'Jost, sans-serif',
@@ -1638,10 +1624,10 @@ function capitalize(str: string) {
                               }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Floor Lamps
+                              Ceiling Light
                             </Link>
                             <Link
-                              href="/product-list?category=wall"
+                              href="/product-list?category=Wall Lamp"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
                                 fontFamily: 'Jost, sans-serif',
@@ -1649,10 +1635,10 @@ function capitalize(str: string) {
                               }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Wall Lights
+                              Wall Lamp
                             </Link>
                             <Link
-                              href="/product-list?category=table"
+                              href="/product-list?category=Table Lamp"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
                                 fontFamily: 'Jost, sans-serif',
@@ -1660,10 +1646,43 @@ function capitalize(str: string) {
                               }}
                               onClick={() => setIsDropdownOpen(false)}
                             >
-                              Table Lamps
+                              Table Lamp
                             </Link>
                             <Link
-                              href="/product-list?category=outdoor"
+                              href="/product-list?category=Floor Lamp"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: 'Jost, sans-serif',
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Floor Lamp
+                            </Link>
+                            <Link
+                              href="/product-list?category=Track Lighting"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: 'Jost, sans-serif',
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Track Lighting
+                            </Link>
+                            <Link
+                              href="/product-list?category=Recessed Lighting"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: 'Jost, sans-serif',
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Recessed Lighting
+                            </Link>
+                            <Link
+                              href="/product-list?category=Outdoor Lighting"
                               className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
                               style={{ 
                                 fontFamily: 'Jost, sans-serif',
@@ -1673,6 +1692,63 @@ function capitalize(str: string) {
                             >
                               Outdoor Lighting
                             </Link>
+                            <Link
+                              href="/product-list?category=Smart Lighting"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: 'Jost, sans-serif',
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Smart Lighting
+                            </Link>
+                            <Link
+                              href="/product-list?category=LED Strip"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: 'Jost, sans-serif',
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              LED Strip
+                            </Link>
+                            <Link
+                              href="/product-list?category=Lantern"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: 'Jost, sans-serif',
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Lantern
+                            </Link>
+                            <Link
+                              href="/product-list?category=Spotlight"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: 'Jost, sans-serif',
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Spotlight
+                            </Link>
+                            <Link
+                              href="/product-list?category=Emergency Light"
+                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
+                              style={{ 
+                                fontFamily: 'Jost, sans-serif',
+                                letterSpacing: '0.05em'
+                              }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              Emergency Light
+                            </Link>
+                            {/* Extra spacer to ensure bottom items are visible */}
+                            <div style={{ height: '2rem', minHeight: '2rem' }}></div>
                           </div>
                         </div>
 
@@ -1734,62 +1810,24 @@ function capitalize(str: string) {
                           </div>
                         </div>
 
-                        {/* Services */}
-                        <div className="space-y-6">
-                          <div className="border-b border-gray-200 pb-4">
-                            <h3 className="text-sm font-bold text-black uppercase tracking-wider" style={{ 
-                              fontFamily: 'Jost, sans-serif',
-                              letterSpacing: '0.2em'
-                            }}>
-                              Services
-                            </h3>
-                          </div>
-                          <div className="space-y-2">
-                            <Link
-                              href="/static/consultation"
-                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
-                              style={{ 
-                                fontFamily: 'Jost, sans-serif',
-                                letterSpacing: '0.05em'
-                              }}
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              Design Consultation
-                            </Link>
-                            <Link
-                              href="/static/installation"
-                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
-                              style={{ 
-                                fontFamily: 'Jost, sans-serif',
-                                letterSpacing: '0.05em'
-                              }}
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              Installation Services
-                            </Link>
-                            <Link
-                              href="/static/support"
-                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
-                              style={{ 
-                                fontFamily: 'Jost, sans-serif',
-                                letterSpacing: '0.05em'
-                              }}
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              Customer Support
-                            </Link>
-                            <Link
-                              href="/static/contact"
-                              className="block py-3 text-sm text-gray-700 hover:text-black transition-all duration-300 font-medium border-l-2 border-transparent hover:border-black hover:pl-4"
-                              style={{ 
-                                fontFamily: 'Jost, sans-serif',
-                                letterSpacing: '0.05em'
-                              }}
-                              onClick={() => setIsDropdownOpen(false)}
-                            >
-                              Contact Us
-                            </Link>
-                          </div>
+                        {/* Banner Section */}
+                        <div className="space-y-6 pt-8">
+                          <Link
+                            href="/sales"
+                            className="block relative overflow-hidden rounded-lg group"
+                            onClick={() => setIsDropdownOpen(false)}
+                          >
+                            <div className="relative w-full h-full min-h-[400px]">
+                              <Image
+                                src="/ban.png"
+                                alt="Special Offers"
+                                fill
+                                className="object-contain transition-transform duration-300 group-hover:scale-105"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                unoptimized
+                              />
+                            </div>
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -2032,20 +2070,26 @@ function capitalize(str: string) {
           }
 
           .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
           }
 
           .custom-scrollbar::-webkit-scrollbar-track {
             background: #f1f1f1;
+            border-radius: 4px;
           }
 
           .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #4b5563;
-            border-radius: 3px;
+            background: #9ca3af;
+            border-radius: 4px;
           }
 
           .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #000000;
+            background: #6b7280;
+          }
+          
+          .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #9ca3af #f1f1f1;
           }
         `}</style>
       </>

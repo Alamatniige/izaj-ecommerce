@@ -11,6 +11,7 @@ export interface Product {
   stock?: number;
   status?: string;
   pickup_available?: boolean;
+  isOnSale?: boolean;
 }
 
 import { InternalApiService, InternalProduct } from './internalApi';
@@ -120,27 +121,30 @@ export const getAllProducts = async (): Promise<Product[]> => {
       const realStockQuantity: number | undefined = productData?.product_stock?.display_quantity;
 
       // Calculate sale price based on percentage or fixed_amount
+      // Only apply sale price if product is actually on sale
       const originalPrice = parseFloat(productData.price.toString());
+      const isOnSale = productData.on_sale === true;
       const saleDetails = productData.sale?.[0]; // Sale is an array, get first element
-      let salePrice = originalPrice;
+      let finalPrice = originalPrice;
       let originalPriceFormatted = `₱${originalPrice.toLocaleString()}`;
 
-      if (saleDetails) {
+      // Only apply sale price if product is marked as on_sale and has sale details
+      if (isOnSale && saleDetails) {
         if (saleDetails.percentage) {
           // Calculate discount based on percentage
           const discountAmount = (originalPrice * saleDetails.percentage) / 100;
-          salePrice = originalPrice - discountAmount;
+          finalPrice = originalPrice - discountAmount;
         } else if (saleDetails.fixed_amount) {
           // Calculate discount based on fixed amount
-          salePrice = Math.max(0, originalPrice - saleDetails.fixed_amount);
+          finalPrice = Math.max(0, originalPrice - saleDetails.fixed_amount);
         }
       }
 
       return {
         id: numericId,
         name: productData.product_name,
-        price: `₱${salePrice.toLocaleString()}`,
-        originalPrice: saleDetails ? originalPriceFormatted : undefined,
+        price: `₱${finalPrice.toLocaleString()}`,
+        originalPrice: (isOnSale && saleDetails) ? originalPriceFormatted : undefined,
         image: primaryImage,
         mediaUrls: productData.media_urls || [],
         colors: ["black"], // Default color
@@ -148,7 +152,8 @@ export const getAllProducts = async (): Promise<Product[]> => {
         category: productData.category,
         stock: typeof realStockQuantity === 'number' ? realStockQuantity : getStockFromStatus(productData.status),
         status: productData.status || 'In Stock',
-        pickup_available: productData.pickup_available
+        pickup_available: productData.pickup_available,
+        isOnSale: isOnSale
       };
     });
 

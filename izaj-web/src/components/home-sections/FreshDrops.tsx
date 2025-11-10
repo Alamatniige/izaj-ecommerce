@@ -63,29 +63,95 @@ export default function FreshDrops() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Fetch products using the same service as collection page
+  // Fetch NEW products that are NOT on sale
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log('🔄 FreshDrops: Starting to fetch products...');
+        console.log('🔄 FreshDrops: Starting to fetch NEW products (excluding sale items)...');
         
-        // Use the same service as collection page to ensure consistent image handling
-        const products = await getAllProducts();
-        console.log('📦 FreshDrops: Received products:', products);
-        console.log('📦 FreshDrops: Products length:', products?.length || 0);
+        // Fetch new products (within last 90 days)
+        const newProductsResponse = await fetch('/api/new-products');
+        if (!newProductsResponse.ok) {
+          throw new Error('Failed to fetch new products');
+        }
+        const newProductsData = await newProductsResponse.json();
+        console.log('📦 FreshDrops: Fetched new products:', newProductsData?.length || 0);
         
+        // Fetch all products to check which ones are on sale
+        const allProducts = await getAllProducts();
+        console.log('📦 FreshDrops: Fetched all products to check sale status:', allProducts?.length || 0);
+        
+        // Create a set of product IDs that are on sale for quick lookup
+        // Match by both id and product_id to handle different ID formats
+        const saleProductIds = new Set<string>();
+        allProducts
+          .filter(product => product.isOnSale === true)
+          .forEach(product => {
+            saleProductIds.add(product.id.toString());
+          });
+        console.log('📦 FreshDrops: Products on sale (to exclude):', saleProductIds.size);
+        
+        // Filter new products to exclude those that are on sale
+        const newProductsNotOnSale = (newProductsData || []).filter((newProduct: any) => {
+          // Generate ID the same way productService does
+          let numericId = parseInt(newProduct.product_id);
+          if (isNaN(numericId)) {
+            numericId = parseInt(newProduct.id?.replace(/[^0-9]/g, '').slice(0, 8)) || 0;
+          }
+          const isOnSale = saleProductIds.has(numericId.toString());
+          if (isOnSale) {
+            console.log(`🚫 FreshDrops: Excluding product on sale: ${newProduct.product_name} (ID: ${numericId})`);
+          }
+          return !isOnSale; // Only include if NOT on sale
+        });
+        
+        console.log('📦 FreshDrops: NEW products NOT on sale:', newProductsNotOnSale.length);
         
         // Transform to the format expected by FreshDrops component
-        const transformedProducts = products.map(product => ({
-          id: product.id,
-          name: product.name,
-          price: product.price, // Already formatted in productService
-          image: product.image,
-          mediaUrls: product.mediaUrls || [],
-          colors: product.colors || ["black"],
-          stock: product.stock || 0,
-          category: product.category || 'Lighting' // Use actual category from Supabase
-        }));
+        // Use getAllProducts to get properly formatted prices and other data
+        const transformedProducts = newProductsNotOnSale.map((newProduct: any) => {
+          // Generate ID the same way productService does
+          let numericId = parseInt(newProduct.product_id);
+          if (isNaN(numericId)) {
+            numericId = parseInt(newProduct.id?.replace(/[^0-9]/g, '').slice(0, 8)) || 0;
+          }
+          // Find the corresponding product in allProducts for formatted data
+          const fullProduct = allProducts.find(p => p.id === numericId);
+          
+          // Use first media URL if available, otherwise fallback to image_url
+          const primaryImage = newProduct.media_urls && newProduct.media_urls.length > 0 
+            ? newProduct.media_urls[0] 
+            : (newProduct.image_url || "/placeholder.jpg");
+          
+          // Use real stock quantity when available
+          const realStockQuantity: number | undefined = newProduct?.product_stock?.[0]?.display_quantity;
+          
+          // Convert status to stock number for display logic
+          const getStockFromStatus = (status: string): number => {
+            const normalizedStatus = status?.toLowerCase() || '';
+            switch (normalizedStatus) {
+              case 'in stock':
+                return 10;
+              case 'low stock':
+                return 3;
+              case 'out of stock':
+                return 0;
+              default:
+                return 10;
+            }
+          };
+          
+          return {
+            id: numericId,
+            name: newProduct.product_name,
+            price: fullProduct?.price || `₱${parseFloat(newProduct.price.toString()).toLocaleString()}`,
+            image: primaryImage,
+            mediaUrls: newProduct.media_urls || [],
+            colors: ["black"], // Default color
+            stock: typeof realStockQuantity === 'number' ? realStockQuantity : getStockFromStatus(newProduct.status),
+            category: newProduct.category || 'Lighting'
+          };
+        });
         
         setAllProducts(transformedProducts);
       } catch (error) {

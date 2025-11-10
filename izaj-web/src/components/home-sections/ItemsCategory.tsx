@@ -14,18 +14,21 @@ interface LightingCategoryProps {
 
 const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
   const allItems = [
-    { id: 1, name: "Ceiling Lights", image: "bey.jpg" },
-    { id: 2, name: "Chandelier", image: "bey2.jpg" },
-    { id: 3, name: "Pendant Lights", image: "bey3.jpg" },
-    { id: 4, name: "Wall Lights", image: "bey4.jpg" },
-    { id: 5, name: "Table Lamps", image: "bey5.jpg" },
-    { id: 6, name: "Cluster Chandelier", image: "bey6.jpg" },
-    { id: 7, name: "Floor Lamps", image: "bey7.jpg" },
-    { id: 8, name: "Painting Lights", image: "bey8.jpg" },
-    { id: 9, name: "Indoor Lights", image: "bey9.jpg" },
-    { id: 10, name: "Outdoor Lights", image: "bey10.jpg" },
-    { id: 11, name: "Mirror", image: "bey11.jpg" },
-    { id: 12, name: "Magnetic Lights", image: "bey12.jpg" },
+    { id: 1, name: "Chandelier", image: "chandelier.webp" },
+    { id: 2, name: "Bulb", image: "bulb.webp" },
+    { id: 3, name: "Pendant Light", image: "pendant.jpg" },
+    { id: 4, name: "Ceiling Light", image: "ceiling.webp" },
+    { id: 5, name: "Wall Lamp", image: "wall.webp" },
+    { id: 6, name: "Table Lamp", image: "table.webp" },
+    { id: 7, name: "Floor Lamp", image: "floor.webp" },
+    { id: 8, name: "Track Lighting", image: "track.webp" },
+    { id: 9, name: "Recessed Lighting", image: "recessed.webp" },
+    { id: 10, name: "Outdoor Lighting", image: "out.webp" },
+    { id: 11, name: "Smart Lighting", image: "smart.webp" },
+    { id: 12, name: "LED Strip", image: "led.webp" },
+    { id: 13, name: "Lantern", image: "lantern.jpg" },
+    { id: 14, name: "Spotlight", image: "spotlight.webp" },
+    { id: 15, name: "Emergency Light", image: "emergency.webp" },
   ];
 
   const [currentPage, setCurrentPage] = useState(0);
@@ -73,24 +76,24 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
   };
 
   const handleNextClick = () => {
-    if (currentPage < totalPages - 1) {
+    if (currentPage < totalPages - 1 && !isAnimating) {
       setIsAnimating(true);
       setSlideDirection('forward');
       setTimeout(() => {
         setCurrentPage((prev) => prev + 1);
         setIsAnimating(false);
-      }, 500);
+      }, 300);
     }
   };
 
   const handlePrevClick = () => {
-    if (currentPage > 0) {
+    if (currentPage > 0 && !isAnimating) {
       setIsAnimating(true);
       setSlideDirection('backward');
       setTimeout(() => {
         setCurrentPage((prev) => prev - 1);
         setIsAnimating(false);
-      }, 500);
+      }, 300);
     }
   };
 
@@ -198,7 +201,7 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
           </h2>
           <div className="flex-grow"></div>
           <Link
-            href="/product-list"
+            href="/categories"
             className="text-xs sm:text-sm font-medium text-gray-500 hover:underline mt-1 flex items-center font-semibold"
             style={{ fontFamily: 'Jost, sans-serif' }}
           >
@@ -254,9 +257,10 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
           <div className="show-horizontal-scroll pb-6 md:pb-2 px-6">
             <div className="flex flex-nowrap gap-4 sm:gap-6 -mx-6">
               {allItems.map((item, idx) => (
-                <div
+                <Link
                   key={item.id}
-                  className="overflow-hidden relative flex flex-col w-full group max-w-[500px] min-w-0"
+                  href={`/product-list?category=${encodeURIComponent(item.name)}`}
+                  className="overflow-hidden relative flex flex-col w-full group max-w-[500px] min-w-0 cursor-pointer"
                   style={isMobile ? { width: '65vw', minWidth: '65vw', flex: '0 0 65vw' } : isTablet ? { width: '40vw', minWidth: '40vw', flex: '0 0 40vw' } : {}}
                   onMouseEnter={() => setHoveredIndex(idx)}
                   onMouseLeave={() => setHoveredIndex(null)}
@@ -272,29 +276,29 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
                     {/* Overlay hidden; name shown below */}
                   </div>
                   <div className="mt-3 text-center">
-                    <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>
+                    <h3 className="text-sm sm:text-base md:text-lg font-normal text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>
                       {item.name}
                     </h3>
-                    <Link
-                      href={`/product-list?category=${encodeURIComponent(item.name)}`}
-                      className="hidden sm:inline-block mt-2 text-xs sm:text-sm font-semibold text-black hover:underline"
+                    <div
+                      className="hidden sm:inline-block mt-2 text-xs font-normal text-black hover:underline"
                       style={{ fontFamily: 'Jost, sans-serif', letterSpacing: '0.05em' }}
                     >
                       VIEW
-                    </Link>
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
         ) : (
           <div 
-            className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 justify-center transition-all duration-500 ease-in-out ${isAnimating ? (slideDirection === 'forward' ? 'animate-slide-out-left' : 'animate-slide-out-right') : ''}`}
+            className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 justify-center transition-opacity duration-300 ease-in-out ${isAnimating ? 'opacity-0' : 'opacity-100'}`}
           >
             {getCurrentPageItems().map((item, idx) => (
-              <div 
-                key={item.id} 
-                className="overflow-hidden relative flex flex-col w-full group"
+              <Link
+                key={item.id}
+                href={`/product-list?category=${encodeURIComponent(item.name)}`}
+                className="overflow-hidden relative flex flex-col w-full group cursor-pointer"
                 onMouseEnter={() => setHoveredIndex(currentPage * itemsPerPage + idx)}
                 onMouseLeave={() => setHoveredIndex(null)}
               >
@@ -306,53 +310,86 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
                       hoveredIndex === (currentPage * itemsPerPage + idx) ? 'scale-110' : 'scale-100'
                     }`}
                   />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <h3 className={`text-white text-xl sm:text-2xl md:text-3xl font-bold text-center transition-all duration-500 mb-4 ${
-                      hoveredIndex === (currentPage * itemsPerPage + idx) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <h3 className={`text-white text-lg sm:text-xl md:text-2xl font-medium text-center transition-all duration-500 ${
+                      hoveredIndex === (currentPage * itemsPerPage + idx) ? 'scale-110 -translate-y-3' : 'scale-100 translate-y-0'
                     }`} style={{ 
                       fontFamily: 'Jost, sans-serif', 
-                      fontWeight: 600,
+                      fontWeight: 500,
                       textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
                     }}>
                       {item.name}
                     </h3>
-                    <Link
-                      href={`/product-list?category=${encodeURIComponent(item.name)}`}
-                      className={`text-black py-2 px-4 hover:opacity-80 transition-all duration-500 text-sm text-center block rounded-sm border ${
+                    <div
+                      className={`text-black py-2 px-4 hover:opacity-80 transition-all duration-500 text-xs text-center block rounded-sm border ${
                         hoveredIndex === (currentPage * itemsPerPage + idx) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
                       }`}
-                      style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600, backgroundColor: 'white', borderColor: 'white', letterSpacing: '0.1em' }}
+                      style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500, backgroundColor: 'white', borderColor: 'white', letterSpacing: '0.1em' }}
                     >
                       VIEW
-                    </Link>
+                    </div>
                   </div>
                 </div>
                 {/* Name below only for mobile/tablet; desktop overlay retained */}
-              </div>
+              </Link>
             ))}
           </div>
         )}
         </div>
 
-        {/* Pagination arrows only on desktop */}
-        {!(isMobile || isTablet) && currentPage > 0 && (
-          <button
-            onClick={handlePrevClick}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-70 sm:opacity-0 group-hover:opacity-100 hidden sm:block"
-            style={{ zIndex: 10 }}
-          >
-            <Icon icon="mdi:chevron-left" className="h-4 w-4 sm:h-6 sm:w-6 text-gray-600" width="24" height="24" />
-          </button>
+        {/* Pagination arrows - visible on desktop and tablet */}
+        {!(isMobile || isTablet) && totalPages > 1 && (
+          <>
+            {currentPage > 0 && (
+              <button
+                onClick={handlePrevClick}
+                disabled={isAnimating}
+                className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:bg-gray-100 focus:outline-none transition-all duration-300 hover:scale-110 opacity-90 hover:opacity-100 z-20 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Previous page"
+              >
+                <Icon icon="mdi:chevron-left" className="h-5 w-5 md:h-6 md:w-6 text-gray-700" width="24" height="24" />
+              </button>
+            )}
+
+            {currentPage < totalPages - 1 && (
+              <button
+                onClick={handleNextClick}
+                disabled={isAnimating}
+                className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:bg-gray-100 focus:outline-none transition-all duration-300 hover:scale-110 opacity-90 hover:opacity-100 z-20 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Next page"
+              >
+                <Icon icon="mdi:chevron-right" className="h-5 w-5 md:h-6 md:w-6 text-gray-700" width="24" height="24" />
+              </button>
+            )}
+          </>
         )}
 
-        {!(isMobile || isTablet) && currentPage < totalPages - 1 && (
-          <button
-            onClick={handleNextClick}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:bg-gray-100 focus:outline-none transition-transform duration-500 hover:scale-110 opacity-70 sm:opacity-0 group-hover:opacity-100 hidden sm:block"
-            style={{ zIndex: 10 }}
-          >
-            <Icon icon="mdi:chevron-right" className="h-4 w-4 sm:h-6 sm:w-6 text-gray-600" width="24" height="24" />
-          </button>
+        {/* Page indicator dots */}
+        {!(isMobile || isTablet) && totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-6">
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  if (!isAnimating) {
+                    setIsAnimating(true);
+                    setSlideDirection(index > currentPage ? 'forward' : 'backward');
+                    setTimeout(() => {
+                      setCurrentPage(index);
+                      setIsAnimating(false);
+                    }, 300);
+                  }
+                }}
+                disabled={isAnimating}
+                className={`transition-all duration-300 rounded-full ${
+                  currentPage === index
+                    ? 'w-8 h-2 bg-gray-700'
+                    : 'w-2 h-2 bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Go to page ${index + 1}`}
+              />
+            ))}
+          </div>
         )}
       </section>
     </>

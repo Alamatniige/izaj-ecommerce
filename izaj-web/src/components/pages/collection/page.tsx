@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from 'next/navigation';
-import { InternalApiService } from '../../../services/internalApi';
+import { getAllProducts } from '../../../services/productService';
 import ProductList from '@/components/pages/collection/ProductList';
 import SortModal from '@/components/pages/collection/SortModal';
 import dynamic from 'next/dynamic';
@@ -87,76 +87,54 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
 
 
 
-  // Fetch products from internal API
+  // Fetch products and exclude those on sale
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const serviceProducts = await InternalApiService.getAllProducts();
-
-        type ApiProduct = {
-          product_name: string;
-          description?: string;
-          price: number | string;
-          image_url?: string;
-          media_urls?: string[];
-          category?: string;
-          status?: string;
-          stock?: number;
-          colors?: string[];
-        };
-
-        // Transform service products to collection products
-        const transformedProducts: CollectionProduct[] = (serviceProducts as any[]).map((product, index) => {
-          // Align ID generation with productService.transformToLegacyProduct
-          // Prefer numeric product_id; fallback to numeric hash from UUID `id`
-          let numericId = parseInt(product.product_id);
-          if (isNaN(numericId)) {
-            numericId = parseInt(String(product.id).replace(/[^0-9]/g, '').slice(0, 8)) || index + 1;
+        console.log('🔄 Collection: Starting to fetch products (excluding sale items)...');
+        
+        // Fetch all products using productService which includes isOnSale flag
+        const products = await getAllProducts();
+        console.log('📦 Collection: Fetched products:', products?.length || 0);
+        
+        // Filter out products that are on sale
+        const productsNotOnSale = products.filter(product => {
+          const isOnSale = product.isOnSale === true;
+          if (isOnSale) {
+            console.log(`🚫 Collection: Excluding product on sale: ${product.name}`);
           }
+          return !isOnSale; // Only include if NOT on sale
+        });
+        
+        console.log('📦 Collection: Products NOT on sale:', productsNotOnSale.length);
+
+        // Transform products to collection format
+        const transformedProducts: CollectionProduct[] = productsNotOnSale.map((product) => {
+          // Parse price from formatted string (e.g., "₱1,234" -> 1234)
+          const priceString = product.price.replace(/[₱,]/g, '');
+          const price = parseFloat(priceString) || 0;
 
           return {
-            id: numericId,
-            name: product.product_name,
+            id: product.id,
+            name: product.name,
             description: product.description || '',
-            price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+            price: price,
             rating: 4.5, // Default rating
             reviewCount: 0, // Default review count
-            image: product.image_url || '',
-            mediaUrls: product.media_urls || [],
+            image: product.image || '',
+            mediaUrls: product.mediaUrls || [],
             colors: product.colors || ["black"],
-            isOnSale: false, // Default
-            isNew: (
-              product.product_name.toLowerCase().includes('new') ||
-              product.category?.toLowerCase().includes('new') ||
-              (product.description || '').toLowerCase().includes('new')
-            ),
+            isOnSale: false, // Already filtered out, so always false
+            isNew: false, // Will be determined separately if needed
             category: product.category,
-            stock: (() => {
-              // First check if there's a numeric stock field
-              if (typeof product.stock === 'number') {
-                return product.stock;
-              }
-              
-              // Fallback to status field
-              const normalizedStatus = product.status?.toLowerCase() || '';
-              switch (normalizedStatus) {
-                case 'in stock':
-                  return 10; // High stock
-                case 'low stock':
-                  return 3; // Low stock
-                case 'out of stock':
-                  return 0; // Out of stock
-                default:
-                  return 10; // Default to in stock
-              }
-            })()
+            stock: product.stock || 0
           };
         });
         
         setAllProducts(transformedProducts);
         setFilteredProducts(transformedProducts);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('❌ Collection: Error fetching products:', error);
         setAllProducts([]);
         setFilteredProducts([]);
       } finally {

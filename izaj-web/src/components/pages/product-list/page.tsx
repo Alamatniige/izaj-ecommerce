@@ -87,9 +87,18 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   useEffect(() => {
     const categoryFromUrl = searchParams?.get('category');
     const searchFromUrl = searchParams?.get('search');
-    if (categoryFromUrl && categoryFromUrl !== selectedCategory) {
-      setSelectedCategory(categoryFromUrl);
+    
+    if (categoryFromUrl) {
+      const decodedCategory = decodeURIComponent(categoryFromUrl);
+      setSelectedCategory(decodedCategory);
+      // Also add to selectedCategories array for sidebar display
+      setSelectedCategories([decodedCategory]);
+    } else {
+      // Clear category selection if no category in URL
+      setSelectedCategory('');
+      setSelectedCategories([]);
     }
+    
     if (typeof searchFromUrl === 'string') {
       setSearchTerm(searchFromUrl);
     }
@@ -344,13 +353,20 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   useEffect(() => {
     let filtered = [...allProducts];
 
-    // Filter by header category selection (takes priority)
+    // Filter by header category selection (takes priority) - from URL parameter
     if (selectedCategory) {
-      filtered = filtered.filter(product => product.category === selectedCategory);
+      filtered = filtered.filter(product => {
+        // Case-insensitive matching for category
+        const productCategory = product.category?.trim() || '';
+        const selectedCat = selectedCategory.trim();
+        return productCategory.toLowerCase() === selectedCat.toLowerCase();
+      });
     } else if (selectedCategories.length > 0) {
       // Filter by sidebar categories if no header category selected
       filtered = filtered.filter(product => 
-        product.category && selectedCategories.includes(product.category)
+        product.category && selectedCategories.some(cat => 
+          product.category?.toLowerCase() === cat.toLowerCase()
+        )
       );
     }
 
