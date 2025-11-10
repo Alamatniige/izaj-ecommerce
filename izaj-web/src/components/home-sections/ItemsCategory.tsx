@@ -291,78 +291,74 @@ const LightingCategory: React.FC<LightingCategoryProps> = ({ user: _user }) => {
             </div>
           </div>
         ) : (
-          <div 
-            className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 justify-center transition-opacity duration-300 ease-in-out ${isAnimating ? 'opacity-0' : 'opacity-100'}`}
-          >
-            {getCurrentPageItems().map((item, idx) => (
-              <Link
-                key={item.id}
-                href={`/product-list?category=${encodeURIComponent(item.name)}`}
-                className="overflow-hidden relative flex flex-col w-full group cursor-pointer"
-                onMouseEnter={() => setHoveredIndex(currentPage * itemsPerPage + idx)}
-                onMouseLeave={() => setHoveredIndex(null)}
-              >
-                <div className="relative overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.name} 
-                    className={`w-full h-72 sm:h-96 object-cover transition-all duration-300 ${
-                      hoveredIndex === (currentPage * itemsPerPage + idx) ? 'scale-110' : 'scale-100'
-                    }`}
-                  />
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <h3 className={`text-white text-lg sm:text-xl md:text-2xl font-medium text-center transition-all duration-500 ${
-                      hoveredIndex === (currentPage * itemsPerPage + idx) ? 'scale-110 -translate-y-3' : 'scale-100 translate-y-0'
-                    }`} style={{ 
-                      fontFamily: 'Jost, sans-serif', 
-                      fontWeight: 500,
-                      textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
-                    }}>
-                      {item.name}
-                    </h3>
-                    <div
-                      className={`text-black py-2 px-4 hover:opacity-80 transition-all duration-500 text-xs text-center block rounded-sm border ${
-                        hoveredIndex === (currentPage * itemsPerPage + idx) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          <div className="relative overflow-hidden w-full">
+            {/* Navigation arrows - inside products container */}
+            {!(isMobile || isTablet) && totalPages > 1 && (
+              <>
+                <button
+                  onClick={handlePrevClick}
+                  disabled={isAnimating || currentPage <= 0}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Previous page"
+                >
+                  <Icon icon="mdi:chevron-left" className="w-6 h-6 text-gray-700" />
+                </button>
+                <button
+                  onClick={handleNextClick}
+                  disabled={isAnimating || currentPage >= totalPages - 1}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Next page"
+                >
+                  <Icon icon="mdi:chevron-right" className="w-6 h-6 text-gray-700" />
+                </button>
+              </>
+            )}
+            <div 
+              className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 justify-center transition-opacity duration-300 ease-in-out ${isAnimating ? 'opacity-0' : 'opacity-100'}`}
+            >
+              {getCurrentPageItems().map((item, idx) => (
+                <Link
+                  key={item.id}
+                  href={`/product-list?category=${encodeURIComponent(item.name)}`}
+                  className="overflow-hidden relative flex flex-col w-full group cursor-pointer"
+                  onMouseEnter={() => setHoveredIndex(currentPage * itemsPerPage + idx)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                >
+                  <div className="relative overflow-hidden">
+                    <img 
+                      src={item.image} 
+                      alt={item.name} 
+                      className={`w-full h-72 sm:h-96 object-cover transition-all duration-300 ${
+                        hoveredIndex === (currentPage * itemsPerPage + idx) ? 'scale-110' : 'scale-100'
                       }`}
-                      style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500, backgroundColor: 'white', borderColor: 'white', letterSpacing: '0.1em' }}
-                    >
-                      VIEW
+                    />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <h3 className={`text-white text-lg sm:text-xl md:text-2xl font-medium text-center transition-all duration-500 ${
+                        hoveredIndex === (currentPage * itemsPerPage + idx) ? 'scale-110 -translate-y-3' : 'scale-100 translate-y-0'
+                      }`} style={{ 
+                        fontFamily: 'Jost, sans-serif', 
+                        fontWeight: 500,
+                        textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
+                      }}>
+                        {item.name}
+                      </h3>
+                      <div
+                        className={`text-black py-2 px-4 hover:opacity-80 transition-all duration-500 text-xs text-center block rounded-sm border ${
+                          hoveredIndex === (currentPage * itemsPerPage + idx) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                        }`}
+                        style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500, backgroundColor: 'white', borderColor: 'white', letterSpacing: '0.1em' }}
+                      >
+                        VIEW
+                      </div>
                     </div>
                   </div>
-                </div>
-                {/* Name below only for mobile/tablet; desktop overlay retained */}
-              </Link>
-            ))}
+                  {/* Name below only for mobile/tablet; desktop overlay retained */}
+                </Link>
+              ))}
+            </div>
           </div>
         )}
         </div>
-
-        {/* Pagination arrows - visible on desktop and tablet */}
-        {!(isMobile || isTablet) && totalPages > 1 && (
-          <>
-            {currentPage > 0 && (
-              <button
-                onClick={handlePrevClick}
-                disabled={isAnimating}
-                className="absolute left-2 md:left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:bg-gray-100 focus:outline-none transition-all duration-300 hover:scale-110 opacity-90 hover:opacity-100 z-20 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Previous page"
-              >
-                <Icon icon="mdi:chevron-left" className="h-5 w-5 md:h-6 md:w-6 text-gray-700" width="24" height="24" />
-              </button>
-            )}
-
-            {currentPage < totalPages - 1 && (
-              <button
-                onClick={handleNextClick}
-                disabled={isAnimating}
-                className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 md:p-3 shadow-lg hover:bg-gray-100 focus:outline-none transition-all duration-300 hover:scale-110 opacity-90 hover:opacity-100 z-20 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Next page"
-              >
-                <Icon icon="mdi:chevron-right" className="h-5 w-5 md:h-6 md:w-6 text-gray-700" width="24" height="24" />
-              </button>
-            )}
-          </>
-        )}
 
         {/* Page indicator dots */}
         {!(isMobile || isTablet) && totalPages > 1 && (
