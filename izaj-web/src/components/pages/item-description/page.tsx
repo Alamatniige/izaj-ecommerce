@@ -469,7 +469,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
               <div className="block lg:hidden -mx-4 lg:mx-0">
                 <div 
                   ref={imgRef}
-                  className="relative overflow-hidden w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
+                  className="relative overflow-hidden w-full cursor-pointer group flex items-center justify-center"
                   style={{ aspectRatio: '4/5', minHeight: '360px' }}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
@@ -533,7 +533,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                   <div className="w-1/2">
                     <div 
                       ref={pairIndex === 0 ? imgRef : null}
-                      className="relative overflow-hidden rounded-lg w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
+                      className="relative overflow-hidden rounded-lg w-full cursor-pointer group flex items-center justify-center"
                       style={{ aspectRatio: '4/5', minHeight: '400px' }}
                       onMouseMove={pairIndex === 0 ? handleMouseMove : undefined}
                       onMouseLeave={pairIndex === 0 ? handleMouseLeave : undefined}
@@ -570,7 +570,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                   {thumbnails[pairIndex * 2 + 1] && (
                     <div className="w-1/2">
                       <div 
-                        className="relative overflow-hidden rounded-lg w-full bg-gray-50 cursor-pointer group flex items-center justify-center"
+                        className="relative overflow-hidden rounded-lg w-full cursor-pointer group flex items-center justify-center"
                         style={{ aspectRatio: '4/5', minHeight: '400px' }}
                         onClick={() => handleImageClick(thumbnails[pairIndex * 2 + 1])}
                       >
@@ -672,7 +672,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                 
                 {/* Add to Cart Button */}
                 <button 
-                  className="flex-1 bg-black text-white py-4 px-6 rounded font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-black text-white py-3 px-6 rounded font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleAddToCart}
                   disabled={cartLoading}
                   style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
@@ -980,10 +980,10 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
         </div>
       )}
 
-      {/* Floating message icon button - bottom right (hidden when modal is open) */}
+      {/* Floating chatbot icon button - bottom right (hidden when modal is open) */}
       {!isChatModalOpen && (
         <button
-          aria-label="Open chat"
+          aria-label="Open chatbot"
           className="fixed bottom-4 right-4 z-50 rounded-full bg-black text-white p-4 shadow-lg hover:bg-gray-800 transition-all hover:scale-110"
           onClick={() => setIsChatModalOpen(true)}
         >

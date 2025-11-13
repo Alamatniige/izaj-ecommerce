@@ -9,6 +9,7 @@ import { useCartContext, useFavoritesContext } from '@/context';
 import { addToFavoritesWithAnimation } from '@/utils/cartAnimation';
 import { formatCurrency } from '@/utils/helpers/format';
 import { calculateShipping, calculateTax, calculateTotal } from '@/utils/calculations/cartCalculations';
+import CompactChat from '@/components/common/CompactChat';
 
 export default function CartPage() {
   const { cart, updateQuantity, removeFromCart, clearCart } = useCartContext();
@@ -27,6 +28,8 @@ export default function CartPage() {
   const [promoCode, setPromoCode] = useState('');
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [promoDiscount, setPromoDiscount] = useState(0);
+  const [isChatModalOpen, setIsChatModalOpen] = useState(false);
+  const [showContactInfo, setShowContactInfo] = useState(false);
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     updateQuantity(id, newQuantity);
@@ -152,6 +155,24 @@ export default function CartPage() {
     }
   }, [appliedPromo, shippingFee, subtotal]);
 
+  // Close contact info dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showContactInfo && !target.closest('.contact-info-dropdown')) {
+        setShowContactInfo(false);
+      }
+    };
+
+    if (showContactInfo) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showContactInfo]);
+
   return (
     <div className="min-h-screen bg-white">
       
@@ -272,28 +293,6 @@ export default function CartPage() {
               <div className="space-y-4 lg:space-y-6">
                 <div className="bg-white p-4 lg:p-8 border border-gray-200 shadow-sm rounded-xl">
                   <h2 className="text-lg lg:text-xl font-extrabold mb-4 lg:mb-5 text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Order Summary</h2>
-                  <div className="mb-4 lg:mb-6">
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value)}
-                        placeholder="Enter promo code"
-                        className="flex-1 px-3 lg:px-4 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black text-sm lg:text-base"
-                        style={{ fontFamily: 'Jost, sans-serif' }}
-                      />
-                      <button
-                        onClick={applyPromo}
-                        className="px-3 lg:px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-200 transition-colors text-sm lg:text-base"
-                        style={{ fontFamily: 'Jost, sans-serif' }}
-                      >Apply</button>
-                    </div>
-                    {appliedPromo && (
-                      <p className="mt-2 text-xs text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>
-                        Applied: {appliedPromo}
-                      </p>
-                    )}
-                  </div>
                   <div className="space-y-3 lg:space-y-4 mb-4 lg:mb-6">
                     <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Subtotal</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(subtotal)}</span></div>
                     
@@ -331,7 +330,63 @@ export default function CartPage() {
                       </div>
                     )}
                     
-                    <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Shipping</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{hasShippingAddress ? formatCurrency(shippingFee) : '—'}</span></div>
+                    <div className="flex justify-between items-center relative">
+                      <span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Shipping</span>
+                      <div className="relative contact-info-dropdown">
+                        <button
+                          onClick={() => setShowContactInfo(!showContactInfo)}
+                          className="font-semibold text-black text-xs lg:text-sm text-right hover:text-gray-700 transition-colors underline cursor-pointer"
+                          style={{ fontFamily: 'Jost, sans-serif' }}
+                        >
+                          Contact IZAJ for shipping fee
+                        </button>
+                        {showContactInfo && (
+                          <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-xl z-50 p-4 animate-fade-in">
+                            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Icon icon="mdi:account-circle" className="text-blue-600 text-xl" />
+                                <h4 className="font-semibold text-blue-900 text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>Contact IZAJ Lighting</h4>
+                              </div>
+                              <div className="space-y-2 text-sm">
+                                <a 
+                                  href="tel:+63491234567" 
+                                  className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors"
+                                  style={{ fontFamily: 'Jost, sans-serif' }}
+                                >
+                                  <Icon icon="mdi:phone" className="text-lg" />
+                                  <span>+63 (49) 123-4567</span>
+                                </a>
+                                <a 
+                                  href="mailto:info@izajlighting.com" 
+                                  className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors"
+                                  style={{ fontFamily: 'Jost, sans-serif' }}
+                                >
+                                  <Icon icon="mdi:email" className="text-lg" />
+                                  <span>info@izajlighting.com</span>
+                                </a>
+                                <a 
+                                  href="https://facebook.com/izajlighting" 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors"
+                                  style={{ fontFamily: 'Jost, sans-serif' }}
+                                >
+                                  <Icon icon="mdi:facebook" className="text-lg" />
+                                  <span>Facebook: IZAJ Lighting Centre</span>
+                                </a>
+                                <div className="flex items-start gap-2 text-gray-700 mt-3 pt-3 border-t border-blue-200" style={{ fontFamily: 'Jost, sans-serif' }}>
+                                  <Icon icon="mdi:map-marker" className="text-lg mt-0.5" />
+                                  <div>
+                                    <p className="font-medium">Address:</p>
+                                    <p>173 1, San Pablo City, 4000 Laguna, Philippines</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                     <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Tax (12% VAT)</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(tax)}</span></div>
                     <div className="border-t border-gray-300 pt-3 lg:pt-4 flex justify-between font-extrabold text-base lg:text-lg"><span className="text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Total</span><span className="text-black" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(computedTotal)}</span></div>
                   </div>
@@ -341,58 +396,67 @@ export default function CartPage() {
                   </button>
                   <p className="text-xs text-center mt-3 lg:mt-4 text-gray-500" style={{ fontFamily: 'Jost, sans-serif' }}>Taxes and shipping calculated at checkout</p>
                 </div>
-                <div className="bg-white p-4 lg:p-8 rounded-xl border border-gray-200 shadow-sm">
-                  <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowShipping(!showShipping)}>
-                    <div className="flex items-center">
-                      <Icon icon="mdi:truck-delivery-outline" width="24" height="24" className="mr-3 lg:mr-4 text-black" />
-                      <span className="font-semibold text-black text-base lg:text-lg" style={{ fontFamily: 'Jost, sans-serif' }}>Estimate Shipping</span>
-                    </div>
-                    <Icon icon={showShipping ? "mdi:chevron-up" : "mdi:chevron-down"} width="20" height="20" className="text-gray-500 transition-transform duration-200" />
-                  </div>
-                  {showShipping && (
-                    <div className="mt-4 space-y-3 lg:space-y-4 bg-white p-3 lg:p-4 rounded-lg shadow-sm border border-gray-200">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Jost, sans-serif' }}>Street Address</label>
-                        <input type="text" value={shippingAddress.street} onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black bg-white text-black text-sm lg:text-base" placeholder="Enter street address" style={{ fontFamily: 'Jost, sans-serif' }} />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Jost, sans-serif' }}>City</label>
-                        <input
-                          type="text"
-                          value={shippingAddress.city}
-                          onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black bg-white text-black text-sm lg:text-base"
-                          placeholder="Enter city"
-                          style={{ fontFamily: 'Jost, sans-serif' }}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Jost, sans-serif' }}>Province</label>
-                        <input
-                          type="text"
-                          value={shippingAddress.province}
-                          onChange={(e) => setShippingAddress({ ...shippingAddress, province: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black bg-white text-black text-sm lg:text-base"
-                          placeholder="Enter province"
-                          style={{ fontFamily: 'Jost, sans-serif' }}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'Jost, sans-serif' }}>Postal Code</label>
-                        <input type="text" value={shippingAddress.postalCode} onChange={(e) => setShippingAddress({...shippingAddress, postalCode: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-black focus:border-black bg-white text-black text-sm lg:text-base" placeholder="Enter postal code" style={{ fontFamily: 'Jost, sans-serif' }} />
-                      </div>
-                      <div className="pt-2">
-                        <p className="text-xs lg:text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif' }}>Estimated delivery: 3-5 business days</p>
-                        <p className="text-xs lg:text-sm text-gray-600 mt-1" style={{ fontFamily: 'Jost, sans-serif' }}>Shipping cost: {hasShippingAddress ? formatCurrency(shippingFee) : '—'}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Chat Modal */}
+      {isChatModalOpen && (
+        <div className="fixed z-[9999] bottom-4 right-4 md:bottom-6 md:right-6">
+          {/* Compact chat window positioned where floating icon was */}
+          <div
+            className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-[340px] h-[520px] md:w-[380px] md:h-[560px] overflow-hidden animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Chat component */}
+            <div className="h-full">
+              <CompactChat onClose={() => setIsChatModalOpen(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating chatbot icon button - bottom right (hidden when modal is open) */}
+      {!isChatModalOpen && (
+        <button
+          aria-label="Open chatbot"
+          className="fixed bottom-4 right-4 z-50 rounded-full bg-black text-white p-4 shadow-lg hover:bg-gray-800 transition-all hover:scale-110"
+          onClick={() => setIsChatModalOpen(true)}
+        >
+          <Icon icon="material-symbols:chat-outline-rounded" className="text-2xl" />
+        </button>
+      )}
+
+      <style jsx>{`
+        @keyframes scale-in {
+          from {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        .animate-scale-in {
+          animation: scale-in 0.3s ease-out;
+        }
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+      `}</style>
 
     </div>
   );

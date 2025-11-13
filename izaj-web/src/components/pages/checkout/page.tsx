@@ -22,6 +22,8 @@ const Checkout = () => {
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
   const [showSavedAddresses, setShowSavedAddresses] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [orderCompleted, setOrderCompleted] = useState(false);
   
   
   // Form data
@@ -40,12 +42,12 @@ const Checkout = () => {
     newsletter: false
   });
 
-  // Redirect if cart is empty
+  // Redirect if cart is empty (but not if order was just completed or if we're submitting)
   useEffect(() => {
-    if (cart.totalItems === 0) {
+    if (cart.totalItems === 0 && !orderCompleted && !isSubmitting) {
       router.push('/cart');
     }
-  }, [cart.totalItems, router]);
+  }, [cart.totalItems, router, orderCompleted, isSubmitting]);
 
 
   // Load saved addresses when user is available
@@ -60,6 +62,7 @@ const Checkout = () => {
       }));
     }
   }, [user]);
+
 
   // Load saved addresses
   const loadSavedAddresses = async () => {
@@ -225,6 +228,12 @@ const Checkout = () => {
       return;
     }
 
+    // Show confirmation modal before submitting
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmOrder = async () => {
+    setShowConfirmModal(false);
     setIsSubmitting(true);
 
     try {
@@ -254,6 +263,7 @@ const Checkout = () => {
         };
       } else {
         // For shipping orders, use provided address
+        // Shipping fee will be set to 0 - admin will input it later
         const fullAddress = formData.address;
         orderData = {
           items: cart.items.map(item => ({
@@ -272,7 +282,8 @@ const Checkout = () => {
           shipping_phone: formData.phone,
           recipient_name: `${formData.firstName} ${formData.lastName}`,
           payment_method: formData.paymentMethod as 'gcash' | 'maya' | 'cash_on_delivery',
-          customer_notes: undefined
+          customer_notes: 'Please contact customer for shipping fee confirmation',
+          shipping_fee: 0 // Admin will input shipping fee later
         };
       }
 
@@ -283,17 +294,22 @@ const Checkout = () => {
       console.log('🔵 Order result:', result);
 
       if (result.success && result.data) {
+        // Set order completed flag to prevent redirect to cart
+        setOrderCompleted(true);
+        
         // Show success toast
-        toast.success(`Order placed successfully!`, {
+        toast.success(`Order placed successfully! Your order is now pending. Admin will add shipping fee and approve your order.`, {
           icon: '✅',
-          duration: 4000,
+          duration: 5000,
         });
         
-        // Clear cart
-        clearCart();
+        // Redirect IMMEDIATELY using window.location (synchronous navigation)
+        // This prevents any useEffect from running and redirecting to cart
+        window.location.href = '/orders?order_completed=true';
         
-        // Redirect to order confirmation with order ID
-        router.push(`/orders?success=true&order=${result.data.order_number}`);
+        // Clear cart will happen on orders page when it loads
+        // We don't clear here to prevent redirect conflict
+        return; // Exit early to prevent any further execution
       } else {
         throw new Error(result.error || 'Failed to create order');
       }
@@ -399,16 +415,6 @@ const Checkout = () => {
                     className="w-full pl-10 p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost shadow-sm hover:border-gray-300" 
                 />
               </div>
-              <label className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 cursor-pointer font-jost">
-                  <input 
-                    type="checkbox"
-                    name="newsletter"
-                    checked={formData.newsletter}
-                    onChange={handleInputChange}
-                    className="rounded text-black focus:ring-black mr-2" 
-                  /> 
-                Email me with news and exclusive offers
-              </label>
             </div>
 
             {/* Delivery */}
@@ -660,19 +666,6 @@ const Checkout = () => {
                     </div>
                   )}
               </div>
-              {/* Only show save info checkbox for shipping */}
-              {deliveryMethod === 'ship' && (
-                <label className="inline-flex items-center text-sm text-gray-600 mt-4 block hover:text-gray-800 cursor-pointer font-jost">
-                  <input 
-                    type="checkbox"
-                    name="saveInfo"
-                    checked={formData.saveInfo}
-                    onChange={handleInputChange}
-                    className="rounded text-black focus:ring-black mr-2" 
-                  /> 
-                  Save this information for next time
-                </label>
-              )}
             </div>
 
             {/* Shipping Method */}
@@ -684,20 +677,47 @@ const Checkout = () => {
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 font-jost">Shipping Method</h2>
               </div>
-                  <div className="border-2 border-gray-200 hover:border-black hover:bg-gray-50 p-4 md:p-6 rounded-xl flex justify-between items-center cursor-pointer transition-all shadow-sm hover:shadow-md">
-                <div>
-                      <div className="font-bold text-gray-900 font-jost">Standard Shipping</div>
-                  <div className="text-sm text-gray-600 font-jost mt-1">3-5 business days</div>
-                      {shippingFee === 0 && (
-                        <div className="text-sm text-green-600 font-semibold mt-2 font-jost flex items-center gap-1">
-                          <Icon icon="mdi:check-circle" className="text-green-600" />
-                          Free shipping (order above ₱10,000)
+                  <div className="border-2 border-gray-200 hover:border-black hover:bg-gray-50 p-4 md:p-6 rounded-xl transition-all shadow-sm hover:shadow-md">
+                    <div>
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon icon="mdi:account-circle" className="text-blue-600 text-xl" />
+                          <h4 className="font-semibold text-blue-900 text-sm font-jost">Contact IZAJ Lighting for Shipping Fee</h4>
                         </div>
-                      )}
+                        <div className="space-y-2 text-sm">
+                          <a 
+                            href="tel:+63491234567" 
+                            className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors font-jost"
+                          >
+                            <Icon icon="mdi:phone" className="text-lg" />
+                            <span>+63 (49) 123-4567</span>
+                          </a>
+                          <a 
+                            href="mailto:info@izajlighting.com" 
+                            className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors font-jost"
+                          >
+                            <Icon icon="mdi:email" className="text-lg" />
+                            <span>info@izajlighting.com</span>
+                          </a>
+                          <a 
+                            href="https://facebook.com/izajlighting" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors font-jost"
+                          >
+                            <Icon icon="mdi:facebook" className="text-lg" />
+                            <span>Facebook: IZAJ Lighting Centre</span>
+                          </a>
+                          <div className="flex items-start gap-2 text-gray-700 mt-3 pt-3 border-t border-blue-200 font-jost">
+                            <Icon icon="mdi:map-marker" className="text-lg mt-0.5" />
+                            <div>
+                              <p className="font-medium">Address:</p>
+                              <p>173 1, San Pablo City, 4000 Laguna, Philippines</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <span className="font-bold text-gray-900 text-xl font-jost">
-                      {shippingFee === 0 ? 'FREE' : `₱${shippingFee.toFixed(2)}`}
-                    </span>
                   </div>
                 </div>
               )}
@@ -871,10 +891,6 @@ const Checkout = () => {
                   </div>
                 )}
                 
-                <div className="flex justify-between">
-                  <span className="text-gray-600">{deliveryMethod === 'pickup' ? 'Pickup' : 'Shipping'}</span>
-                    <span className="font-medium">{shippingFee === 0 ? 'FREE' : `₱${shippingFee.toFixed(2)}`}</span>
-                </div>
                 <div className="border-t border-gray-200 pt-4 flex justify-between text-base">
                   <span className="font-medium text-gray-800">Total</span>
                   <div className="text-right">
@@ -915,6 +931,116 @@ const Checkout = () => {
           </div>
         </form>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setShowConfirmModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                  <Icon icon="mdi:information" className="text-white text-xl" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 font-jost">Before Completing Your Order</h3>
+              </div>
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-full"
+              >
+                <Icon icon="mdi:close" className="text-2xl" />
+              </button>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <p className="text-gray-700 font-jost leading-relaxed">
+                Please contact IZAJ for shipping fee before completing your order.
+              </p>
+              
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                <h4 className="font-semibold text-blue-900 text-sm font-jost flex items-center gap-2">
+                  <Icon icon="mdi:account-circle" className="text-blue-600 text-lg" />
+                  Contact IZAJ Lighting
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <a 
+                    href="tel:+63491234567" 
+                    className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors font-jost"
+                  >
+                    <Icon icon="mdi:phone" className="text-lg" />
+                    <span>+63 (49) 123-4567</span>
+                  </a>
+                  <a 
+                    href="mailto:info@izajlighting.com" 
+                    className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors font-jost"
+                  >
+                    <Icon icon="mdi:email" className="text-lg" />
+                    <span>info@izajlighting.com</span>
+                  </a>
+                  <a 
+                    href="https://facebook.com/izajlighting" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors font-jost"
+                  >
+                    <Icon icon="mdi:facebook" className="text-lg" />
+                    <span>Facebook: IZAJ Lighting Centre</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-sm text-yellow-800 font-jost">
+                  <strong>Note:</strong> Your order will be placed in <strong>PENDING</strong> status. The admin will input the shipping fee and approve your order.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold font-jost"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmOrder}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-black to-gray-900 hover:from-gray-900 hover:to-black text-white rounded-lg transition-all font-semibold font-jost shadow-lg hover:shadow-xl"
+              >
+                Proceed with Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+        @keyframes scale-in {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+        .animate-scale-in {
+          animation: scale-in 0.3s ease-out;
+        }
+      `}</style>
     </RequireAuth>
   );
 };

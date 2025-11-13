@@ -125,6 +125,9 @@ export interface CreateOrderRequest {
   
   // Notes
   customer_notes?: string;
+  
+  // Shipping fee (optional - admin will input for shipping orders)
+  shipping_fee?: number;
 }
 
 export interface OrderSummary {

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import RequireAuth from '../../common/RequireAuth';
 import AccountSidebar from '../../common/AccountSidebar';
 import { useUserContext } from '../../../context/UserContext';
+import { useCartContext } from '../../../context/CartContext';
 
 interface Order {
   id: string;
@@ -29,6 +30,7 @@ interface Order {
 
 const MyOrders: React.FC = () => {
   const { user } = useUserContext();
+  const { clearCart } = useCartContext();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -81,6 +83,14 @@ const MyOrders: React.FC = () => {
       const params = new URLSearchParams(window.location.search);
       const success = params.get('success');
       const orderNumber = params.get('order');
+      const orderCompleted = params.get('order_completed');
+      
+      // Clear cart if order was just completed
+      if (orderCompleted === 'true') {
+        clearCart();
+        // Clear URL parameters
+        window.history.replaceState({}, '', '/orders');
+      }
       
       if (success === 'true' && orderNumber) {
         setShowSuccessMessage(true);
@@ -93,7 +103,7 @@ const MyOrders: React.FC = () => {
         setTimeout(() => setShowSuccessMessage(false), 10000);
       }
     }
-  }, []);
+  }, [clearCart]);
 
   useEffect(() => {
     const fetchOrders = async () => {
