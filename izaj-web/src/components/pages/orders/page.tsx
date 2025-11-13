@@ -23,6 +23,7 @@ interface Order {
     productId?: string;
   }>;
   total: number;
+  shippingFee: number;
   shippingAddress: string;
   paymentMethod: string;
   trackingNumber?: string;
@@ -143,6 +144,7 @@ const MyOrders: React.FC = () => {
                 };
               }) || [],
               total: parseFloat(order.total_amount),
+              shippingFee: parseFloat(order.shipping_fee || 0),
               shippingAddress: `${order.shipping_city}, ${order.shipping_province}`,
               paymentMethod: order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 
                             order.payment_method === 'gcash' ? 'GCash' :
@@ -319,6 +321,7 @@ const MyOrders: React.FC = () => {
                   };
                 }) || [],
                 total: parseFloat(order.total_amount),
+                shippingFee: parseFloat(order.shipping_fee || 0),
                 shippingAddress: `${order.shipping_city}, ${order.shipping_province}`,
                 paymentMethod: order.payment_method === 'cash_on_delivery' ? 'Cash on Delivery' : 
                               order.payment_method === 'gcash' ? 'GCash' :
@@ -566,7 +569,7 @@ const MyOrders: React.FC = () => {
                                 </div>
                                 <div className="flex items-center gap-2 w-full sm:w-auto">
                                   <span className="text-xs sm:text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Total:</span>
-                                  <span className="text-base sm:text-lg font-bold text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{formatPrice(order.total)}</span>
+                                  <span className="text-base sm:text-lg font-bold text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{formatPrice(order.total + order.shippingFee)}</span>
                                 </div>
                               </div>
                               <p className="text-xs sm:text-sm text-gray-500 mt-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{formatDate(order.date)}</p>
@@ -899,6 +902,15 @@ const MyOrders: React.FC = () => {
                           <p className="text-xs sm:text-sm font-semibold text-gray-800 break-words" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{selectedOrder.shippingAddress}</p>
                         </div>
                       </div>
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <Icon icon="mdi:currency-php" className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Shipping Fee</p>
+                          <p className="text-xs sm:text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                            {selectedOrder.shippingFee === 0 ? 'FREE' : formatPrice(selectedOrder.shippingFee)}
+                          </p>
+                        </div>
+                      </div>
                       {selectedOrder.trackingNumber && (
                         <div className="flex items-start gap-2 sm:gap-3 bg-blue-50 rounded-lg p-2 sm:p-3 border-2 border-blue-200">
                           <Icon icon="mdi:package-variant" className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -934,11 +946,35 @@ const MyOrders: React.FC = () => {
                           <p className="text-xs sm:text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{selectedOrder.paymentMethod}</p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-2 sm:gap-3 bg-green-50 rounded-lg p-3 border-2 border-green-200">
-                        <Icon icon="mdi:cash" className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Total Amount</p>
-                          <p className="text-xl sm:text-2xl font-bold text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{formatPrice(selectedOrder.total)}</p>
+                      {/* Total Breakdown */}
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-2 border-green-200">
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <p className="text-xs sm:text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                              Items Total
+                            </p>
+                            <p className="text-xs sm:text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                              {formatPrice(selectedOrder.total)}
+                            </p>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <p className="text-xs sm:text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                              Shipping Fee
+                            </p>
+                            <p className="text-xs sm:text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                              {selectedOrder.shippingFee === 0 ? 'FREE' : formatPrice(selectedOrder.shippingFee)}
+                            </p>
+                          </div>
+                          <div className="border-t-2 border-green-300 pt-2 mt-2">
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm sm:text-base font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                                Grand Total
+                              </p>
+                              <p className="text-xl sm:text-2xl font-bold text-green-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                                {formatPrice(selectedOrder.total + selectedOrder.shippingFee)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
