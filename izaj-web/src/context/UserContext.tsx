@@ -57,6 +57,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
               const storedProfileImage = localStorage.getItem(`profileImage_${userData.id}`);
               if (storedProfileImage) {
                 userData.profilePicture = storedProfileImage;
+                console.log(`✅ UserContext: Loaded profile image from localStorage for user ${userData.id}`);
               }
             }
             console.log('✅ UserContext: Found user in localStorage (remember me):', userData);
@@ -81,6 +82,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
               const storedProfileImage = localStorage.getItem(`profileImage_${userData.id}`);
               if (storedProfileImage) {
                 userData.profilePicture = storedProfileImage;
+                console.log(`✅ UserContext: Loaded profile image from localStorage for user ${userData.id}`);
               }
             }
             console.log('✅ UserContext: Found user in sessionStorage:', userData);
@@ -153,6 +155,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           updatedAt: new Date(),
         };
         
+        // Store profile picture with user ID for proper isolation per account
+        if (profilePicture && userData.id) {
+          localStorage.setItem(`profileImage_${userData.id}`, profilePicture);
+          console.log(`💾 Stored profile image for user ${userData.id} from server`);
+        }
+        
         console.log('💾 UserContext: Storing user data:', userData);
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
@@ -204,6 +212,12 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       };
 
       setUser(userData);
+      
+      // Store profile picture with user ID for proper isolation per account
+      if (profilePicture && userData.id) {
+        localStorage.setItem(`profileImage_${userData.id}`, profilePicture);
+        console.log(`💾 Stored profile image for user ${userData.id} during login`);
+      }
       
       // Debug: Log profile images in localStorage
       console.log('🔍 Profile images in localStorage after login:');

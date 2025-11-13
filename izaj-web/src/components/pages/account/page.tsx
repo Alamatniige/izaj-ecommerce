@@ -32,6 +32,28 @@ const MyProfile: React.FC = () => {
   // Load user data on component mount and hydrate from server
   useEffect(() => {
     const hydrate = async () => {
+      let profilePicLoaded = false;
+
+      // First, check UserContext for the current user
+      if (user?.id) {
+        // Use profile picture from UserContext if available
+        if (user.profilePicture) {
+          setProfileImage(user.profilePicture);
+          // Also store it in localStorage with user ID for consistency
+          localStorage.setItem(`profileImage_${user.id}`, user.profilePicture);
+          profilePicLoaded = true;
+          console.log(`✅ Account: Loaded profile image from UserContext for user ${user.id}`);
+        } else {
+          // Fallback to localStorage if not in UserContext
+          const storedProfileImage = localStorage.getItem(`profileImage_${user.id}`);
+          if (storedProfileImage) {
+            setProfileImage(storedProfileImage);
+            profilePicLoaded = true;
+            console.log(`✅ Account: Loaded profile image from localStorage for user ${user.id}`);
+          }
+        }
+      }
+
       const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
       if (storedUser) {
         try {
@@ -42,10 +64,15 @@ const MyProfile: React.FC = () => {
             email: userData.email || '',
             phone: userData.phone || ''
           });
-          // Get profile image using user ID for proper isolation
-          const storedProfileImage = localStorage.getItem(`profileImage_${userData.id}`);
-          console.log(`🔍 Loading profile image for user ${userData.id}:`, storedProfileImage ? 'Found' : 'Not found');
-          if (storedProfileImage) setProfileImage(storedProfileImage);
+          // Get profile image using user ID for proper isolation (only if not already loaded)
+          if (!profilePicLoaded && userData.id) {
+            const storedProfileImage = localStorage.getItem(`profileImage_${userData.id}`);
+            console.log(`🔍 Loading profile image for user ${userData.id}:`, storedProfileImage ? 'Found' : 'Not found');
+            if (storedProfileImage) {
+              setProfileImage(storedProfileImage);
+              profilePicLoaded = true;
+            }
+          }
         } catch {}
       } else {
         window.location.href = '/';
@@ -63,24 +90,35 @@ const MyProfile: React.FC = () => {
         const resolvedFirst = explicitFirst || splitFirst || '';
         const resolvedLast = explicitLast || splitLast || '';
         const phone = (meta.phone || '').toString();
+        const profilePicture = (meta.profile_picture || '').toString();
+        
         setFormData(prev => ({
           ...prev,
           firstName: resolvedFirst || prev.firstName,
           lastName: resolvedLast || prev.lastName,
           phone: phone || prev.phone,
         }));
+        
+        // Store profile picture if available from server (this should always be the source of truth)
+        if (profilePicture && data?.user?.id) {
+          setProfileImage(profilePicture);
+          localStorage.setItem(`profileImage_${data.user.id}`, profilePicture);
+          console.log(`💾 Stored profile image from server for user ${data.user.id}`);
+        }
+        
         const merged = {
           ...(storedUser ? JSON.parse(storedUser) : {}),
           firstName: resolvedFirst || undefined,
           lastName: resolvedLast || undefined,
           phone: phone || undefined,
+          profilePicture: profilePicture || undefined,
         };
         localStorage.setItem('user', JSON.stringify(merged));
         sessionStorage.setItem('user', JSON.stringify(merged));
       } catch {}
     };
     hydrate();
-  }, []);
+  }, [user]);
 
   const validatePhone = (phone: string) => {
     const digits = (phone || '').replace(/\D/g, '');
