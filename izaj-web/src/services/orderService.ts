@@ -265,7 +265,8 @@ export function getOrderProgress(status: OrderStatus): number {
     approved: 25,
     in_transit: 50,
     complete: 100,
-    cancelled: 0
+    cancelled: 0,
+    pending_cancellation: 0
   };
   return progressMap[status];
 }

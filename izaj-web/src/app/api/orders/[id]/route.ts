@@ -277,15 +277,14 @@ export async function DELETE(
       );
     }
 
-    console.log('🔵 Updating order to cancelled...');
+    console.log('🔵 Updating order to pending_cancellation...');
 
-    // Cancel order
+    // Set order to pending cancellation (requires admin approval)
     const { data: cancelledOrder, error: cancelError } = await supabase
       .from('orders')
       .update({
-        status: 'cancelled',
-        cancellation_reason: cancellationReason,
-        cancelled_at: new Date().toISOString()
+        status: 'pending_cancellation',
+        cancellation_reason: cancellationReason
       })
       .eq('id', orderId)
       .eq('user_id', session.user.id)

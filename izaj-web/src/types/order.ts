@@ -5,7 +5,8 @@ export type OrderStatus =
   | 'approved' 
   | 'in_transit' 
   | 'complete' 
-  | 'cancelled';
+  | 'cancelled'
+  | 'pending_cancellation';
 
 export type PaymentStatus = 
   | 'pending' 
@@ -165,7 +166,8 @@ export const getStatusLabel = (status: OrderStatus): string => {
     approved: 'Approved',
     in_transit: 'In Transit',
     complete: 'Complete',
-    cancelled: 'Cancelled'
+    cancelled: 'Cancelled',
+    pending_cancellation: 'Pending Cancellation'
   };
   return labels[status];
 };
@@ -187,7 +189,8 @@ export const getStatusColor = (status: OrderStatus): string => {
     approved: 'text-blue-600 bg-blue-50 border-blue-200',
     in_transit: 'text-purple-600 bg-purple-50 border-purple-200',
     complete: 'text-green-600 bg-green-50 border-green-200',
-    cancelled: 'text-red-600 bg-red-50 border-red-200'
+    cancelled: 'text-red-600 bg-red-50 border-red-200',
+    pending_cancellation: 'text-orange-600 bg-orange-50 border-orange-200'
   };
   return colors[status];
 };
@@ -198,7 +201,8 @@ export const getStatusIcon = (status: OrderStatus): string => {
     approved: 'mdi:check-circle',
     in_transit: 'mdi:truck-fast',
     complete: 'mdi:check-all',
-    cancelled: 'mdi:close-circle'
+    cancelled: 'mdi:close-circle',
+    pending_cancellation: 'mdi:clock-alert-outline'
   };
   return icons[status];
 };

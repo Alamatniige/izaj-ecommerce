@@ -37,7 +37,7 @@ const Checkout = () => {
     city: '',
     province: '',
     phone: '',
-    paymentMethod: 'gcash',
+    paymentMethod: 'cash_on_delivery',
     saveInfo: false,
     newsletter: false
   });
@@ -774,30 +774,46 @@ const Checkout = () => {
               </p>
                 
                 <div className="space-y-3 mb-4">
-                  <label className="flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'gcash' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'gcash' ? '#f9fafb' : 'white' }}>
+                  <label className="relative flex items-center p-4 md:p-5 border-2 rounded-xl cursor-not-allowed opacity-60 transition-all shadow-sm group" style={{ borderColor: '#e5e7eb', backgroundColor: 'white' }} onClick={(e) => e.preventDefault()}>
                     <input 
                       type="radio"
                       name="paymentMethod"
                       value="gcash"
-                      checked={formData.paymentMethod === 'gcash'}
-                      onChange={handleInputChange}
-                      className="mr-3 text-black focus:ring-black" 
+                      checked={false}
+                      disabled
+                      onChange={() => {}}
+                      className="mr-3 text-black focus:ring-black cursor-not-allowed" 
                     /> 
-                    <img src="/gcash.png" alt="GCash" className="h-10 object-contain mr-3" />
-                    <span className="font-bold text-gray-900 font-jost">GCash</span>
+                    <img src="/gcash.png" alt="GCash" className="h-10 object-contain mr-3 opacity-60" />
+                    <span className="font-bold text-gray-500 font-jost">GCash</span>
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 px-4 py-3 bg-red-600 text-white text-base font-bold rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-[100] whitespace-nowrap font-jost shadow-2xl border-2 border-red-700">
+                      <div className="flex items-center gap-2">
+                        <Icon icon="mdi:alert-circle" className="text-xl" />
+                        <span>Currently Unavailable</span>
+                      </div>
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-600 border-r-2 border-b-2 border-red-700 transform rotate-45"></div>
+                    </div>
                   </label>
                   
-                  <label className="flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'maya' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'maya' ? '#f9fafb' : 'white' }}>
+                  <label className="relative flex items-center p-4 md:p-5 border-2 rounded-xl cursor-not-allowed opacity-60 transition-all shadow-sm group" style={{ borderColor: '#e5e7eb', backgroundColor: 'white' }} onClick={(e) => e.preventDefault()}>
                 <input 
                   type="radio" 
                       name="paymentMethod"
                       value="maya"
-                      checked={formData.paymentMethod === 'maya'}
-                      onChange={handleInputChange}
-                      className="mr-3 text-black focus:ring-black" 
+                      checked={false}
+                      disabled
+                      onChange={() => {}}
+                      className="mr-3 text-black focus:ring-black cursor-not-allowed" 
                     /> 
-                    <img src="/maya.png" alt="Maya" className="h-10 object-contain mr-3" />
-                    <span className="font-bold text-gray-900 font-jost">Maya</span>
+                    <img src="/maya.png" alt="Maya" className="h-10 object-contain mr-3 opacity-60" />
+                    <span className="font-bold text-gray-500 font-jost">Maya</span>
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 px-4 py-3 bg-red-600 text-white text-base font-bold rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-[100] whitespace-nowrap font-jost shadow-2xl border-2 border-red-700">
+                      <div className="flex items-center gap-2">
+                        <Icon icon="mdi:alert-circle" className="text-xl" />
+                        <span>Currently Unavailable</span>
+                      </div>
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-600 border-r-2 border-b-2 border-red-700 transform rotate-45"></div>
+                    </div>
               </label>
                   
                   <label className="flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'cash_on_delivery' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'cash_on_delivery' ? '#f9fafb' : 'white' }}>

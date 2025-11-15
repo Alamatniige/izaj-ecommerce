@@ -11,7 +11,7 @@ interface Order {
   id: string;
   orderNumber: string;
   date: string;
-  status: 'pending' | 'approved' | 'in_transit' | 'complete' | 'cancelled';
+  status: 'pending' | 'approved' | 'in_transit' | 'complete' | 'cancelled' | 'pending_cancellation';
   items: Array<{
     id: string;
     name: string;
@@ -200,18 +200,21 @@ const MyOrders: React.FC = () => {
         return 'mdi:check-all';
       case 'cancelled':
         return 'mdi:close-circle';
+      case 'pending_cancellation':
+        return 'mdi:clock-alert-outline';
       default:
         return 'mdi:package';
     }
   };
 
-  const getStatusLabel = (status: Order['status'], isMobile: boolean = false) => {
+  const getStatusLabel = (status: Order['status'], order?: Order, isMobile: boolean = false) => {
     const labels: Record<Order['status'], { full: string; mobile: string }> = {
       pending: { full: 'Pending', mobile: 'Pending' },
       approved: { full: 'Approved', mobile: 'Approved' },
       in_transit: { full: 'In Transit', mobile: 'Transit' },
       complete: { full: 'Complete', mobile: 'Complete' },
-      cancelled: { full: 'Cancelled', mobile: 'Cancel' }
+      cancelled: { full: 'Cancelled', mobile: 'Cancel' },
+      pending_cancellation: { full: 'Pending Cancellation', mobile: 'Pending Cancel' }
     };
     
     const label = labels[status] || { full: status, mobile: status };
@@ -230,6 +233,8 @@ const MyOrders: React.FC = () => {
         return 'text-green-600 bg-green-50 border-green-200';
       case 'cancelled':
         return 'text-red-600 bg-red-50 border-red-200';
+      case 'pending_cancellation':
+        return 'text-orange-600 bg-orange-50 border-orange-200';
       default:
         return 'text-gray-600 bg-gray-50 border-gray-200';
     }
@@ -249,6 +254,12 @@ const MyOrders: React.FC = () => {
       ];
     }
 
+    if (status === 'pending_cancellation') {
+      return [
+        { key: 'pending_cancellation', label: 'Pending Cancellation', icon: 'mdi:clock-alert-outline', active: true, completed: false }
+      ];
+    }
+
     const statusOrder = ['pending', 'approved', 'in_transit', 'complete'];
     const currentIndex = statusOrder.indexOf(status);
 
@@ -261,6 +272,8 @@ const MyOrders: React.FC = () => {
 
   const filteredOrders = selectedStatus === 'all' 
     ? orders 
+    : selectedStatus === 'cancelled'
+    ? orders.filter(order => order.status === 'cancelled' || order.status === 'pending_cancellation')
     : orders.filter(order => order.status === selectedStatus);
 
   const formatDate = (dateString: string) => {
@@ -289,7 +302,12 @@ const MyOrders: React.FC = () => {
 
   const confirmCancelOrder = async () => {
     if (!orderToCancel || !cancelReason.trim()) {
-      alert('Please provide a reason for cancellation');
+      setToast({ 
+        show: true, 
+        message: 'Please provide a reason for cancellation', 
+        type: 'error' 
+      });
+      setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
       return;
     }
 
@@ -302,7 +320,7 @@ const MyOrders: React.FC = () => {
         // Update local state
         setOrders(prev => prev.map(order => 
           order.id === orderToCancel.id 
-            ? { ...order, status: 'cancelled', cancellationReason: cancelReason } 
+            ? { ...order, status: 'pending_cancellation', cancellationReason: cancelReason } 
             : order
         ));
         
@@ -313,8 +331,13 @@ const MyOrders: React.FC = () => {
         setShowCancelReasonDropdown(false);
         setIsCancelReasonInputFocused(false);
         
-        // Show success message
-        alert('Order cancelled successfully');
+        // Show success message with better design
+        setToast({ 
+          show: true, 
+          message: 'Cancellation request submitted successfully. Your request is under review and awaiting admin approval.', 
+          type: 'success' 
+        });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 6000);
         
         // Refresh orders
         const fetchOrders = async () => {
@@ -364,11 +387,21 @@ const MyOrders: React.FC = () => {
         };
         fetchOrders();
       } else {
-        alert(result.error || 'Failed to cancel order');
+        setToast({ 
+          show: true, 
+          message: result.error || 'Failed to cancel order. Please try again.', 
+          type: 'error' 
+        });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 5000);
       }
     } catch (error) {
       console.error('Error cancelling order:', error);
-      alert('Failed to cancel order. Please try again.');
+      setToast({ 
+        show: true, 
+        message: 'Failed to cancel order. Please try again.', 
+        type: 'error' 
+      });
+      setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 5000);
     } finally {
       setIsCancelling(false);
     }
@@ -483,7 +516,10 @@ const MyOrders: React.FC = () => {
                   />
                 </div>
                 <div className="ml-3 flex-1">
-                  <p className={`text-sm ${toast.type === 'success' ? 'text-green-800' : 'text-red-800'}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}>
+                  <h3 className={`text-sm font-semibold mb-1 ${toast.type === 'success' ? 'text-green-800' : 'text-red-800'}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                    {toast.type === 'success' ? 'Cancellation Request Submitted' : 'Error'}
+                  </h3>
+                  <p className={`text-sm ${toast.type === 'success' ? 'text-green-700' : 'text-red-700'}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
                     {toast.message}
                   </p>
                 </div>
@@ -595,8 +631,8 @@ const MyOrders: React.FC = () => {
                                     <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{order.orderNumber}</h4>
                                   <div className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border text-xs sm:text-sm font-semibold ${getStatusColor(order.status)}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                                     <Icon icon={getStatusIcon(order.status)} className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                                    <span className="hidden sm:inline whitespace-nowrap">{getStatusLabel(order.status, false)}</span>
-                                    <span className="sm:hidden whitespace-nowrap">{getStatusLabel(order.status, true)}</span>
+                                    <span className="hidden sm:inline whitespace-nowrap">{getStatusLabel(order.status, order, false)}</span>
+                                    <span className="sm:hidden whitespace-nowrap">{getStatusLabel(order.status, order, true)}</span>
                                   </div>
                                   </div>
                                 </div>
@@ -853,7 +889,7 @@ const MyOrders: React.FC = () => {
                 <div>
                   <span className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl border-2 text-xs sm:text-sm font-semibold shadow-md ${getStatusColor(selectedOrder.status)}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                     <Icon icon={getStatusIcon(selectedOrder.status)} className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                    <span className="whitespace-nowrap">{getStatusLabel(selectedOrder.status, false)}</span>
+                    <span className="whitespace-nowrap">{getStatusLabel(selectedOrder.status, selectedOrder, false)}</span>
                   </span>
                 </div>
               </div>
@@ -919,8 +955,8 @@ const MyOrders: React.FC = () => {
                     ))}
                   </div>
 
-                  {/* Cancellation Reason Section - Only show if order is cancelled */}
-                  {selectedOrder.status === 'cancelled' ? (
+                  {/* Cancellation Reason Section - Only show if order is cancelled or pending cancellation */}
+                  {(selectedOrder.status === 'cancelled' || selectedOrder.status === 'pending_cancellation') ? (
                     <div className="p-4 sm:p-5 border-t-2 border-gray-200">
                       <div className="flex items-center gap-2 mb-4">
                         <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center">
@@ -929,7 +965,8 @@ const MyOrders: React.FC = () => {
                         <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Cancellation Details</h4>
                       </div>
                       <div className="space-y-3 pl-8 sm:pl-10">
-                        {selectedOrder.cancellationReason && (
+                        {/* Show cancellation reason: customer's reason if customer cancelled, admin's notes if admin cancelled */}
+                        {selectedOrder.cancellationReason ? (
                           <div className="flex items-start gap-2 sm:gap-3 bg-red-50 rounded-lg p-3 sm:p-4 border-2 border-red-200">
                             <Icon icon="mdi:alert-circle" className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 mt-0.5 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
@@ -939,19 +976,17 @@ const MyOrders: React.FC = () => {
                               </p>
                             </div>
                           </div>
-                        )}
-                        {selectedOrder.adminNotes && (
-                          <div className="flex items-start gap-2 sm:gap-3 bg-gray-50 rounded-lg p-3 sm:p-4 border-2 border-gray-200">
-                            <Icon icon="mdi:note-text" className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 mt-0.5 flex-shrink-0" />
+                        ) : selectedOrder.adminNotes ? (
+                          <div className="flex items-start gap-2 sm:gap-3 bg-red-50 rounded-lg p-3 sm:p-4 border-2 border-red-200">
+                            <Icon icon="mdi:alert-circle" className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 mt-0.5 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Admin Notes</p>
+                              <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Reason for Cancellation (by Admin)</p>
                               <p className="text-xs sm:text-sm font-semibold text-gray-800 break-words whitespace-pre-wrap" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                                 {selectedOrder.adminNotes}
                               </p>
                             </div>
                           </div>
-                        )}
-                        {!selectedOrder.cancellationReason && !selectedOrder.adminNotes && (
+                        ) : (
                           <div className="flex items-start gap-2 sm:gap-3 bg-gray-50 rounded-lg p-3 sm:p-4 border-2 border-gray-200">
                             <Icon icon="mdi:information" className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 mt-0.5 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
@@ -1075,8 +1110,8 @@ const MyOrders: React.FC = () => {
                     </button>
                   )}
                   
-                  {/* Contact Support - For Active Orders (not cancelled/complete) */}
-                  {selectedOrder.status !== 'cancelled' && selectedOrder.status !== 'complete' && selectedOrder.status !== 'pending' && (
+                  {/* Contact Support - For Active Orders (not cancelled/complete/pending cancellation) */}
+                  {selectedOrder.status !== 'cancelled' && selectedOrder.status !== 'complete' && selectedOrder.status !== 'pending' && selectedOrder.status !== 'pending_cancellation' && (
                     <button
                       className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base font-semibold hover:from-gray-800 hover:to-gray-900 transition-all duration-200 flex items-center justify-center gap-2 rounded-xl shadow-md"
                       style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
@@ -1109,202 +1144,134 @@ const MyOrders: React.FC = () => {
             <div 
               className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] modal-scale-in overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
+              style={{ overflow: 'visible' }}
             >
-              {/* Header */}
-              <div className="flex-shrink-0 bg-white px-6 py-5 border-b-2 border-gray-200">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
-                    <Icon icon="mdi:alert-circle" className="w-6 h-6 text-red-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Cancel Order?</h3>
-                    <p className="text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Order: {orderToCancel.orderNumber}</p>
-                  </div>
-                </div>
-                </div>
-                <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                  <p className="text-xs text-red-800 flex items-start gap-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                    <Icon icon="mdi:information" className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    <span>
-                      Are you sure you want to cancel this order? This action cannot be undone.
-                    </span>
-                  </p>
-                </div>
-                </div>
-
               {/* Content Container */}
-              <div className="flex-1 overflow-y-auto p-6">
-                <div className="space-y-6">
-                  {/* Order Items Section */}
-                  <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-md overflow-hidden">
-                    <div className="p-3 sm:p-4 border-b-2 border-gray-200 bg-gradient-to-r from-gray-100 to-white">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 bg-black rounded-lg flex items-center justify-center">
-                          <Icon icon="mdi:cart-outline" className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                        </div>
-                        <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Order Items</h4>
-                        <span className="ml-auto text-xs sm:text-sm font-semibold text-gray-600 bg-gray-200 px-2 sm:px-3 py-1 rounded-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                          {orderToCancel.items.length} {orderToCancel.items.length === 1 ? 'item' : 'items'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-3 sm:p-4 space-y-3">
-                      {orderToCancel.items.map((item) => (
-                        <div key={item.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border-2 border-gray-200">
-                          <div className="relative">
-                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border-2 border-gray-200 flex-shrink-0 shadow-sm">
-                              <img 
-                                src={item.image} 
-                                alt={item.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="absolute -top-2 -right-2 bg-black text-white text-xs font-bold w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center shadow-lg">
-                              {item.quantity}
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs sm:text-sm font-bold text-gray-800 mb-1 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{item.name}</p>
-                            <p className="text-xs text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Qty: {item.quantity}</p>
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            {item.originalPrice && item.originalPrice > item.price && item.discount && item.discount > 0 ? (
-                              <div>
-                                <p className="text-xs text-gray-400 line-through" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                                  {formatPrice(item.originalPrice * item.quantity)}
-                                </p>
-                                <p className="text-xs sm:text-sm font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                                  {formatPrice(item.price * item.quantity)}
-                                </p>
-                              </div>
-                            ) : (
-                              <p className="text-xs sm:text-sm font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                                {formatPrice(item.price * item.quantity)}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
+              <div className="flex-1 overflow-y-auto p-6" style={{ overflowX: 'visible', overflowY: 'auto', overflow: 'visible' }}>
+                <div className="space-y-6" style={{ overflow: 'visible' }}>
                   {/* Cancellation Reason Section */}
-                  <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-md overflow-hidden">
-                    <div className="p-4 sm:p-5">
-                      <div className="flex items-center gap-2 mb-4">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                          <Icon icon="mdi:close-circle" className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
-                        </div>
-                        <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Cancellation Reason</h4>
+                  <div style={{ overflow: 'visible' }}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                        <Icon icon="mdi:close-circle" className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                       </div>
-                      <div className="relative">
-                          <input
-                            type="text"
-                    value={cancelReason}
-                            onChange={(e) => {
-                              setCancelReason(e.target.value);
-                              // Hide dropdown when user types
-                              if (e.target.value.trim().length > 0) {
-                                setShowCancelReasonDropdown(false);
-                              } else {
-                                setShowCancelReasonDropdown(isCancelReasonInputFocused);
-                              }
-                            }}
-                            onFocus={() => {
-                              setIsCancelReasonInputFocused(true);
-                              // Show dropdown only if input is empty
-                              if (!cancelReason.trim()) {
-                                setShowCancelReasonDropdown(true);
-                              }
-                            }}
-                            onBlur={() => {
-                              setIsCancelReasonInputFocused(false);
-                              // Delay hiding dropdown to allow click on dropdown item
-                              setTimeout(() => {
-                                setShowCancelReasonDropdown(false);
-                              }, 200);
-                            }}
-                            className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    placeholder="Please tell us why you're cancelling this order..."
-                    disabled={isCancelling}
-                            style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
-                  />
-                          {!cancelReason.trim() && (
-                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
-                              <Icon icon="mdi:chevron-down" className="w-5 h-5 text-gray-400" />
-                </div>
-                          )}
-                          
-                          {/* Dropdown */}
-                          {showCancelReasonDropdown && !cancelReason.trim() && (
-                            <div className="absolute z-50 w-full mt-1 bg-white border-2 border-gray-300 rounded-xl shadow-lg max-h-60 overflow-auto">
-                              {cancellationReasons.map((reason, index) => (
-                                <button
-                                  key={index}
-                                  type="button"
-                                  onClick={() => {
-                                    setCancelReason(reason);
-                                    setShowCancelReasonDropdown(false);
-                                    setIsCancelReasonInputFocused(false);
-                                  }}
-                                  className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors first:rounded-t-xl last:rounded-b-xl border-b border-gray-100 last:border-b-0"
-                                  style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
-                                  disabled={isCancelling}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Icon icon="mdi:check-circle-outline" className="w-4 h-4 text-gray-400" />
-                                    <span className="text-sm text-gray-700">{reason}</span>
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                          * Required field
-                        </p>
+                      <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Cancellation Reason</h4>
+                    </div>
+                    
+                    {/* Warning Message */}
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                      <p className="text-sm text-red-800 flex items-start gap-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                        <Icon icon="mdi:information" className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                        <span>
+                          Are you sure you want to cancel this order? This action cannot be undone.
+                        </span>
+                      </p>
+                    </div>
+                    
+                    <div className="relative" style={{ overflow: 'visible' }}>
+                        <input
+                          type="text"
+                  value={cancelReason}
+                          onChange={(e) => {
+                            setCancelReason(e.target.value);
+                            // Hide dropdown when user types
+                            if (e.target.value.trim().length > 0) {
+                              setShowCancelReasonDropdown(false);
+                            } else {
+                              setShowCancelReasonDropdown(isCancelReasonInputFocused);
+                            }
+                          }}
+                          onFocus={() => {
+                            setIsCancelReasonInputFocused(true);
+                            // Show dropdown only if input is empty
+                            if (!cancelReason.trim()) {
+                              setShowCancelReasonDropdown(true);
+                            }
+                          }}
+                          onBlur={() => {
+                            setIsCancelReasonInputFocused(false);
+                            // Delay hiding dropdown to allow click on dropdown item
+                            setTimeout(() => {
+                              setShowCancelReasonDropdown(false);
+                            }, 200);
+                          }}
+                          className="w-full px-4 py-3 pr-10 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  placeholder="Please tell us why you're cancelling this order..."
+                  disabled={isCancelling}
+                          style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
+                />
+                        {!cancelReason.trim() && (
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                            <Icon icon="mdi:chevron-down" className="w-5 h-5 text-gray-400" />
+              </div>
+                        )}
+                        
+                        {/* Dropdown */}
+                        {showCancelReasonDropdown && !cancelReason.trim() && (
+                          <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-gray-300 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto">
+                            {cancellationReasons.map((reason, index) => (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => {
+                                  setCancelReason(reason);
+                                  setShowCancelReasonDropdown(false);
+                                  setIsCancelReasonInputFocused(false);
+                                }}
+                                className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors first:rounded-t-xl last:rounded-b-xl border-b border-gray-100 last:border-b-0"
+                                style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
+                                disabled={isCancelling}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Icon icon="mdi:check-circle-outline" className="w-4 h-4 text-gray-400" />
+                                  <span className="text-sm text-gray-700">{reason}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                  </div>
+                      <p className="text-xs text-gray-500 mt-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                        * Required field
+                      </p>
+                    </div>
                 </div>
               </div>
 
-              {/* Modal Footer */}
-              <div className="flex-shrink-0 bg-white border-t-2 border-gray-200 px-6 py-4 shadow-lg">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button
-                    onClick={() => {
-                      setShowCancelModal(false);
-                      setOrderToCancel(null);
-                      setCancelReason('');
-                      setShowCancelReasonDropdown(false);
-                      setIsCancelReasonInputFocused(false);
-                    }}
-                    disabled={isCancelling}
-                    className="w-full sm:flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
-                  >
-                    No, Keep Order
-                  </button>
-                  <button
-                    onClick={confirmCancelOrder}
-                    disabled={isCancelling || !cancelReason.trim()}
-                    className="w-full sm:flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
-                  >
-                    {isCancelling ? (
-                      <>
-                        <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
-                        Cancelling...
-                      </>
-                    ) : (
-                      <>
-                        <Icon icon="mdi:check" className="w-5 h-5" />
-                        Yes, Cancel Order
-                      </>
-                    )}
-                  </button>
-                </div>
+              {/* Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 px-6 pb-6">
+                <button
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setOrderToCancel(null);
+                    setCancelReason('');
+                    setShowCancelReasonDropdown(false);
+                    setIsCancelReasonInputFocused(false);
+                  }}
+                  disabled={isCancelling}
+                  className="w-full sm:flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
+                >
+                  No, Keep Order
+                </button>
+                <button
+                  onClick={confirmCancelOrder}
+                  disabled={isCancelling || !cancelReason.trim()}
+                  className="w-full sm:flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
+                >
+                  {isCancelling ? (
+                    <>
+                      <Icon icon="mdi:loading" className="w-5 h-5 animate-spin" />
+                      Cancelling...
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="mdi:check" className="w-5 h-5" />
+                      Yes, Cancel Order
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>

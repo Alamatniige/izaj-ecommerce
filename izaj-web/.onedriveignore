@@ -1,0 +1,12 @@
+# OneDrive ignore file
+# This prevents OneDrive from syncing these folders/files
+# which can cause EPERM errors on Windows
+
+.next/
+node_modules/
+out/
+build/
+*.tsbuildinfo
+.env.local
+.env*.local
+
