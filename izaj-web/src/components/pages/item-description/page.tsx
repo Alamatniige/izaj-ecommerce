@@ -75,6 +75,29 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
     }
     return { status: 'In Stock', color: 'green', bgColor: 'bg-green-100', textColor: 'text-green-600', percentage: 100 };
   };
+
+  // Calculate discount percentage from price and originalPrice
+  const calculateDiscountPercentage = (): number | null => {
+    if (!product || !product.originalPrice) return null;
+    
+    try {
+      const priceString = product.price.replace(/[₱,]/g, '');
+      const originalPriceString = product.originalPrice.replace(/[₱,]/g, '');
+      const currentPrice = parseFloat(priceString);
+      const originalPrice = parseFloat(originalPriceString);
+      
+      if (originalPrice > 0 && currentPrice < originalPrice) {
+        const discount = ((originalPrice - currentPrice) / originalPrice) * 100;
+        return Math.round(discount);
+      }
+    } catch (error) {
+      console.error('Error calculating discount percentage:', error);
+    }
+    
+    return null;
+  };
+
+  const discountPercentage = calculateDiscountPercentage();
   
   useEffect(() => {
     if (!id) return;
@@ -599,10 +622,17 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
           <div className="w-full lg:w-[30%] lg:sticky lg:top-8 lg:self-start lg:max-h-screen lg:overflow-y-auto scrollbar-hide pt-4 lg:pt-0">
             {/* Product Information - Lucendi Style */}
             <div className="mb-8">
-              {/* Brand/Category Line */}
-              <p className="text-sm text-gray-500 mb-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                {product.category || 'Uncategorized'}
-              </p>
+              {/* Brand/Category Line with Discount Badge */}
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+                  {product.category || 'Uncategorized'}
+                </p>
+                {discountPercentage && (
+                  <span className="text-white text-xs font-bold px-2 py-1 rounded-sm shadow-md whitespace-nowrap" style={{ backgroundColor: '#EF4444' }}>
+                    SALE -{discountPercentage}%
+                  </span>
+                )}
+              </div>
               
               {/* Product Name */}
               <h1 className="text-3xl md:text-4xl font-semibold mb-4 text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>

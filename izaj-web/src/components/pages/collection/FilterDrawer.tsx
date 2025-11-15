@@ -17,6 +17,7 @@ interface FilterDrawerProps {
   setSelectCategoryOpen: (open: boolean) => void;
   selectedCategories: string[];
   handleCategorySelect: (category: string) => void;
+  clearAllCategories: () => void;
   // Product-list parity
   priceRange?: { min: number; max: number };
   setPriceRange?: (range: { min: number; max: number }) => void;
@@ -42,6 +43,7 @@ const FilterDrawer: React.FC<FilterDrawerProps> = ({
   setSelectCategoryOpen,
   selectedCategories,
   handleCategorySelect,
+  clearAllCategories,
   // used
   priceRange = { min: 0, max: 0 },
   setPriceRange = () => {},
@@ -150,6 +152,16 @@ const FilterDrawer: React.FC<FilterDrawerProps> = ({
                 <span style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Categories</span>
               </div>
               <div className="mt-3 space-y-2 text-sm">
+                {selectedCategories.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearAllCategories}
+                    className="w-full flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 transition text-xs font-medium mb-2"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    Clear Filters
+                  </button>
+                )}
                 {categories.map(({ category, count }) => {
                   const selected = selectedCategories.includes(category);
                   return (

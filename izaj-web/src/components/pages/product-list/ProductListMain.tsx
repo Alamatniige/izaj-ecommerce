@@ -18,6 +18,7 @@ type Product = {
   mediaUrls?: string[];
   isNew?: boolean;
   isOnSale?: boolean;
+  discountPercentage?: number;
   size?: string;
   colors?: string[];
   category?: string;
@@ -160,9 +161,11 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
                 {product.isNew && !product.isOnSale && (
                   <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#10B981' }}>NEW</span>
                 )}
-                {/* SALE badge - mobile responsive */}
+                {/* SALE badge with discount percentage - mobile responsive */}
                 {product.isOnSale && (
-                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>SALE</span>
+                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>
+                    SALE{product.discountPercentage ? ` -${product.discountPercentage}%` : ''}
+                  </span>
                 )}
                 
               </div>
@@ -263,17 +266,17 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
                            {(product.stock || 0) > 5 ? 'In Stock' : (product.stock || 0) > 0 ? 'Low Stock' : 'Out of Stock'}
                          </span>
                        </div>
-                       <div className="flex items-center justify-end space-x-2 mt-2">
+                       <div className="flex items-center justify-end space-x-2 mt-2 flex-wrap gap-2">
                          {/* NEW badge - only show if product is new and not on sale */}
                          {product.isNew && !product.isOnSale && (
                            <div className="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md">
                              NEW
                            </div>
                          )}
-                         {/* SALE badge - only show if product is on sale */}
+                         {/* SALE badge with discount percentage - only show if product is on sale */}
                          {product.isOnSale && (
                            <div className="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md">
-                             SALE
+                             SALE{product.discountPercentage ? ` -${product.discountPercentage}%` : ''}
                            </div>
                          )}
                        </div>

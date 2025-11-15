@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Create new address
+    // Create new address (postal code is now included in the address string)
     const { data: newAddress, error } = await supabase
       .from('user_addresses')
       .insert([{

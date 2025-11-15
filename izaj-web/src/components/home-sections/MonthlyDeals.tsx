@@ -89,15 +89,19 @@ export default function MonthlyDeals() {
           const saleDetails = (product as any).sale?.[0]; // Sale is an array, get first element
           let salePrice = originalPrice;
           let originalPriceFormatted = `₱${originalPrice.toLocaleString()}`;
+          let discountPercentage: number | undefined = undefined;
           
           if (saleDetails) {
             if (saleDetails.percentage) {
               // Calculate discount based on percentage
+              discountPercentage = saleDetails.percentage;
               const discountAmount = (originalPrice * saleDetails.percentage) / 100;
               salePrice = originalPrice - discountAmount;
             } else if (saleDetails.fixed_amount) {
               // Calculate discount based on fixed amount
               salePrice = Math.max(0, originalPrice - saleDetails.fixed_amount);
+              // Calculate percentage from fixed amount
+              discountPercentage = originalPrice > 0 ? Math.round((saleDetails.fixed_amount / originalPrice) * 100) : 0;
             }
           }
           
@@ -110,6 +114,7 @@ export default function MonthlyDeals() {
             mediaUrls: product.media_urls || [],
           colors: ["black"], // Default color
             sale: (product as any).sale || [], // Include sale information
+            discountPercentage: discountPercentage,
             stock: stock,
             category: product.category || 'Lighting' // Use actual category from Supabase
           };
@@ -397,7 +402,9 @@ export default function MonthlyDeals() {
                         isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
                       }`} 
                     />
-                    <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>SALE</span>
+                    <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>
+                      SALE{product.discountPercentage ? ` -${product.discountPercentage}%` : ''}
+                    </span>
                   </div>
                   <div className="pt-5 pb-0 flex flex-col">
                     <div className="space-y-1.5">
@@ -506,7 +513,9 @@ export default function MonthlyDeals() {
                             isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
                           }`} 
                         />
-                        <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>SALE</span>
+                        <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>
+                      SALE{product.discountPercentage ? ` -${product.discountPercentage}%` : ''}
+                    </span>
                       </div>
                       <div className="pt-5 pb-0 flex flex-col">
                         <div className="space-y-1.5">

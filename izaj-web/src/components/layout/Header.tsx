@@ -1483,15 +1483,16 @@ function capitalize(str: string) {
                 {/* Vertical Divider */}
                 <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 h-4 w-px bg-gray-200" />
                 
-                <div
-                  className={`px-8 py-4 flex items-center gap-4 relative transition-all duration-500 cursor-pointer ${
+                <Link
+                  href="/product-list"
+                  className={`px-8 py-4 flex items-center gap-4 relative transition-all duration-500 ${
                     isLinkActive('/product-list') 
                       ? 'text-black' 
                       : 'text-gray-600 hover:text-black'
                   }`}
                   onClick={(e) => {
                     createRipple(e);
-                    setIsDropdownOpen(!isDropdownOpen);
+                    setIsDropdownOpen(false);
                   }}
                   onMouseEnter={() => {
                     if (dropdownCloseTimer.current) {
@@ -1530,7 +1531,7 @@ function capitalize(str: string) {
                   <span className={`absolute bottom-0 left-0 h-px bg-black transition-all duration-700 ${
                     hoveredNav === 'products' || isLinkActive('/product-list') ? 'w-full' : 'w-0'
                   }`}></span>
-                </div>
+                </Link>
 
                 {/* Full Width Luxury Dropdown */}
                 {isDropdownOpen && (

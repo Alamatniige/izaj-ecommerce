@@ -6,6 +6,7 @@ import { Icon } from '@iconify/react';
 interface SalesSidebarProps {
   selectedCategories: string[];
   handleCategorySelect: (category: string) => void;
+  clearAllCategories: () => void;
   priceRange: { min: number; max: number };
   setPriceRange: (range: { min: number; max: number }) => void;
   sortOption: string;
@@ -17,6 +18,7 @@ interface SalesSidebarProps {
 const SalesSidebar: React.FC<SalesSidebarProps> = ({
   selectedCategories,
   handleCategorySelect,
+  clearAllCategories,
   priceRange,
   setPriceRange,
   sortOption,
@@ -121,6 +123,16 @@ const SalesSidebar: React.FC<SalesSidebarProps> = ({
         </button>
         {categoriesOpen && (
           <div className="mt-3 space-y-2 text-sm">
+            {selectedCategories.length > 0 && (
+              <button
+                type="button"
+                onClick={clearAllCategories}
+                className="w-full flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50 transition text-xs font-medium mb-2"
+                style={{ fontFamily: 'Jost, sans-serif' }}
+              >
+                Clear Filters
+              </button>
+            )}
             {categories.map(({ category, count }) => {
               const selected = selectedCategories.includes(category);
               return (

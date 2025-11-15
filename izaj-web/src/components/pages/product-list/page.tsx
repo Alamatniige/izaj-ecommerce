@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { InternalApiService } from '../../../services/internalApi';
 import ProductListSidebar from './ProductListSidebar';
 import ProductListMain from './ProductListMain';
@@ -21,6 +21,7 @@ type Product = {
   mediaUrls?: string[];
   isNew?: boolean;
   isOnSale?: boolean;
+  discountPercentage?: number;
   size?: string;
   colors?: string[];
   category?: string;
@@ -57,6 +58,8 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   const [selectCategoryOpen, setSelectCategoryOpen] = useState(true);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   // New filter states for sidebar
   const [availabilityFilter, setAvailabilityFilter] = useState<string[]>([]);
@@ -83,16 +86,23 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
     return () => window.removeEventListener('resize', checkDevice);
   }, []);
 
-  // Initialize selectedCategory from URL query param (e.g., ?category=Chandelier)
+  // Initialize selectedCategory from URL query param (e.g., ?category=Chandelier or multiple categories)
   useEffect(() => {
-    const categoryFromUrl = searchParams?.get('category');
+    const categoriesFromUrl = searchParams?.getAll('category');
     const searchFromUrl = searchParams?.get('search');
     
-    if (categoryFromUrl) {
-      const decodedCategory = decodeURIComponent(categoryFromUrl);
-      setSelectedCategory(decodedCategory);
-      // Also add to selectedCategories array for sidebar display
-      setSelectedCategories([decodedCategory]);
+    if (categoriesFromUrl && categoriesFromUrl.length > 0) {
+      const decodedCategories = categoriesFromUrl.map(cat => decodeURIComponent(cat));
+      
+      // If there's only one category, set it as selectedCategory for backward compatibility
+      if (decodedCategories.length === 1) {
+        setSelectedCategory(decodedCategories[0]);
+      } else {
+        setSelectedCategory('');
+      }
+      
+      // Set selectedCategories array for sidebar display
+      setSelectedCategories(decodedCategories);
     } else {
       // Clear category selection if no category in URL
       setSelectedCategory('');
@@ -239,15 +249,19 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
           const saleDetails = (saleProductData as any)?.sale?.[0]; // Get sale details from salesProductsData
           let finalPrice = originalPrice;
           let originalPriceForDisplay: number | undefined = undefined;
+          let discountPercentage: number | undefined = undefined;
           
           if (saleDetails && isOnSale) {
             if (saleDetails.percentage) {
               // Calculate discount based on percentage
+              discountPercentage = saleDetails.percentage;
               const discountAmount = (originalPrice * saleDetails.percentage) / 100;
               finalPrice = originalPrice - discountAmount;
             } else if (saleDetails.fixed_amount) {
               // Calculate discount based on fixed amount
               finalPrice = Math.max(0, originalPrice - saleDetails.fixed_amount);
+              // Calculate percentage from fixed amount
+              discountPercentage = originalPrice > 0 ? Math.round((saleDetails.fixed_amount / originalPrice) * 100) : 0;
             }
             originalPriceForDisplay = originalPrice;
           }
@@ -265,6 +279,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
               colors: ["black"], // Default color
             isOnSale: isOnSale,
             isNew: isNew,
+            discountPercentage: discountPercentage,
               category: product.category || getCategoryFromName(product.product_name),
               stock: (() => {
                 // First check if there's a numeric stock field
@@ -338,15 +353,73 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
 
   // Handle category selection for sidebar
   const handleCategorySelect = (category: string) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(category)) {
+    // Clear URL-based category selection when sidebar category is selected
+    // This allows sidebar selections to take priority
+    setSelectedCategory('');
+    
+    const updatedCategories = (() => {
+      if (selectedCategories.includes(category)) {
         // Remove category if already selected
-        return prev.filter(cat => cat !== category);
+        return selectedCategories.filter(cat => cat !== category);
       } else {
         // Add category if not selected
-        return [...prev, category];
+        return [...selectedCategories, category];
       }
+    })();
+    
+    setSelectedCategories(updatedCategories);
+    
+    // Update URL with selected categories
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    
+    // Remove all existing category parameters
+    const allCategories = params.getAll('category');
+    allCategories.forEach(() => {
+      params.delete('category');
     });
+    
+    // Add multiple category parameters if there are any selected
+    if (updatedCategories.length > 0) {
+      updatedCategories.forEach(cat => {
+        params.append('category', encodeURIComponent(cat));
+      });
+    }
+    
+    // Preserve search term if it exists
+    const search = searchParams?.get('search');
+    if (search) {
+      params.set('search', search);
+    }
+    
+    // Update URL
+    const newUrl = updatedCategories.length > 0 || search 
+      ? `${pathname}?${params.toString()}` 
+      : pathname;
+    router.push(newUrl);
+  };
+
+  // Clear all category filters
+  const clearAllCategories = () => {
+    setSelectedCategory('');
+    setSelectedCategories([]);
+    
+    // Update URL to remove category parameters
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    // Remove all category parameters
+    const allCategories = params.getAll('category');
+    allCategories.forEach(() => {
+      params.delete('category');
+    });
+    
+    // Preserve search term if it exists
+    const search = searchParams?.get('search');
+    if (search) {
+      params.set('search', search);
+    }
+    
+    // Update URL
+    const newUrl = search ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl);
   };
 
   // Filter products based on selected categories, availability, price, and search term
@@ -566,6 +639,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
           setFansDropdownOpen={setFansDropdownOpen}
           selectedCategories={selectedCategories}
           handleCategorySelect={handleCategorySelect}
+          clearAllCategories={clearAllCategories}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           sortOption={sortOption}
@@ -611,6 +685,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
         setSelectCategoryOpen={setSelectCategoryOpen}
         selectedCategories={selectedCategories}
         handleCategorySelect={handleCategorySelect}
+        clearAllCategories={clearAllCategories}
         priceRange={priceRange}
         setPriceRange={setPriceRange}
         sortOption={sortOption}

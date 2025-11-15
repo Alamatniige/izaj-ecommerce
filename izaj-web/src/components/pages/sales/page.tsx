@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { InternalApiService } from '../../../services/internalApi';
 import SalesSidebar from './SalesSidebar';
@@ -22,6 +22,7 @@ type SalesProduct = {
   mediaUrls?: string[];
   isNew?: boolean;
   isOnSale?: boolean;
+  discountPercentage?: number;
   size?: string;
   colors?: string[];
   category?: string;
@@ -51,6 +52,8 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   
   // Product data states
   const [allProducts, setAllProducts] = useState<SalesProduct[]>([]);
@@ -147,21 +150,25 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
           const saleDetails = (saleProductData as any)?.sale?.[0]; // Get sale details from salesProductsData
           let finalPrice = originalPrice;
           let originalPriceFormatted: string | undefined = undefined;
+          let discountPercentage: number | undefined = undefined;
           
           if (saleDetails && isOnSale) {
             if (saleDetails.percentage) {
               // Calculate discount based on percentage
+              discountPercentage = saleDetails.percentage;
               const discountAmount = (originalPrice * saleDetails.percentage) / 100;
               finalPrice = originalPrice - discountAmount;
             } else if (saleDetails.fixed_amount) {
               // Calculate discount based on fixed amount
               finalPrice = Math.max(0, originalPrice - saleDetails.fixed_amount);
+              // Calculate percentage from fixed amount
+              discountPercentage = originalPrice > 0 ? Math.round((saleDetails.fixed_amount / originalPrice) * 100) : 0;
             }
             originalPriceFormatted = `₱${originalPrice.toLocaleString()}`;
           }
           
           return {
-            id: (parseInt(product.product_id) || 0) + index, // Ensures unique ID
+            id: parseInt(product.product_id) || 0, // Use original product_id for navigation
             name: product.product_name,
             description: product.description || '',
             price: finalPrice,
@@ -172,6 +179,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
             colors: (product as any).colors || ["black"], // Handles missing colors property
             isOnSale: isOnSale,
             isNew: isNew,
+            discountPercentage: discountPercentage,
             category: product.category,
             stock: (() => {
               // First check if there's a numeric stock field
@@ -224,11 +232,14 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
     fetchProducts();
   }, []);
 
-  // Initialize selectedCategory from URL query param (e.g., ?category=Chandelier)
+  // Initialize selectedCategory from URL query param (e.g., ?category=Chandelier or multiple categories)
   useEffect(() => {
-    const categoryFromUrl = searchParams?.get('category');
-    if (categoryFromUrl) {
-      setSelectedCategories([categoryFromUrl]);
+    const categoriesFromUrl = searchParams?.getAll('category');
+    if (categoriesFromUrl && categoriesFromUrl.length > 0) {
+      const decodedCategories = categoriesFromUrl.map(cat => decodeURIComponent(cat));
+      setSelectedCategories(decodedCategories);
+    } else {
+      setSelectedCategories([]);
     }
   }, [searchParams]);
 
@@ -299,15 +310,56 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
 
   // Handle category selection for sidebar
   const handleCategorySelect = (category: string) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(category)) {
+    const updatedCategories = (() => {
+      if (selectedCategories.includes(category)) {
         // Remove category if already selected
-        return prev.filter(cat => cat !== category);
+        return selectedCategories.filter(cat => cat !== category);
       } else {
         // Add category if not selected
-        return [...prev, category];
+        return [...selectedCategories, category];
       }
+    })();
+    
+    setSelectedCategories(updatedCategories);
+    
+    // Update URL with selected categories
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    
+    // Remove all existing category parameters
+    const allCategories = params.getAll('category');
+    allCategories.forEach(() => {
+      params.delete('category');
     });
+    
+    // Add multiple category parameters if there are any selected
+    if (updatedCategories.length > 0) {
+      updatedCategories.forEach(cat => {
+        params.append('category', encodeURIComponent(cat));
+      });
+    }
+    
+    // Update URL
+    const newUrl = updatedCategories.length > 0 
+      ? `${pathname}?${params.toString()}` 
+      : pathname;
+    router.push(newUrl);
+  };
+
+  // Clear all category filters
+  const clearAllCategories = () => {
+    setSelectedCategories([]);
+    
+    // Update URL to remove category parameters
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    // Remove all category parameters
+    const allCategories = params.getAll('category');
+    allCategories.forEach(() => {
+      params.delete('category');
+    });
+    
+    // Update URL
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl);
   };
 
   const handleColorSelect = (productId: number, color: string) => {
@@ -412,6 +464,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         <SalesSidebar
           selectedCategories={selectedCategories}
           handleCategorySelect={handleCategorySelect}
+          clearAllCategories={clearAllCategories}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           sortOption={sortOption}
@@ -471,6 +524,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         setSelectCategoryOpen={() => {}}
         selectedCategories={selectedCategories}
         handleCategorySelect={handleCategorySelect}
+        clearAllCategories={clearAllCategories}
         priceRange={priceRange}
         setPriceRange={setPriceRange}
         sortOption={sortOption}

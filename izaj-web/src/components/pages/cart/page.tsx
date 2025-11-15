@@ -222,11 +222,21 @@ export default function CartPage() {
                           <div>
                             <p className="font-bold text-xs sm:text-sm lg:text-lg text-black group-hover:text-gray-700 line-clamp-2" style={{ fontFamily: 'Jost, sans-serif' }}>{item.name}</p>
                             <div className="flex flex-wrap gap-1 sm:gap-2 mt-1 sm:mt-2">
-                              {item.isSale && (
-                                <span className="inline-block bg-red-600 text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1" style={{ fontFamily: 'Jost, sans-serif' }}>SALE</span>
-                              )}
+                              {item.isSale && (() => {
+                                // Calculate discount percentage
+                                let discountPercentage: number | null = null;
+                                if (item.originalPrice !== undefined && item.originalPrice > item.price) {
+                                  const discount = ((item.originalPrice - item.price) / item.originalPrice) * 100;
+                                  discountPercentage = Math.round(discount);
+                                }
+                                return (
+                                  <span className="inline-block bg-red-600 text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-sm shadow-md whitespace-nowrap" style={{ fontFamily: 'Jost, sans-serif', backgroundColor: '#EF4444' }}>
+                                    SALE{discountPercentage ? ` -${discountPercentage}%` : ''}
+                                  </span>
+                                );
+                              })()}
                               {item.isNew && (
-                                <span className="inline-block bg-green-600 text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1" style={{ fontFamily: 'Jost, sans-serif' }}>NEW</span>
+                                <span className="inline-block bg-green-600 text-white text-[10px] sm:text-xs font-bold px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-sm shadow-md whitespace-nowrap" style={{ fontFamily: 'Jost, sans-serif' }}>NEW</span>
                               )}
                             </div>
                           </div>

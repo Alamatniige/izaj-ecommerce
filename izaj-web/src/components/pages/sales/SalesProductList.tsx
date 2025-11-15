@@ -21,6 +21,7 @@ type SalesProduct = {
   colors?: string[];
   isOnSale?: boolean;
   isNew?: boolean;
+  discountPercentage?: number;
   stock?: number;
   category?: string;
 };
@@ -150,7 +151,12 @@ const SalesProductList: React.FC<SalesProductListProps> = ({
                     isImageTransitioning[product.id] ? 'opacity-0' : 'opacity-100'
                   }`} 
                 />
-                
+                {/* Discount badge - only show discount percentage */}
+                {product.discountPercentage && (
+                  <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>
+                    -{product.discountPercentage}%
+                  </span>
+                )}
               </div>
               <div className="pt-5 pb-0 flex flex-col">
                 <div className="space-y-1.5">
@@ -209,6 +215,12 @@ const SalesProductList: React.FC<SalesProductListProps> = ({
                       className="max-w-full max-h-full object-contain sm:group-hover:scale-105 transition-transform duration-300 transform translate-y-4"
                     />
                   </div>
+                  {/* Discount badge - only show discount percentage */}
+                  {product.discountPercentage && (
+                    <span className="absolute top-2 left-2 sm:top-3 sm:left-3 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-sm shadow-md whitespace-nowrap z-0" style={{ backgroundColor: '#EF4444' }}>
+                      -{product.discountPercentage}%
+                    </span>
+                  )}
                 </div>
                 {/* Mobile: make entire list card clickable */}
                 <Link
@@ -258,10 +270,10 @@ const SalesProductList: React.FC<SalesProductListProps> = ({
                              NEW
                            </div>
                          )}
-                         {/* SALE badge - only show if product is on sale */}
-                         {product.isOnSale && (
+                         {/* Discount badge - only show discount percentage */}
+                         {product.discountPercentage && (
                            <div className="bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-sm shadow-md">
-                             SALE
+                             -{product.discountPercentage}%
                            </div>
                          )}
                        </div>

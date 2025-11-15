@@ -5,6 +5,7 @@ export interface Address {
   name: string;
   phone: string;
   address: string;
+  postal_code?: string;
   is_default: boolean;
   is_active: boolean;
   created_at: string;
@@ -15,6 +16,7 @@ export interface CreateAddressData {
   name: string;
   phone: string;
   address: string;
+  postal_code?: string | null;
   is_default?: boolean;
 }
 
@@ -22,6 +24,7 @@ export interface UpdateAddressData {
   name: string;
   phone: string;
   address: string;
+  postal_code?: string | null;
   is_default?: boolean;
 }
 
@@ -89,7 +92,11 @@ class AddressService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to update address: ${response.statusText}`);
+        const errorMessage = errorData.details 
+          ? `${errorData.error}: ${errorData.details}` 
+          : errorData.error || `Failed to update address: ${response.statusText}`;
+        console.error('Update address error response:', errorData);
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();

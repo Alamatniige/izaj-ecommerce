@@ -26,16 +26,19 @@ export async function PUT(
       }, { status: 400 });
     }
 
+    // Update address (postal code is now included in the address string)
+    const updateData = {
+      name: name.trim(),
+      phone: phone.trim(),
+      address: address.trim(),
+      is_default: is_default,
+      updated_at: new Date().toISOString()
+    };
+
     // Update address
     const { data: updatedAddress, error } = await supabase
       .from('user_addresses')
-      .update({
-        name: name.trim(),
-        phone: phone.trim(),
-        address: address.trim(),
-        is_default: is_default,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', id)
       .eq('user_id', user.id)
       .eq('is_active', true)
@@ -44,9 +47,12 @@ export async function PUT(
 
     if (error) {
       console.error('Error updating address:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       return NextResponse.json({ 
         error: 'Failed to update address',
-        details: error.message 
+        details: error.message,
+        code: error.code,
+        hint: error.hint
       }, { status: 500 });
     }
 

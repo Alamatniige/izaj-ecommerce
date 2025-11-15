@@ -40,6 +40,7 @@ const MyOrders: React.FC = () => {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successOrderNumber, setSuccessOrderNumber] = useState<string>('');
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [orderToCancel, setOrderToCancel] = useState<Order | null>(null);
   const [cancelReason, setCancelReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -258,11 +259,15 @@ const MyOrders: React.FC = () => {
   };
 
   const handleCancelOrder = () => {
-    setShowCancelModal(true);
+    if (selectedOrder) {
+      setOrderToCancel(selectedOrder);
+      setShowCancelModal(true);
+      setSelectedOrder(null); // Close the order details modal
+    }
   };
 
   const confirmCancelOrder = async () => {
-    if (!selectedOrder || !cancelReason.trim()) {
+    if (!orderToCancel || !cancelReason.trim()) {
       alert('Please provide a reason for cancellation');
       return;
     }
@@ -270,19 +275,19 @@ const MyOrders: React.FC = () => {
     setIsCancelling(true);
     try {
       const { cancelOrder: cancelOrderAPI } = await import('@/services/orderService');
-      const result = await cancelOrderAPI(selectedOrder.id, cancelReason);
+      const result = await cancelOrderAPI(orderToCancel.id, cancelReason);
 
       if (result.success) {
         // Update local state
         setOrders(prev => prev.map(order => 
-          order.id === selectedOrder.id 
+          order.id === orderToCancel.id 
             ? { ...order, status: 'cancelled' } 
             : order
         ));
         
         // Close modals
         setShowCancelModal(false);
-        setSelectedOrder(null);
+        setOrderToCancel(null);
         setCancelReason('');
         
         // Show success message
@@ -559,12 +564,15 @@ const MyOrders: React.FC = () => {
                             {/* Order Header */}
                             <div className="mb-4">
                               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 sm:justify-between">
-                                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                                  <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{order.orderNumber}</h4>
+                                <div className="flex flex-col gap-1">
+                                  <p className="text-xs text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Order ID</p>
+                                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                                    <h4 className="text-base sm:text-lg font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{order.orderNumber}</h4>
                                   <div className={`inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border text-xs sm:text-sm font-semibold ${getStatusColor(order.status)}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                                     <Icon icon={getStatusIcon(order.status)} className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                                     <span className="hidden sm:inline whitespace-nowrap">{getStatusLabel(order.status, false)}</span>
                                     <span className="sm:hidden whitespace-nowrap">{getStatusLabel(order.status, true)}</span>
+                                  </div>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -794,20 +802,20 @@ const MyOrders: React.FC = () => {
             onClick={() => setSelectedOrder(null)}
           >
             <div 
-              className="relative w-full sm:w-[420px] md:w-[500px] lg:w-[540px] xl:w-[580px] bg-gradient-to-b from-gray-50 to-white h-screen shadow-2xl overflow-y-auto z-[10000]"
+              className="relative w-full sm:w-[420px] md:w-[500px] lg:w-[540px] xl:w-[580px] bg-gradient-to-b from-gray-50 to-white h-screen shadow-2xl overflow-y-auto z-[10000] modal-slide-in"
               onClick={(e) => e.stopPropagation()}
-              style={{
-                animation: 'slideInRight 0.3s ease-out'
-              }}
             >
               {/* Header */}
               <div className="sticky top-0 z-20 bg-white px-4 sm:px-6 py-4 sm:py-5 border-b-2 border-gray-200">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                    <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
                       Order Details
                     </h2>
-                    <p className="text-xs sm:text-sm text-gray-500 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{selectedOrder.orderNumber}</p>
+                    <div className="flex flex-col gap-1">
+                      <p className="text-xs text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Order ID</p>
+                      <p className="text-xs sm:text-sm text-gray-500 truncate" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{selectedOrder.orderNumber}</p>
+                    </div>
                   </div>
                   <button
                     onClick={() => setSelectedOrder(null)}
@@ -902,15 +910,6 @@ const MyOrders: React.FC = () => {
                           <p className="text-xs sm:text-sm font-semibold text-gray-800 break-words" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{selectedOrder.shippingAddress}</p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-2 sm:gap-3">
-                        <Icon icon="mdi:currency-php" className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Shipping Fee</p>
-                          <p className="text-xs sm:text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                            {selectedOrder.shippingFee === 0 ? 'FREE' : formatPrice(selectedOrder.shippingFee)}
-                          </p>
-                        </div>
-                      </div>
                       {selectedOrder.trackingNumber && (
                         <div className="flex items-start gap-2 sm:gap-3 bg-blue-50 rounded-lg p-2 sm:p-3 border-2 border-blue-200">
                           <Icon icon="mdi:package-variant" className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -962,7 +961,11 @@ const MyOrders: React.FC = () => {
                               Shipping Fee
                             </p>
                             <p className="text-xs sm:text-sm font-semibold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                              {selectedOrder.shippingFee === 0 ? 'FREE' : formatPrice(selectedOrder.shippingFee)}
+                              {selectedOrder.status === 'pending' 
+                                ? 'Pending' 
+                                : selectedOrder.shippingFee === 0 
+                                  ? 'FREE' 
+                                  : formatPrice(selectedOrder.shippingFee)}
                             </p>
                           </div>
                           <div className="border-t-2 border-green-300 pt-2 mt-2">
@@ -1017,24 +1020,19 @@ const MyOrders: React.FC = () => {
         )}
 
         {/* Cancel Order Confirmation Modal */}
-        {showCancelModal && selectedOrder && (
+        {showCancelModal && orderToCancel && (
           <div 
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-            style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              backdropFilter: 'blur(25px)',
-              WebkitBackdropFilter: 'blur(25px)',
-              animation: 'fadeIn 0.2s ease-out'
-            }}
+            className="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-[60] flex items-center justify-center p-4 modal-backdrop"
             onClick={() => {
               if (!isCancelling) {
                 setShowCancelModal(false);
+                setOrderToCancel(null);
                 setCancelReason('');
               }
             }}
           >
             <div 
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full"
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full modal-scale-in"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6">
@@ -1044,7 +1042,7 @@ const MyOrders: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-gray-800" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>Cancel Order?</h3>
-                    <p className="text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Order: {selectedOrder.orderNumber}</p>
+                    <p className="text-sm text-gray-500" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>Order: {orderToCancel.orderNumber}</p>
                   </div>
                 </div>
 
@@ -1075,6 +1073,7 @@ const MyOrders: React.FC = () => {
                   <button
                     onClick={() => {
                       setShowCancelModal(false);
+                      setOrderToCancel(null);
                       setCancelReason('');
                     }}
                     disabled={isCancelling}
@@ -1110,13 +1109,7 @@ const MyOrders: React.FC = () => {
         {/* Review Modal */}
         {showReviewModal && selectedOrder && (
           <div 
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-            style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              backdropFilter: 'blur(25px)',
-              WebkitBackdropFilter: 'blur(25px)',
-              animation: 'fadeIn 0.2s ease-out'
-            }}
+            className="fixed inset-0 bg-black/30 backdrop-blur-[1px] z-[60] flex items-center justify-center p-4 modal-backdrop"
             onClick={() => {
               if (!isSubmittingReview) {
                 setShowReviewModal(false);
@@ -1126,11 +1119,8 @@ const MyOrders: React.FC = () => {
             }}
           >
             <div 
-              className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl transform transition-all"
+              className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl modal-scale-in"
               onClick={(e) => e.stopPropagation()}
-              style={{
-                animation: 'scaleIn 0.2s ease-out'
-              }}
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
@@ -1244,14 +1234,30 @@ const MyOrders: React.FC = () => {
 
       {/* CSS for modal animations and blur */}
       <style jsx>{`
+        /* Optimized modal backdrop animation */
+        .modal-backdrop {
+          animation: fadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: opacity;
+        }
+
+        /* Optimized slide-in animation for order details modal */
+        .modal-slide-in {
+          animation: slideInRight 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: transform, opacity;
+        }
+
+        /* Optimized scale-in animation for centered modals */
+        .modal-scale-in {
+          animation: scaleIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: transform, opacity;
+        }
+
         @keyframes fadeIn {
           from {
             opacity: 0;
-            backdrop-filter: blur(0px);
           }
           to {
             opacity: 1;
-            backdrop-filter: blur(20px);
           }
         }
 
@@ -1262,6 +1268,17 @@ const MyOrders: React.FC = () => {
           }
           to {
             transform: translateX(0);
+            opacity: 1;
+          }
+        }
+
+        @keyframes scaleIn {
+          from {
+            transform: scale(0.95);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
             opacity: 1;
           }
         }
@@ -1278,13 +1295,17 @@ const MyOrders: React.FC = () => {
         }
 
         .animate-slideIn {
-          animation: slideIn 0.3s ease-out;
+          animation: slideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          will-change: transform, opacity;
         }
 
-        @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
-          .backdrop-blur {
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+        /* Performance optimization: reduce repaints */
+        @media (prefers-reduced-motion: reduce) {
+          .modal-backdrop,
+          .modal-slide-in,
+          .modal-scale-in,
+          .animate-slideIn {
+            animation: none;
           }
         }
       `}</style>

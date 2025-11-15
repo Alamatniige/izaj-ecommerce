@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { getAllProducts } from '../../../services/productService';
 import ProductList from '@/components/pages/collection/ProductList';
 import SortModal from '@/components/pages/collection/SortModal';
@@ -65,6 +65,8 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
   const [priceRange, setPriceRange] = useState<PriceRange>({ min: 0, max: 0 });
   const [maxPrice, setMaxPrice] = useState<number>(0);
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
 
   const handleColorSelect = (productId: number, color: string) => {
@@ -145,11 +147,14 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
     fetchProducts();
   }, []);
 
-  // Initialize selectedCategories from URL query param (e.g., ?category=Chandelier)
+  // Initialize selectedCategories from URL query param (e.g., ?category=Chandelier or multiple categories)
   useEffect(() => {
-    const categoryFromUrl = searchParams?.get('category');
-    if (categoryFromUrl) {
-      setSelectedCategories([categoryFromUrl]);
+    const categoriesFromUrl = searchParams?.getAll('category');
+    if (categoriesFromUrl && categoriesFromUrl.length > 0) {
+      const decodedCategories = categoriesFromUrl.map(cat => decodeURIComponent(cat));
+      setSelectedCategories(decodedCategories);
+    } else {
+      setSelectedCategories([]);
     }
   }, [searchParams]);
 
@@ -190,15 +195,56 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
 
   // Handle category selection
   const handleCategorySelect = (category: string) => {
-    setSelectedCategories(prev => {
-      if (prev.includes(category)) {
+    const updatedCategories = (() => {
+      if (selectedCategories.includes(category)) {
         // Remove category if already selected
-        return prev.filter(cat => cat !== category);
+        return selectedCategories.filter(cat => cat !== category);
       } else {
         // Add category if not selected
-        return [...prev, category];
+        return [...selectedCategories, category];
       }
+    })();
+    
+    setSelectedCategories(updatedCategories);
+    
+    // Update URL with selected categories
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    
+    // Remove all existing category parameters
+    const allCategories = params.getAll('category');
+    allCategories.forEach(() => {
+      params.delete('category');
     });
+    
+    // Add multiple category parameters if there are any selected
+    if (updatedCategories.length > 0) {
+      updatedCategories.forEach(cat => {
+        params.append('category', encodeURIComponent(cat));
+      });
+    }
+    
+    // Update URL
+    const newUrl = updatedCategories.length > 0 
+      ? `${pathname}?${params.toString()}` 
+      : pathname;
+    router.push(newUrl);
+  };
+
+  // Clear all category filters
+  const clearAllCategories = () => {
+    setSelectedCategories([]);
+    
+    // Update URL to remove category parameters
+    const params = new URLSearchParams(searchParams?.toString() || '');
+    // Remove all category parameters
+    const allCategories = params.getAll('category');
+    allCategories.forEach(() => {
+      params.delete('category');
+    });
+    
+    // Update URL
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl);
   };
 
   // Filter and sort products
@@ -357,6 +403,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
         <Sidebar
           selectedCategories={selectedCategories}
           handleCategorySelect={handleCategorySelect}
+          clearAllCategories={clearAllCategories}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           sortOption={sortOption}
@@ -402,6 +449,7 @@ const Collection: React.FC<CollectionProps> = ({ }) => {
           setSelectCategoryOpen={() => {}}
           selectedCategories={selectedCategories}
           handleCategorySelect={handleCategorySelect}
+          clearAllCategories={clearAllCategories}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           sortOption={sortOption}

@@ -85,13 +85,23 @@ const Checkout = () => {
     const selectedAddress = savedAddresses.find(addr => addr.id === addressId);
     if (selectedAddress) {
       // Parse the address to extract components
+      // Format: Street, Barangay, City, Province, PostalCode (optional)
       const addressParts = selectedAddress.address.split(',').map(part => part.trim());
       let streetAddress = '';
       let barangay = '';
       let city = '';
       let province = '';
+      let postalCode = '';
       
-      if (addressParts.length >= 4) {
+      if (addressParts.length >= 5) {
+        // Has postal code (5 parts)
+        streetAddress = addressParts[0];
+        barangay = addressParts[1];
+        city = addressParts[2];
+        province = addressParts[3];
+        postalCode = addressParts[4];
+      } else if (addressParts.length >= 4) {
+        // No postal code, 4 parts
         streetAddress = addressParts[0];
         barangay = addressParts[1];
         city = addressParts[2];
@@ -110,8 +120,10 @@ const Checkout = () => {
       setFormData(prev => ({
         ...prev,
         address: streetAddress,
+        barangay: barangay,
         city: city,
         province: province,
+        postalCode: postalCode,
         phone: selectedAddress.phone,
         firstName: selectedAddress.name.split(' ')[0] || prev.firstName,
         lastName: selectedAddress.name.split(' ').slice(1).join(' ') || prev.lastName,

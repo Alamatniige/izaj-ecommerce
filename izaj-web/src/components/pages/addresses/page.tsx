@@ -31,11 +31,14 @@ const MyPurchase: React.FC = () => {
     address: '',
     province: '',
     city: '',
-    barangay: ''
+    barangay: '',
+    postal_code: ''
   });
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -121,7 +124,8 @@ const MyPurchase: React.FC = () => {
       address: '',
       province: '',
       city: '',
-      barangay: ''
+      barangay: '',
+      postal_code: ''
     });
     setIsAddingNew(true);
   };
@@ -130,13 +134,23 @@ const MyPurchase: React.FC = () => {
     setEditingAddress(address);
     
     // Parse the address to extract components
+    // Format: Street, Barangay, City, Province, PostalCode (optional)
     const addressParts = address.address.split(',').map(part => part.trim());
     let streetAddress = '';
     let barangay = '';
     let city = '';
     let province = '';
+    let postalCode = '';
     
-    if (addressParts.length >= 4) {
+    if (addressParts.length >= 5) {
+      // Has postal code
+      streetAddress = addressParts[0];
+      barangay = addressParts[1];
+      city = addressParts[2];
+      province = addressParts[3];
+      postalCode = addressParts[4];
+    } else if (addressParts.length >= 4) {
+      // No postal code, 4 parts
       streetAddress = addressParts[0];
       barangay = addressParts[1];
       city = addressParts[2];
@@ -158,31 +172,44 @@ const MyPurchase: React.FC = () => {
       address: streetAddress,
       province: province,
       city: city,
-      barangay: barangay
+      barangay: barangay,
+      postal_code: postalCode
     });
     setIsAddingNew(true);
   };
 
-  const handleDeleteAddress = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this address?')) {
-      try {
-        setIsLoading(true);
-        await addressService.deleteAddress(id);
-        setSuccessMessage('Address deleted successfully!');
-        setShowSuccessMessage(true);
-        setTimeout(() => {
-          setShowSuccessMessage(false);
-          setSuccessMessage('');
-        }, 3000);
-        // Reload addresses from database
-        await loadAddresses();
-      } catch (error) {
-        console.error('Error deleting address:', error);
-        alert('Error deleting address. Please try again.');
-      } finally {
-        setIsLoading(false);
-      }
+  const handleDeleteClick = (id: string) => {
+    setAddressToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!addressToDelete) return;
+    
+    try {
+      setIsLoading(true);
+      await addressService.deleteAddress(addressToDelete);
+      setSuccessMessage('Address deleted successfully!');
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        setSuccessMessage('');
+      }, 3000);
+      // Reload addresses from database
+      await loadAddresses();
+      setShowDeleteModal(false);
+      setAddressToDelete(null);
+    } catch (error) {
+      console.error('Error deleting address:', error);
+      alert('Error deleting address. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
+    setAddressToDelete(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -190,7 +217,7 @@ const MyPurchase: React.FC = () => {
     
     // Validate form data
     if (!formData.name.trim() || !formData.phone.trim() || !formData.province.trim() || !formData.city.trim() || !formData.barangay.trim() || !formData.address.trim()) {
-      alert('Please fill in all fields');
+      alert('Please fill in all required fields');
       return;
     }
 
@@ -204,25 +231,40 @@ const MyPurchase: React.FC = () => {
     try {
       setIsLoading(true);
 
-      const composedAddress = `${formData.address.trim()}, ${formData.barangay.trim()}, ${formData.city.trim()}, ${formData.province.trim()}`.replace(/,\s*,/g, ', ').trim();
+      // Compose address with postal code included
+      let composedAddress = `${formData.address.trim()}, ${formData.barangay.trim()}, ${formData.city.trim()}, ${formData.province.trim()}`;
+      
+      // Add postal code to the address if provided
+      if (formData.postal_code && formData.postal_code.trim() !== '') {
+        composedAddress += `, ${formData.postal_code.trim()}`;
+      }
+      
+      // Clean up any extra commas
+      composedAddress = composedAddress.replace(/,\s*,/g, ', ').trim();
 
       if (editingAddress) {
         // Update existing address
-        await addressService.updateAddress(editingAddress.id, {
+        const updateData = {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
           address: composedAddress,
           is_default: editingAddress.is_default
-        });
+        };
+        
+        console.log('Updating address:', editingAddress.id, updateData);
+        
+        await addressService.updateAddress(editingAddress.id, updateData);
         setSuccessMessage('Address updated successfully!');
       } else {
         // Add new address
-        await addressService.createAddress({
+        const createData = {
           name: formData.name.trim(),
           phone: formData.phone.trim(),
           address: composedAddress,
           is_default: addresses.length === 0 // Set as default if it's the first address
-        });
+        };
+        
+        await addressService.createAddress(createData);
         setSuccessMessage('Address added successfully!');
       }
 
@@ -241,14 +283,16 @@ const MyPurchase: React.FC = () => {
         address: '',
         province: '',
         city: '',
-        barangay: ''
+        barangay: '',
+        postal_code: ''
       });
 
       // Reload addresses from database
       await loadAddresses();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving address:', error);
-      alert('Error saving address. Please try again.');
+      const errorMessage = error?.message || 'Error saving address. Please try again.';
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -283,7 +327,8 @@ const MyPurchase: React.FC = () => {
       address: '',
       province: '',
       city: '',
-      barangay: ''
+      barangay: '',
+      postal_code: ''
     });
   };
 
@@ -336,6 +381,55 @@ const MyPurchase: React.FC = () => {
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-black text-white px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-2xl flex items-center space-x-2 sm:space-x-3 animate-slideIn border border-gray-300 max-w-[90vw] sm:max-w-md">
           <Icon icon="mdi:check-circle" className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse flex-shrink-0" />
           <span className="font-medium text-sm sm:text-base">{successMessage}</span>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-transparent backdrop-blur-sm"
+          onClick={handleCancelDelete}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full mx-4 transform transition-all animate-fadeIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                <Icon icon="mdi:alert-circle" className="w-8 h-8 text-red-600" />
+              </div>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-2" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+              Delete Address?
+            </h3>
+            <p className="text-gray-600 text-center mb-6 text-sm sm:text-base" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
+              Are you sure you want to delete this address? This action cannot be undone.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleCancelDelete}
+                disabled={isLoading}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 text-sm sm:text-base font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
+              >
+                <Icon icon="mdi:close" className="w-4 h-4" />
+                <span>Cancel</span>
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={isLoading}
+                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white text-sm sm:text-base font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
+              >
+                {isLoading ? (
+                  <Icon icon="mdi:loading" className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Icon icon="mdi:delete" className="w-4 h-4" />
+                )}
+                <span>{isLoading ? 'Deleting...' : 'Delete'}</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
       {/* Mobile: My Account Navigation removed per request */}
@@ -527,6 +621,23 @@ const MyPurchase: React.FC = () => {
                             style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
                           />
                         </div>
+
+                        {/* Postal Code */}
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
+                            <Icon icon="mdi:postal-code" className="w-4 h-4 mr-2 text-black" />
+                            Postal Code
+                          </label>
+                          <input
+                            type="text"
+                            name="postal_code"
+                            value={formData.postal_code}
+                            onChange={handleInputChange}
+                            className="w-full px-4 py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                            placeholder="Enter postal code (optional)"
+                            style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}
+                          />
+                        </div>
                         <div className="flex flex-col sm:flex-row gap-3 pt-4">
                           <button
                             type="submit"
@@ -636,7 +747,7 @@ const MyPurchase: React.FC = () => {
                                 </button>
                               )}
                               <button
-                                onClick={() => handleDeleteAddress(address.id)}
+                                onClick={() => handleDeleteClick(address.id)}
                                 className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center group"
                                 style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
                               >
