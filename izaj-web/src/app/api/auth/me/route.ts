@@ -5,8 +5,11 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 export async function GET() {
     try {
         const supabase = await getSupabaseServerClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        // If there's an auth error (like invalid refresh token), just return null user
+        // This is expected when user clicks email links without being logged in
+        if (error || !user) {
             return NextResponse.json({ user: null }, { status: 200 });
         }
 
@@ -27,7 +30,9 @@ export async function GET() {
         } catch {}
 
         return NextResponse.json({ user }, { status: 200 });
-    } catch {
+    } catch (error) {
+        // Silently handle any errors (including refresh token errors)
+        // This is expected behavior when user is not authenticated
         return NextResponse.json({ user: null }, { status: 200 });
     }
 }

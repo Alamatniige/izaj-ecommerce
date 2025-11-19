@@ -675,6 +675,63 @@ const MyOrders: React.FC = () => {
                                   <Icon icon="mdi:eye-outline" className="w-4 h-4" />
                                   View Details
                                 </button>
+                                
+                                {/* Pay Now Button - For Approved Orders with GCash/Maya */}
+                                {order.status === 'approved' && (order.paymentMethod === 'GCash' || order.paymentMethod === 'Maya') && (
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        const totalAmount = order.total + order.shippingFee;
+                                        
+                                        // Check minimum amount
+                                        if (totalAmount < 100) {
+                                          alert('Minimum payment amount is ₱100.00. Please contact support.');
+                                          return;
+                                        }
+                                        
+                                        // Store order ID for callback
+                                        sessionStorage.setItem('pending_order_id', order.id);
+                                        sessionStorage.setItem('pending_order_total', totalAmount.toString());
+                                        
+                                        // Create PayMongo payment link
+                                        const response = await fetch('/api/paymongo/payment-link', {
+                                          method: 'POST',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                          },
+                                          body: JSON.stringify({
+                                            amount: totalAmount,
+                                            currency: 'PHP',
+                                            description: `Order #${order.orderNumber} - ${order.paymentMethod} Payment`,
+                                            metadata: {
+                                              order_id: order.id,
+                                              order_number: order.orderNumber,
+                                              payment_method: order.paymentMethod.toLowerCase(),
+                                            }
+                                          })
+                                        });
+
+                                        const data = await response.json();
+
+                                        if (data.success && data.data.checkout_url) {
+                                          // Redirect to PayMongo checkout
+                                          window.location.href = data.data.checkout_url;
+                                        } else {
+                                          alert(data.error || 'Failed to create payment link. Please try again.');
+                                        }
+                                      } catch (error) {
+                                        console.error('Payment error:', error);
+                                        alert('An error occurred. Please try again.');
+                                      }
+                                    }}
+                                    className="w-full sm:w-auto lg:w-full px-4 py-2.5 sm:py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 whitespace-nowrap shadow-md hover:shadow-lg"
+                                    style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
+                                  >
+                                    <Icon icon={order.paymentMethod === 'GCash' ? 'mdi:cellphone' : 'mdi:wallet'} className="w-5 h-5" />
+                                    Pay Now
+                                  </button>
+                                )}
+                                
                                 {order.status === 'complete' && !reviewedOrders.has(order.id) && (
                                   <button
                                     onClick={() => {
@@ -1098,6 +1155,62 @@ const MyOrders: React.FC = () => {
               {/* Modal Footer */}
               <div className="sticky bottom-0 bg-white border-t-2 border-gray-200 px-4 sm:px-6 py-3 sm:py-4 shadow-lg">
                 <div className="space-y-2 sm:space-y-3">
+                  {/* Pay Now Button - For Approved Orders with GCash/Maya */}
+                  {selectedOrder.status === 'approved' && (selectedOrder.paymentMethod === 'GCash' || selectedOrder.paymentMethod === 'Maya') && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          const totalAmount = selectedOrder.total + selectedOrder.shippingFee;
+                          
+                          // Check minimum amount
+                          if (totalAmount < 100) {
+                            alert('Minimum payment amount is ₱100.00. Please contact support.');
+                            return;
+                          }
+                          
+                          // Store order ID for callback
+                          sessionStorage.setItem('pending_order_id', selectedOrder.id);
+                          sessionStorage.setItem('pending_order_total', totalAmount.toString());
+                          
+                          // Create PayMongo payment link
+                          const response = await fetch('/api/paymongo/payment-link', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              amount: totalAmount,
+                              currency: 'PHP',
+                              description: `Order #${selectedOrder.orderNumber} - ${selectedOrder.paymentMethod} Payment`,
+                              metadata: {
+                                order_id: selectedOrder.id,
+                                order_number: selectedOrder.orderNumber,
+                                payment_method: selectedOrder.paymentMethod.toLowerCase(),
+                              }
+                            })
+                          });
+
+                          const data = await response.json();
+
+                          if (data.success && data.data.checkout_url) {
+                            // Redirect to PayMongo checkout
+                            window.location.href = data.data.checkout_url;
+                          } else {
+                            alert(data.error || 'Failed to create payment link. Please try again.');
+                          }
+                        } catch (error) {
+                          console.error('Payment error:', error);
+                          alert('An error occurred. Please try again.');
+                        }
+                      }}
+                      className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center gap-2 rounded-xl shadow-md hover:shadow-lg"
+                      style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
+                    >
+                      <Icon icon={selectedOrder.paymentMethod === 'GCash' ? 'mdi:cellphone' : 'mdi:wallet'} className="w-5 h-5 sm:w-6 sm:h-6" />
+                      Pay Now with {selectedOrder.paymentMethod}
+                    </button>
+                  )}
+                  
                   {/* Cancel Button - Only for Pending Orders */}
                   {selectedOrder.status === 'pending' && (
                     <button
@@ -1107,17 +1220,6 @@ const MyOrders: React.FC = () => {
                     >
                       <Icon icon="mdi:close-circle" className="w-4 h-4 sm:w-5 sm:h-5" />
                       Cancel Order
-                    </button>
-                  )}
-                  
-                  {/* Contact Support - For Active Orders (not cancelled/complete/pending cancellation) */}
-                  {selectedOrder.status !== 'cancelled' && selectedOrder.status !== 'complete' && selectedOrder.status !== 'pending' && selectedOrder.status !== 'pending_cancellation' && (
-                    <button
-                      className="w-full bg-gradient-to-r from-black to-gray-800 text-white py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base font-semibold hover:from-gray-800 hover:to-gray-900 transition-all duration-200 flex items-center justify-center gap-2 rounded-xl shadow-md"
-                      style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
-                    >
-                      <Icon icon="mdi:message-outline" className="w-4 h-4 sm:w-5 sm:h-5" />
-                      Contact Support
                     </button>
                   )}
                 </div>

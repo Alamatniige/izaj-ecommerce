@@ -249,6 +249,10 @@ const Checkout = () => {
     setIsSubmitting(true);
 
     try {
+      // Check if payment method requires PayMongo (GCash or Maya)
+      // Note: Payment will be done later when order is approved, not during checkout
+      const requiresPayment = formData.paymentMethod === 'gcash' || formData.paymentMethod === 'maya';
+      
       // Prepare order data with complete address
       let orderData;
       
@@ -301,7 +305,7 @@ const Checkout = () => {
 
       console.log('🔵 Submitting order data:', orderData);
 
-      // Create order
+      // Create order first
       const result = await createOrder(orderData);
       console.log('🔵 Order result:', result);
 
@@ -309,19 +313,23 @@ const Checkout = () => {
         // Set order completed flag to prevent redirect to cart
         setOrderCompleted(true);
         
-        // Show success toast
-        toast.success(`Order placed successfully! Your order is now pending. Admin will add shipping fee and approve your order.`, {
-          icon: '✅',
-          duration: 5000,
-        });
+        // For GCash/Maya, show message that payment will be after approval
+        if (requiresPayment) {
+          toast.success(`Order placed successfully! Once your order is approved, you can pay using ${formData.paymentMethod.toUpperCase()} from your orders page.`, {
+            icon: '✅',
+            duration: 6000,
+          });
+        } else {
+          // Cash on Delivery - no payment needed
+          toast.success(`Order placed successfully! Your order is now pending. Admin will add shipping fee and approve your order.`, {
+            icon: '✅',
+            duration: 5000,
+          });
+        }
         
-        // Redirect IMMEDIATELY using window.location (synchronous navigation)
-        // This prevents any useEffect from running and redirecting to cart
+        // Redirect to orders page (payment will be done later when order is approved)
         window.location.href = '/orders?order_completed=true';
-        
-        // Clear cart will happen on orders page when it loads
-        // We don't clear here to prevent redirect conflict
-        return; // Exit early to prevent any further execution
+        return;
       } else {
         throw new Error(result.error || 'Failed to create order');
       }
@@ -329,13 +337,11 @@ const Checkout = () => {
       console.error('Order creation error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to create order. Please try again.';
       
-      // Show error toast
       toast.error(errorMessage, {
         icon: '❌',
         duration: 5000,
       });
       
-      // Show helpful error messages
       if (errorMessage.includes('relation') || errorMessage.includes('does not exist')) {
         setError('Database tables not found. Please run the orders-schema.sql first. Check ORDERS_SYSTEM_GUIDE.md');
       } else {
@@ -774,51 +780,35 @@ const Checkout = () => {
               </p>
                 
                 <div className="space-y-3 mb-4">
-                  <label className="relative flex items-center p-4 md:p-5 border-2 rounded-xl cursor-not-allowed opacity-60 transition-all shadow-sm group" style={{ borderColor: '#e5e7eb', backgroundColor: 'white' }} onClick={(e) => e.preventDefault()}>
+                  <label className="flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'gcash' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'gcash' ? '#f9fafb' : 'white' }}>
                     <input 
                       type="radio"
                       name="paymentMethod"
                       value="gcash"
-                      checked={false}
-                      disabled
-                      onChange={() => {}}
-                      className="mr-3 text-black focus:ring-black cursor-not-allowed" 
+                      checked={formData.paymentMethod === 'gcash'}
+                      onChange={handleInputChange}
+                      className="mr-3 text-black focus:ring-black" 
                     /> 
-                    <img src="/gcash.png" alt="GCash" className="h-10 object-contain mr-3 opacity-60" />
-                    <span className="font-bold text-gray-500 font-jost">GCash</span>
-                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 px-4 py-3 bg-red-600 text-white text-base font-bold rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-[100] whitespace-nowrap font-jost shadow-2xl border-2 border-red-700">
-                      <div className="flex items-center gap-2">
-                        <Icon icon="mdi:alert-circle" className="text-xl" />
-                        <span>Currently Unavailable</span>
-                      </div>
-                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-600 border-r-2 border-b-2 border-red-700 transform rotate-45"></div>
-                    </div>
+                    <img src="/gcash.png" alt="GCash" className="h-10 object-contain mr-3" />
+                    <span className="font-bold text-gray-900 font-jost">GCash</span>
                   </label>
                   
-                  <label className="relative flex items-center p-4 md:p-5 border-2 rounded-xl cursor-not-allowed opacity-60 transition-all shadow-sm group" style={{ borderColor: '#e5e7eb', backgroundColor: 'white' }} onClick={(e) => e.preventDefault()}>
-                <input 
-                  type="radio" 
+                  <label className="flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'maya' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'maya' ? '#f9fafb' : 'white' }}>
+                    <input 
+                      type="radio" 
                       name="paymentMethod"
                       value="maya"
-                      checked={false}
-                      disabled
-                      onChange={() => {}}
-                      className="mr-3 text-black focus:ring-black cursor-not-allowed" 
+                      checked={formData.paymentMethod === 'maya'}
+                      onChange={handleInputChange}
+                      className="mr-3 text-black focus:ring-black" 
                     /> 
-                    <img src="/maya.png" alt="Maya" className="h-10 object-contain mr-3 opacity-60" />
-                    <span className="font-bold text-gray-500 font-jost">Maya</span>
-                    <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 px-4 py-3 bg-red-600 text-white text-base font-bold rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none z-[100] whitespace-nowrap font-jost shadow-2xl border-2 border-red-700">
-                      <div className="flex items-center gap-2">
-                        <Icon icon="mdi:alert-circle" className="text-xl" />
-                        <span>Currently Unavailable</span>
-                      </div>
-                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-red-600 border-r-2 border-b-2 border-red-700 transform rotate-45"></div>
-                    </div>
-              </label>
+                    <img src="/maya.png" alt="Maya" className="h-10 object-contain mr-3" />
+                    <span className="font-bold text-gray-900 font-jost">Maya</span>
+                  </label>
                   
                   <label className="flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer hover:border-black hover:bg-gray-50 transition-all shadow-sm hover:shadow-md" style={{ borderColor: formData.paymentMethod === 'cash_on_delivery' ? '#000000' : '#e5e7eb', backgroundColor: formData.paymentMethod === 'cash_on_delivery' ? '#f9fafb' : 'white' }}>
-                <input 
-                  type="radio" 
+                    <input 
+                      type="radio" 
                       name="paymentMethod"
                       value="cash_on_delivery"
                       checked={formData.paymentMethod === 'cash_on_delivery'}
@@ -983,6 +973,38 @@ const Checkout = () => {
               <p className="text-gray-700 font-jost leading-relaxed">
                 Please contact IZAJ for shipping fee before completing your order.
               </p>
+              
+              {/* GCash/Maya Payment Notice */}
+              {(formData.paymentMethod === 'gcash' || formData.paymentMethod === 'maya') && (
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-green-600 flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <Icon icon="mdi:information" className="text-white text-xl" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-green-900 text-sm font-jost mb-2 flex items-center gap-2">
+                        <Icon icon="mdi:credit-card" className="text-green-700" />
+                        {formData.paymentMethod.toUpperCase()} Payment Information
+                      </h4>
+                      <p className="text-sm text-green-800 font-jost leading-relaxed mb-2">
+                        Your order will be created first. Once the admin approves your order and adds the shipping fee, you can pay using <strong>{formData.paymentMethod.toUpperCase()}</strong> from your Orders page.
+                      </p>
+                      <div className="bg-white border border-green-200 rounded-lg p-3 mt-2">
+                        <p className="text-xs text-green-700 font-jost">
+                          <strong>📋 Process:</strong>
+                        </p>
+                        <ol className="text-xs text-green-700 font-jost mt-1 ml-4 list-decimal space-y-1">
+                          <li>Order will be created in PENDING status</li>
+                          <li>Admin will review and approve your order</li>
+                          <li>Shipping fee will be added to your order</li>
+                          <li>You'll see a "Pay Now" button in your Orders page</li>
+                          <li>Click "Pay Now" to complete payment via {formData.paymentMethod.toUpperCase()}</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 space-y-3">
                 <h4 className="font-semibold text-blue-900 text-sm font-jost flex items-center gap-2">

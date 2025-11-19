@@ -74,6 +74,9 @@ export interface Order {
   admin_notes?: string;
   cancellation_reason?: string;
   
+  // Shipping Fee Confirmation
+  shipping_fee_confirmed?: boolean;
+  
   // Timestamps
   created_at: string;
   updated_at: string;
