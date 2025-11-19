@@ -953,8 +953,8 @@ const Checkout = () => {
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setShowConfirmModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 md:p-8 animate-scale-in" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] flex flex-col animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-6 md:p-8 pb-4 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
                   <Icon icon="mdi:information" className="text-white text-xl" />
@@ -969,8 +969,8 @@ const Checkout = () => {
               </button>
             </div>
 
-            <div className="space-y-4 mb-6">
-              <p className="text-gray-700 font-jost leading-relaxed">
+            <div className="space-y-4 px-6 md:px-8 overflow-y-auto flex-1 min-h-0">
+              <p className="text-gray-700 font-jost leading-relaxed break-words">
                 Please contact IZAJ for shipping fee before completing your order.
               </p>
               
@@ -986,14 +986,14 @@ const Checkout = () => {
                         <Icon icon="mdi:credit-card" className="text-green-700" />
                         {formData.paymentMethod.toUpperCase()} Payment Information
                       </h4>
-                      <p className="text-sm text-green-800 font-jost leading-relaxed mb-2">
+                      <p className="text-sm text-green-800 font-jost leading-relaxed mb-2 break-words">
                         Your order will be created first. Once the admin approves your order and adds the shipping fee, you can pay using <strong>{formData.paymentMethod.toUpperCase()}</strong> from your Orders page.
                       </p>
                       <div className="bg-white border border-green-200 rounded-lg p-3 mt-2">
                         <p className="text-xs text-green-700 font-jost">
                           <strong>📋 Process:</strong>
                         </p>
-                        <ol className="text-xs text-green-700 font-jost mt-1 ml-4 list-decimal space-y-1">
+                        <ol className="text-xs text-green-700 font-jost mt-1 ml-4 list-decimal space-y-1 break-words">
                           <li>Order will be created in PENDING status</li>
                           <li>Admin will review and approve your order</li>
                           <li>Shipping fee will be added to your order</li>
@@ -1030,22 +1030,22 @@ const Checkout = () => {
                     href="https://facebook.com/izajlighting" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors font-jost"
+                    className="flex items-center gap-2 text-blue-700 hover:text-blue-900 transition-colors font-jost break-words"
                   >
-                    <Icon icon="mdi:facebook" className="text-lg" />
-                    <span>Facebook: IZAJ Lighting Centre</span>
+                    <Icon icon="mdi:facebook" className="text-lg flex-shrink-0" />
+                    <span className="break-words">Facebook: IZAJ Lighting Centre</span>
                   </a>
                 </div>
               </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-sm text-yellow-800 font-jost">
+                <p className="text-sm text-yellow-800 font-jost break-words">
                   <strong>Note:</strong> Your order will be placed in <strong>PENDING</strong> status. The admin will input the shipping fee and approve your order.
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 p-6 md:p-8 pt-4 flex-shrink-0 border-t border-gray-200">
               <button
                 onClick={() => setShowConfirmModal(false)}
                 className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-semibold font-jost"

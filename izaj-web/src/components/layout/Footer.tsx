@@ -78,19 +78,11 @@ const Footer: React.FC = () => {
                  className="bg-[#1877F3] text-white rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center hover:bg-[#166FE5] transition-colors">
                 <Icon icon="mdi:facebook" width="20" height="20" className="md:w-7 md:h-7" />
               </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" 
+              <a href="https://www.instagram.com/izajlightingcentre/" target="_blank" rel="noopener noreferrer" 
                  className="bg-[#E4405F] text-white rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center hover:bg-[#D62976] transition-colors">
                 <Icon icon="mdi:instagram" width="20" height="20" className="md:w-7 md:h-7" />
               </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" 
-                 className="bg-[#FF0000] text-white rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center hover:bg-[#E60000] transition-colors">
-                <Icon icon="mdi:youtube" width="20" height="20" className="md:w-7 md:h-7" />
-              </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" 
-                 className="bg-[#BD081C] text-white rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center hover:bg-[#A3081A] transition-colors">
-                <Icon icon="mdi:pinterest" width="20" height="20" className="md:w-7 md:h-7" />
-              </a>
-              <a href="#" target="_blank" rel="noopener noreferrer" 
+              <a href="https://www.tiktok.com/@izaj.lighting.cen" target="_blank" rel="noopener noreferrer" 
                  className="bg-black text-white rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center hover:bg-gray-800 transition-colors">
                 <Icon icon="ri:tiktok-fill" width="20" height="20" className="md:w-7 md:h-7" />
               </a>
