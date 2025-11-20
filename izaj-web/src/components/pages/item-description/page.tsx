@@ -57,7 +57,6 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
   const [product, setProduct] = useState<Product | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
   const [quantity, setQuantity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState<string>('');
   // Removed unused selectedBranch state
   const [isLoading, setIsLoading] = useState(true);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -111,7 +110,6 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
         if (found) {
           setProduct(found);
           setMainImage(found.image);
-          setSelectedColor(found.colors?.[0] || 'Black');
           
           // Add to recently viewed
           addToRecentlyViewed({
@@ -179,7 +177,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
       originalPrice: originalPrice,
       image: product.image,
       quantity: quantity,
-      color: selectedColor,
+      color: product.colors?.[0] || 'Black',
       size: '120cm', // Default size since it's not in the product data
       isSale: !!product.originalPrice, // Mark as sale if originalPrice exists
       product: {
@@ -651,25 +649,6 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                 )}
               </div>
               
-              {/* Color Selection */}
-              <div className="mb-6">
-                <p className="text-sm text-black mb-3" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}>
-                  Color: <span className="font-normal">{selectedColor || product.colors?.[0] || 'Black'}</span>
-                </p>
-                <div className="flex gap-2">
-                  {product.colors?.map((color: string, index: number) => (
-                    <div
-                      key={index}
-                      className={`w-6 h-6 border border-gray-300 rounded cursor-pointer hover:border-gray-500 transition-all ${
-                        selectedColor === color ? 'border-gray-800 ring-1 ring-gray-400' : ''
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setSelectedColor(color)}
-                    />
-                  ))}
-                </div>
-              </div>
-              
               {/* Stock Status */}
               <div className="mb-6">
                 <p className="text-sm text-gray-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
@@ -838,7 +817,6 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
                         <p className="text-sm text-black whitespace-pre-wrap" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>{product.description}</p>
                       ) : (
                         <ul className="list-disc pl-5 space-y-1 text-sm text-black" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                          <li>Color: {selectedColor || product.colors?.[0] || 'Black'}</li>
                           <li>No additional description available</li>
                         </ul>
                       )}
