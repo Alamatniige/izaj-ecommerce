@@ -137,15 +137,16 @@ const MyOrders: React.FC = () => {
       console.log('📦 Payment status response:', paymentData);
       
       if (paymentData.success && paymentData.data.payment_reference) {
-        // Payment was successful, update order
+        // Payment was successful, update order with reference only
+        // Payment status will remain 'pending' until admin marks it as paid
         const updateResponse = await fetch(`/api/orders/${orderId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            payment_reference: paymentData.data.payment_reference,
-            payment_status: 'paid'
+            payment_reference: paymentData.data.payment_reference
+            // Do NOT set payment_status to 'paid' automatically
           })
         });
 
@@ -788,11 +789,15 @@ const MyOrders: React.FC = () => {
                                   order.paymentReference ? (
                                     <button
                                       disabled
-                                      className="w-full sm:w-auto lg:w-full px-4 py-2.5 sm:py-2 bg-gray-400 text-white rounded-lg transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 whitespace-nowrap cursor-not-allowed"
+                                      className={`w-full sm:w-auto lg:w-full px-4 py-2.5 sm:py-2 rounded-lg transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 whitespace-nowrap cursor-not-allowed ${
+                                        order.paymentStatus === 'paid' 
+                                          ? 'bg-green-500 text-white' 
+                                          : 'bg-gray-400 text-white'
+                                      }`}
                                       style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
                                     >
-                                      <Icon icon="mdi:clock-outline" className="w-5 h-5" />
-                                      Pending
+                                      <Icon icon={order.paymentStatus === 'paid' ? 'mdi:check-circle' : 'mdi:clock-outline'} className="w-5 h-5" />
+                                      {order.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
                                     </button>
                                   ) : (
                                     <button
@@ -1288,11 +1293,15 @@ const MyOrders: React.FC = () => {
                     selectedOrder.paymentReference ? (
                       <button
                         disabled
-                        className="w-full bg-gray-400 text-white py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2 rounded-xl cursor-not-allowed"
+                        className={`w-full py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base font-semibold transition-all duration-200 flex items-center justify-center gap-2 rounded-xl cursor-not-allowed ${
+                          selectedOrder.paymentStatus === 'paid' 
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-gray-400 text-white'
+                        }`}
                         style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}
                       >
-                        <Icon icon="mdi:clock-outline" className="w-5 h-5 sm:w-6 sm:h-6" />
-                        Pending
+                        <Icon icon={selectedOrder.paymentStatus === 'paid' ? 'mdi:check-circle' : 'mdi:clock-outline'} className="w-5 h-5 sm:w-6 sm:h-6" />
+                        {selectedOrder.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
                       </button>
                     ) : (
                       <button

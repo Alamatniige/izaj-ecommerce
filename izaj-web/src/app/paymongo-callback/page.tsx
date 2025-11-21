@@ -58,8 +58,8 @@ export default function PayMongoCallbackPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          payment_reference: paymentReference,
-          payment_status: 'paid'
+          payment_reference: paymentReference
+          // Do NOT set payment_status to 'paid' automatically - admin will mark as paid
         })
       });
 
