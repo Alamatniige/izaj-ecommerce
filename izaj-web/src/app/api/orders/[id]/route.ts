@@ -148,9 +148,9 @@ export async function PATCH(
       );
     }
 
-    // Only allow updating customer_notes for now
-    // Other updates should be done by admin via desktop app
-    const allowedFields = ['customer_notes'];
+    // Allow updating customer_notes, payment_reference, and payment_status
+    // payment_reference and payment_status are used for PayMongo payment tracking
+    const allowedFields = ['customer_notes', 'payment_reference', 'payment_status'];
     const updateData: Record<string, string> = {};
 
     for (const field of allowedFields) {
