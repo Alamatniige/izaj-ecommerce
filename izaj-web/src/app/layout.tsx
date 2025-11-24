@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "../components/layout";
 import Footer from "../components/layout/Footer";
 import ClientProviders from "../components/providers/ClientProviders";
+import CookieConsent from "../components/common/CookieConsent";
 import { Toaster } from "react-hot-toast";
 
 const playfairDisplay = Playfair_Display({
@@ -113,6 +114,7 @@ export default function RootLayout({
           <Header />
           {children}
           <Footer />
+          <CookieConsent forceShow={false} />
           <Toaster 
             position="top-right"
             toastOptions={{

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Icon } from '@iconify/react';
 import Link from 'next/link';
 
@@ -46,20 +46,50 @@ const Footer: React.FC = () => {
   const toggleTargetingEnabled = () => setIsTargetingEnabled(!isTargetingEnabled);
 
   const handleOnlyNecessaryClick = () => {
-    // Logic for only necessary cookies
+    // Save only necessary cookies preference
+    localStorage.setItem('cookieConsent', 'accepted');
+    localStorage.setItem('cookiePreferences', JSON.stringify({
+      necessary: true,
+      performance: false,
+      functional: false,
+      targeting: false
+    }));
     console.log('Only Necessary Cookies clicked');
     handleCloseCookieModal();
+    // Notify cookie consent banner to hide
+    window.dispatchEvent(new CustomEvent('cookieSettingsConfirmed'));
   };
 
   const handleConfirmChoicesClick = () => {
-    // Logic for confirming choices
+    // Save user's cookie preferences
+    localStorage.setItem('cookieConsent', 'accepted');
+    localStorage.setItem('cookiePreferences', JSON.stringify({
+      necessary: true,
+      performance: isPerformanceEnabled,
+      functional: isFunctionalEnabled,
+      targeting: isTargetingEnabled
+    }));
     console.log('Confirm My Choices clicked');
     console.log('Performance Cookies Enabled:', isPerformanceEnabled);
     console.log('Functional Cookies Enabled:', isFunctionalEnabled);
     console.log('Targeting Cookies Enabled:', isTargetingEnabled);
     handleCloseCookieModal();
+    // Notify cookie consent banner to hide
+    window.dispatchEvent(new CustomEvent('cookieSettingsConfirmed'));
   };
 
+  // Listen for custom event to open cookie settings from consent banner
+  useEffect(() => {
+    const handleOpenCookieSettings = () => {
+      setShowCookieModal(true);
+    };
+
+    window.addEventListener('openCookieSettings', handleOpenCookieSettings);
+    
+    return () => {
+      window.removeEventListener('openCookieSettings', handleOpenCookieSettings);
+    };
+  }, []);
 
   return (
     <>
@@ -272,9 +302,6 @@ const Footer: React.FC = () => {
                 </div>
                 <div className="rounded-lg border border-gray-200 bg-white w-14 h-10 md:w-16 md:h-12 flex items-center justify-center">
                   <img src="/maya2.png" alt="Maya" className="h-6 md:h-8 w-auto object-contain" />
-                </div>
-                <div className="rounded-lg border border-gray-200 bg-white w-14 h-10 md:w-16 md:h-12 flex items-center justify-center">
-                  <img src="/paypal2.png" alt="PayPal" className="h-5 md:h-6" />
                 </div>
               </div>
             </div>
