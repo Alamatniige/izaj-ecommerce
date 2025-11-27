@@ -30,6 +30,38 @@ export default function CartPage() {
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
   const [showContactInfo, setShowContactInfo] = useState(false);
+  
+  // Selected items for checkout
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+
+  // Initialize selected items when cart loads
+  useEffect(() => {
+    setSelectedItems(new Set(cart.items.map(item => item.id)));
+  }, [cart.items.length]);
+
+  const toggleSelectItem = (itemId: string) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === cart.items.length) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(cart.items.map(item => item.id)));
+    }
+  };
+
+  const selectedCartItems = useMemo(() => {
+    return cart.items.filter(item => selectedItems.has(item.id));
+  }, [cart.items, selectedItems]);
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     updateQuantity(id, newQuantity);
@@ -41,14 +73,16 @@ export default function CartPage() {
 
   const calculateSubtotal = () => {
     // Calculate subtotal using original price if available, otherwise use discounted price
-    return cart.items.reduce((sum, item) => {
+    // Only include selected items
+    return selectedCartItems.reduce((sum, item) => {
       const itemPrice = item.originalPrice !== undefined ? item.originalPrice : item.price;
       return sum + (itemPrice * item.quantity);
     }, 0);
   };
 
   const calculateDiscount = () => {
-    return cart.items.reduce((sum, item) => {
+    // Only include selected items
+    return selectedCartItems.reduce((sum, item) => {
       if (item.originalPrice !== undefined) {
         return sum + ((item.originalPrice - item.price) * item.quantity);
       }
@@ -57,7 +91,8 @@ export default function CartPage() {
   };
 
   const getDiscountItems = () => {
-    return cart.items.filter(item => item.originalPrice !== undefined && item.originalPrice > item.price);
+    // Only include selected items
+    return selectedCartItems.filter(item => item.originalPrice !== undefined && item.originalPrice > item.price);
   };
 
   const calculateTotalSavings = () => {
@@ -67,6 +102,9 @@ export default function CartPage() {
   };
 
   const handleCheckout = () => {
+    if (selectedItems.size === 0) {
+      return; // Don't proceed if no items selected
+    }
     try {
       if (shippingAddress.city) {
         localStorage.setItem('checkout_shipping_city', shippingAddress.city);
@@ -78,6 +116,8 @@ export default function CartPage() {
         localStorage.setItem('checkout_applied_promo', appliedPromo);
         localStorage.setItem('checkout_promo_discount', String(promoDiscount));
       }
+      // Save selected items for checkout
+      localStorage.setItem('checkout_selected_items', JSON.stringify(Array.from(selectedItems)));
     } catch (e) {
       // ignore storage failures
     }
@@ -108,8 +148,8 @@ export default function CartPage() {
     return calculateShipping(normalizedLocation);
   }, [hasShippingAddress, normalizedLocation]);
   const shippingFee = shippingFeeMaybe ?? 0;
-  const subtotal = useMemo(() => calculateSubtotal(), [cart.items]);
-  const productDiscount = useMemo(() => calculateDiscount(), [cart.items]);
+  const subtotal = useMemo(() => calculateSubtotal(), [selectedCartItems]);
+  const productDiscount = useMemo(() => calculateDiscount(), [selectedCartItems]);
   const tax = useMemo(() => calculateTax(subtotal), [subtotal]);
   const computedTotal = useMemo(() => {
     const total = subtotal - productDiscount - promoDiscount + shippingFee + tax;
@@ -212,9 +252,44 @@ export default function CartPage() {
                 </div>
               ) : (
                 <div>
+                  {/* Select All Header */}
+                  <div className="flex items-center gap-3 p-3 sm:p-4 border-b border-gray-200 bg-gray-50">
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleSelectAll(); }}
+                      className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-black transition-colors"
+                      style={{ fontFamily: 'Jost, sans-serif' }}
+                    >
+                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                        selectedItems.size === cart.items.length && cart.items.length > 0
+                          ? 'bg-black border-black' 
+                          : selectedItems.size > 0 
+                            ? 'bg-gray-400 border-gray-400' 
+                            : 'border-gray-300 bg-white'
+                      }`}>
+                        {selectedItems.size > 0 && (
+                          <Icon icon={selectedItems.size === cart.items.length ? "mdi:check" : "mdi:minus"} className="text-white" width="14" height="14" />
+                        )}
+                      </div>
+                      <span>Select All ({selectedItems.size}/{cart.items.length})</span>
+                    </button>
+                  </div>
                   <div className="divide-y divide-gray-100">
                     {cart.items.map((item) => (
-                      <Link key={item.id} href={`/item-description/${item.productId}`} className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border-b border-gray-100 bg-white relative hover:bg-gray-50 hover:shadow-md hover:border-gray-300 transition-all duration-300 group rounded-lg" style={{ scrollSnapAlign: 'start' }}>
+                      <div key={item.id} className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border-b border-gray-100 bg-white relative hover:bg-gray-50 hover:shadow-md hover:border-gray-300 transition-all duration-300 group rounded-lg" style={{ scrollSnapAlign: 'start' }}>
+                        {/* Checkbox */}
+                        <button
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleSelectItem(item.id); }}
+                          className="flex-shrink-0 mt-6 sm:mt-8"
+                        >
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                            selectedItems.has(item.id) ? 'bg-black border-black' : 'border-gray-300 bg-white hover:border-gray-400'
+                          }`}>
+                            {selectedItems.has(item.id) && (
+                              <Icon icon="mdi:check" className="text-white" width="14" height="14" />
+                            )}
+                          </div>
+                        </button>
+                        <Link href={`/item-description/${item.productId}`} className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
                         <div className="w-20 h-20 sm:w-24 sm:h-28 flex-shrink-0 flex items-center justify-center overflow-hidden mt-1">
                           <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                         </div>
@@ -290,7 +365,8 @@ export default function CartPage() {
                             </button>
                           </div>
                         </div>
-                      </Link>
+                        </Link>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -400,9 +476,18 @@ export default function CartPage() {
                     <div className="flex justify-between"><span className="text-gray-600 font-medium text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>Tax (12% VAT)</span><span className="font-semibold text-black text-sm lg:text-base" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(tax)}</span></div>
                     <div className="border-t border-gray-300 pt-3 lg:pt-4 flex justify-between font-extrabold text-base lg:text-lg"><span className="text-black" style={{ fontFamily: 'Jost, sans-serif' }}>Total</span><span className="text-black" style={{ fontFamily: 'Jost, sans-serif' }}>{formatCurrency(computedTotal)}</span></div>
                   </div>
-                  <button onClick={handleCheckout} className="w-full bg-black hover:bg-gray-800 text-white py-3 lg:py-4 rounded-xl font-bold text-base lg:text-lg shadow transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  <button 
+                    onClick={handleCheckout} 
+                    disabled={selectedItems.size === 0}
+                    className={`w-full py-3 lg:py-4 rounded-xl font-bold text-base lg:text-lg shadow transition-all duration-200 flex items-center justify-center ${
+                      selectedItems.size === 0 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                        : 'bg-black hover:bg-gray-800 text-white transform hover:scale-[1.02]'
+                    }`} 
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
                     <Icon icon="mdi:lock-outline" className="mr-2" />
-                    PROCEED TO CHECKOUT
+                    CHECKOUT ({selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''})
                   </button>
                   <p className="text-xs text-center mt-3 lg:mt-4 text-gray-500" style={{ fontFamily: 'Jost, sans-serif' }}>Taxes and shipping calculated at checkout</p>
                 </div>

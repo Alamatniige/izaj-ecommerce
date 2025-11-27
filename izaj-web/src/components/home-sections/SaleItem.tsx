@@ -25,7 +25,6 @@ interface SaleProduct {
 }
 
 export default function SaleItem() {
-  const [selectedColor, setSelectedColor] = useState('Black');
   const [quantity, setQuantity] = useState(1);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
@@ -385,24 +384,6 @@ export default function SaleItem() {
                   </p>
                 </div>
                 
-                {/* Color Selection - Same as item-description */}
-                <div className="mb-6">
-                  <p className="text-sm text-black mb-3" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}>
-                    Color: <span className="font-normal">{selectedColor}</span>
-                  </p>
-                  <div className="flex gap-2">
-                    {["Black", "Gold", "Silver", "Bronze"].map((color: string, index: number) => (
-                      <div
-                        key={index}
-                        className={`w-6 h-6 border border-gray-300 rounded cursor-pointer hover:border-gray-500 transition-all ${
-                          selectedColor === color ? 'border-gray-800 ring-1 ring-gray-400' : ''
-                        }`}
-                        style={{ backgroundColor: color.toLowerCase() }}
-                        onClick={() => setSelectedColor(color)}
-                      />
-                    ))}
-                  </div>
-                </div>
                 
                 {/* Stock - show exact quantity from API */}
                 <div className="mb-6">

@@ -39,11 +39,11 @@ function capitalize(str: string) {
     setUser?: React.Dispatch<React.SetStateAction<User | null>>;
   }
 
-  // Promotional banners
-  const promoBanners = [
-    { id: 1, text: "Monthly Sale is here! → Enjoy 10% OFF items for the month of June", color: "bg-black" },
-    { id: 2, text: "Free Installation on Orders Above ₱10,000 → Within San Pablo City", color: "bg-gray-800" },
-    { id: 3, text: "New Arrivals! → Check out our latest lighting fixtures collection", color: "bg-gray-900" },
+  // Default promotional banners (will be updated with real sale data)
+  const defaultBanners = [
+    { id: 1, text: "Check out our latest sale items! → Shop now for great deals", color: "bg-black", link: "/sales" },
+    { id: 2, text: "Free Installation on Orders Above ₱10,000 → Within San Pablo City", color: "bg-gray-800", link: null },
+    { id: 3, text: "New Arrivals! → Check out our latest lighting fixtures collection", color: "bg-gray-900", link: "/collection" },
   ];
   
   const Header: React.FC<HeaderProps> = ({
@@ -98,7 +98,51 @@ function capitalize(str: string) {
   const [isClient, setIsClient] = useState(false);
   const [headerOffsetTop, setHeaderOffsetTop] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+  const [promoBanners, setPromoBanners] = useState(defaultBanners);
   
+  // Fetch real sale data for promotional banner
+  useEffect(() => {
+    const fetchSaleData = async () => {
+      try {
+        const response = await fetch('/api/sales-products');
+        if (response.ok) {
+          const salesProducts = await response.json();
+          if (salesProducts && salesProducts.length > 0) {
+            // Get unique discount percentages from sale products
+            const discounts: number[] = [];
+            salesProducts.forEach((product: any) => {
+              const saleDetails = product.sale?.[0];
+              if (saleDetails?.percentage) {
+                discounts.push(saleDetails.percentage);
+              }
+            });
+            
+            // Get the max discount for the banner
+            const maxDiscount = discounts.length > 0 ? Math.max(...discounts) : null;
+            const saleCount = salesProducts.length;
+            
+            // Update first banner with real sale data
+            if (maxDiscount || saleCount > 0) {
+              const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+              const saleText = maxDiscount 
+                ? `${currentMonth} Sale is here! → Enjoy up to ${maxDiscount}% OFF on ${saleCount} items`
+                : `${currentMonth} Sale is here! → ${saleCount} items on sale now`;
+              
+              setPromoBanners(prev => [
+                { ...prev[0], text: saleText },
+                prev[1],
+                prev[2]
+              ]);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch sale data for banner:', error);
+      }
+    };
+    
+    fetchSaleData();
+  }, []);
   
     // Reset profile image error when user or profilePicture changes
     useEffect(() => {
@@ -641,7 +685,7 @@ function capitalize(str: string) {
               </button>
   
               {/* Login/Signup Section with Icons */}
-              <div className="flex items-center space-x-6 items-center">
+              <div className="flex items-center space-x-4">
                 {/* User Icon or Account Dropdown */}
                 {!isClient ? (
                   // Server-side rendering: always show the login button to avoid hydration mismatch
@@ -678,7 +722,7 @@ function capitalize(str: string) {
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-center relative group" ref={accountDropdownRef}>
+                      <div className="flex items-center justify-center relative group mr-[-8px]" ref={accountDropdownRef}>
                         <button
                           onClick={() => setIsAccountDropdownOpen(!isAccountDropdownOpen)}
                           className="flex items-center transition-all duration-300 hover:scale-110"
@@ -706,7 +750,7 @@ function capitalize(str: string) {
                               </div>
                             )}
                           </div>
-                          <div className="hidden md:flex flex-col ml-2 text-left">
+                          <div className="hidden md:flex flex-col ml-1 text-left">
                             <span
                               className="font-normal text-xs text-gray-500 leading-none "
                               style={{ fontFamily: 'Jost, sans-serif', letterSpacing: "0.02em" }}
@@ -870,7 +914,7 @@ function capitalize(str: string) {
                 {/* Notification Icon with Tooltip */}
                 {!(isClient && isMobile) && (
                 <div className="flex items-center justify-center relative group">
-                  <div className="w-7 h-7 flex items-center justify-center">
+                  <div className="w-7 h-7 flex items-center justify-center" style={{ marginTop: '4px' }}>
                     <NotificationDropdown 
                       user={!isClient ? null : user} 
                       onOpenAuthModal={() => (isMobile ? router.push('/login') : setIsLoginModalOpen(true))}

@@ -116,7 +116,7 @@ export default function RootLayout({
           <Footer />
           <CookieConsent forceShow={false} />
           <Toaster 
-            position="top-right"
+            position="top-center"
             toastOptions={{
               duration: 3000,
               style: {

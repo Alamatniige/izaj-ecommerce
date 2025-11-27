@@ -25,8 +25,8 @@ export const useCart = () => {
       if (saved) {
         const parsed = JSON.parse(saved) as Partial<Cart>;
         const items = Array.isArray(parsed.items) ? parsed.items : [];
-        // Calculate totalItems as sum of all quantities, not count of unique items
-        const totalItems = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        // Calculate totalItems as count of unique items (not sum of quantities)
+        const totalItems = items.length;
         const totalPrice = items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
         
         // Ensure dates are properly handled
@@ -119,8 +119,8 @@ export const useCart = () => {
       updatedItems = [...cart.items, newItem];
     }
 
-    // Calculate totalItems as sum of all quantities, not count of unique items
-    const totalItems = updatedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    // Calculate totalItems as count of unique items (not sum of quantities)
+    const totalItems = updatedItems.length;
     const totalPrice = updatedItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
 
     setCart({
@@ -144,8 +144,8 @@ export const useCart = () => {
       item.id === itemId ? { ...item, quantity } : item
     );
 
-    // Calculate totalItems as sum of all quantities, not count of unique items
-    const totalItems = updatedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    // Calculate totalItems as count of unique items (not sum of quantities)
+    const totalItems = updatedItems.length;
     const totalPrice = updatedItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
 
     setCart({
@@ -159,8 +159,8 @@ export const useCart = () => {
 
   const removeFromCart = (itemId: string) => {
     const updatedItems = cart.items.filter(item => item.id !== itemId);
-    // Calculate totalItems as sum of all quantities, not count of unique items
-    const totalItems = updatedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    // Calculate totalItems as count of unique items (not sum of quantities)
+    const totalItems = updatedItems.length;
     const totalPrice = updatedItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
 
     setCart({

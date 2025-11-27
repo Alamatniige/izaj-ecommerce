@@ -24,6 +24,27 @@ const Checkout = () => {
   const [showSavedAddresses, setShowSavedAddresses] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState(false);
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
+
+  // Load selected items from localStorage
+  useEffect(() => {
+    try {
+      const savedSelectedItems = localStorage.getItem('checkout_selected_items');
+      if (savedSelectedItems) {
+        const parsed = JSON.parse(savedSelectedItems);
+        setSelectedItemIds(new Set(parsed));
+      } else {
+        // If no selection saved, select all items
+        setSelectedItemIds(new Set(cart.items.map(item => item.id)));
+      }
+    } catch (e) {
+      // Fallback to all items
+      setSelectedItemIds(new Set(cart.items.map(item => item.id)));
+    }
+  }, [cart.items]);
+
+  // Filter cart items to only selected ones
+  const checkoutItems = cart.items.filter(item => selectedItemIds.has(item.id));
   
   
   // Form data
@@ -42,12 +63,12 @@ const Checkout = () => {
     newsletter: false
   });
 
-  // Redirect if cart is empty (but not if order was just completed or if we're submitting)
+  // Redirect if no items selected for checkout (but not if order was just completed or if we're submitting)
   useEffect(() => {
-    if (cart.totalItems === 0 && !orderCompleted && !isSubmitting) {
+    if (checkoutItems.length === 0 && selectedItemIds.size > 0 && !orderCompleted && !isSubmitting) {
       router.push('/cart');
     }
-  }, [cart.totalItems, router, orderCompleted, isSubmitting]);
+  }, [checkoutItems.length, selectedItemIds.size, router, orderCompleted, isSubmitting]);
 
 
   // Load saved addresses when user is available
@@ -203,14 +224,16 @@ const Checkout = () => {
 
   const calculateSubtotal = () => {
     // Calculate subtotal using original price if available, otherwise use discounted price
-    return cart.items.reduce((sum, item) => {
+    // Only include selected items
+    return checkoutItems.reduce((sum, item) => {
       const itemPrice = item.originalPrice !== undefined ? item.originalPrice : item.price;
       return sum + (itemPrice * item.quantity);
     }, 0);
   };
 
   const calculateDiscount = () => {
-    return cart.items.reduce((sum, item) => {
+    // Only include selected items
+    return checkoutItems.reduce((sum, item) => {
       if (item.originalPrice !== undefined) {
         return sum + ((item.originalPrice - item.price) * item.quantity);
       }
@@ -219,7 +242,8 @@ const Checkout = () => {
   };
 
   const getDiscountItems = () => {
-    return cart.items.filter(item => item.originalPrice !== undefined && item.originalPrice > item.price);
+    // Only include selected items
+    return checkoutItems.filter(item => item.originalPrice !== undefined && item.originalPrice > item.price);
   };
 
   const shippingFee = calculateShipping();
@@ -259,7 +283,7 @@ const Checkout = () => {
       if (deliveryMethod === 'pickup') {
         // For pickup orders, use store address and default to cash on pickup
         orderData = {
-          items: cart.items.map(item => ({
+          items: checkoutItems.map(item => ({
             product_id: item.productId,
             name: item.name,
             price: item.price, // This is the sale price (discounted price)
@@ -282,7 +306,7 @@ const Checkout = () => {
         // Shipping fee will be set to 0 - admin will input it later
         const fullAddress = formData.address;
         orderData = {
-          items: cart.items.map(item => ({
+          items: checkoutItems.map(item => ({
             product_id: item.productId,
             name: item.name,
             price: item.price, // This is the sale price (discounted price)
@@ -457,7 +481,7 @@ const Checkout = () => {
                     <div className="text-xs text-gray-600 font-jost">Delivered to your address</div>
                   </div>
                 </label>
-                  {cart.items.some(item => item.product?.pickup_available) && (
+                  {checkoutItems.some(item => item.product?.pickup_available) && (
                   <label className="flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all w-full md:w-1/2 hover:border-black hover:bg-gray-50 shadow-sm hover:shadow-md" style={{ borderColor: deliveryMethod === 'pickup' ? '#000000' : '#e5e7eb', backgroundColor: deliveryMethod === 'pickup' ? '#f9fafb' : 'white' }}>
                   <input 
                     type="radio"
@@ -486,7 +510,7 @@ const Checkout = () => {
                           <h3 className="font-bold text-blue-900 mb-3 font-jost text-lg">Pickup Information</h3>
                           <div className="space-y-2 text-sm text-blue-900 font-jost">
                             <p className="flex items-center gap-2"><strong className="text-blue-800">📍 Store:</strong> IZAJ Lighting Centre</p>
-                            <p className="flex items-center gap-2"><strong className="text-blue-800">🏠 Location:</strong> San Pablo City, Laguna</p>
+                            <p className="flex items-center gap-2"><strong className="text-blue-800">🏠 Location:</strong> 173 1, San Pablo City, 4000 Laguna</p>
                             <div className="mt-3 bg-white rounded-lg p-3 border border-blue-200">
                               <p className="text-xs text-blue-800 font-medium flex items-center gap-2 font-jost">
                                 <Icon icon="mdi:bell-outline" className="text-blue-600" />
@@ -565,13 +589,13 @@ const Checkout = () => {
                     </div>
                   )}
 
-                  <select 
+                  <input 
+                    type="text"
                     name="country"
-                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none transition-all bg-white text-black font-jost shadow-sm hover:border-gray-300"
+                    value="Philippines"
                     disabled
-                  >
-                  <option>Philippines</option>
-                </select>
+                    className="w-full p-4 border-2 border-gray-200 rounded-xl bg-gray-50 text-black font-jost shadow-sm cursor-not-allowed"
+                  />
                   
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                     <input 
@@ -863,7 +887,7 @@ const Checkout = () => {
               <h2 className="text-2xl font-bold text-gray-900 mb-6 font-jost">Order Summary</h2>
               
               <div className="max-h-56 md:max-h-64 overflow-auto mb-6 space-y-4">
-                  {cart.items.map((item) => (
+                  {checkoutItems.map((item) => (
                     <div key={item.id} className="flex items-start gap-4 pb-4 border-b border-gray-100">
                   <div className="relative bg-gray-100 rounded-lg overflow-hidden w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0">
                     <img
@@ -885,7 +909,7 @@ const Checkout = () => {
 
               <div className="space-y-4 text-sm mb-6 font-jost">
                 <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal ({cart.totalItems} {cart.totalItems === 1 ? 'item' : 'items'})</span>
+                    <span className="text-gray-600">Subtotal ({checkoutItems.length} {checkoutItems.length === 1 ? 'item' : 'items'})</span>
                     <span className="font-medium">₱{subtotal.toFixed(2)}</span>
                 </div>
                 
