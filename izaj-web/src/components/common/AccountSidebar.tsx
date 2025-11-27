@@ -10,7 +10,7 @@ interface AccountSidebarProps {
     lastName: string;
   };
   profileImage: string;
-  activePage: 'profile' | 'orders' | 'payments' | 'addresses' | 'changepassword';
+  activePage: 'profile' | 'orders' | 'addresses' | 'changepassword';
 }
 
 const AccountSidebar: React.FC<AccountSidebarProps> = ({ userData, profileImage, activePage }) => {
@@ -63,23 +63,6 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ userData, profileImage,
               <Link href="/orders" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
                 <Icon icon="mdi:package-variant" className="w-4 h-4 mr-2" />
                 My Orders
-              </Link>
-            )}
-          </li>
-          <li className={`py-2 px-3 rounded-lg transition-all duration-200 ${
-            activePage === 'payments' 
-              ? 'bg-black' 
-              : 'hover:bg-gray-100'
-          }`}>
-            {activePage === 'payments' ? (
-              <span className="text-white font-semibold text-sm block flex items-center" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                <Icon icon="mdi:credit-card-outline" className="w-4 h-4 mr-2" />
-                Payment Methods
-              </span>
-            ) : (
-              <Link href="/payments" className="text-gray-600 hover:text-black text-sm block transition-colors flex items-center" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                <Icon icon="mdi:credit-card-outline" className="w-4 h-4 mr-2" />
-                Payment Methods
               </Link>
             )}
           </li>
@@ -189,17 +172,6 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ userData, profileImage,
               >
                 <span className="flex items-center"><Icon icon="mdi:package-variant" className="w-5 h-5 mr-3" />My Orders</span>
                 {activePage === 'orders' ? <Icon icon="mdi:check" className="w-4 h-4" /> : <Icon icon="mdi:chevron-right" className="w-4 h-4" />}
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/payments"
-                onClick={() => setMobileOpen(false)}
-                className={`flex items-center justify-between w-full px-4 py-3 rounded-lg border ${activePage === 'payments' ? 'border-black bg-gray-50 text-black' : 'border-gray-200 text-gray-700 hover:bg-gray-50'} transition-colors`}
-                style={{ fontFamily: 'Jost, sans-serif', fontWeight: activePage === 'payments' ? 600 : 400 }}
-              >
-                <span className="flex items-center"><Icon icon="mdi:credit-card-outline" className="w-5 h-5 mr-3" />Payment Methods</span>
-                {activePage === 'payments' ? <Icon icon="mdi:check" className="w-4 h-4" /> : <Icon icon="mdi:chevron-right" className="w-4 h-4" />}
               </Link>
             </li>
             <li>
