@@ -337,7 +337,7 @@ const ProductList: React.FC<ProductListProps> = ({ user }) => {
   // Get maximum price from all products
   const getMaxPrice = useCallback(() => {
     if (allProducts.length === 0) return 282000; // fallback
-    return Math.max(...allProducts.map(product => product.price));
+    return Math.ceil(Math.max(...allProducts.map(product => product.price)));
   }, [allProducts]);
 
   // Update price range when products are loaded

@@ -110,7 +110,7 @@ const AboutUs: React.FC = () => {
                             <div className="relative mt-8 lg:mt-0">
                                 <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                                     <img 
-                                        src="/aber.webp" 
+                                        src="/samp.jpg" 
                                         alt="Our Story" 
                                         className="w-full h-64 sm:h-80 md:h-96 object-cover"
                                     />
@@ -303,7 +303,7 @@ const AboutUs: React.FC = () => {
                                 <div className="relative mb-4 sm:mb-6">
                                     <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 mx-auto rounded-full overflow-hidden border-4 border-gray-200 group-hover:border-gray-400 transition-colors duration-300">
                                         <img 
-                                            src="/profile.webp" 
+                                            src="/anna.jpg" 
                                             alt="Anna Cruz" 
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                                         />
@@ -323,7 +323,7 @@ const AboutUs: React.FC = () => {
                                 <div className="relative mb-4 sm:mb-6">
                                     <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 mx-auto rounded-full overflow-hidden border-4 border-gray-200 group-hover:border-gray-400 transition-colors duration-300">
                                         <img 
-                                            src="/profile.webp" 
+                                            src="/mark.jpg" 
                                             alt="Mark Santos" 
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                                         />
@@ -343,7 +343,7 @@ const AboutUs: React.FC = () => {
                                 <div className="relative mb-4 sm:mb-6">
                                     <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 mx-auto rounded-full overflow-hidden border-4 border-gray-200 group-hover:border-gray-400 transition-colors duration-300">
                                         <img 
-                                            src="/profile.webp" 
+                                            src="/liza.jpg" 
                                             alt="Liza Tan" 
                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                                         />
@@ -395,15 +395,6 @@ const AboutUs: React.FC = () => {
                                         </p>
                                     </div>
                                 </div>
-                                
-                                {/* Background Image */}
-                                <div className="absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden opacity-20 group-hover:opacity-30 transition-opacity duration-300">
-                                    <img 
-                                        src="/aber.webp" 
-                                        alt="Vision" 
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
                             </div>
 
                             {/* Mission */}
@@ -421,15 +412,6 @@ const AboutUs: React.FC = () => {
                                             To deliver world-class lighting products and services that exceed customer expectations. We are committed to continuous innovation, outstanding customer care, and empowering our clients to create spaces that reflect their unique style and vision.
                                         </p>
                                     </div>
-                                </div>
-                                
-                                {/* Background Image */}
-                                <div className="absolute inset-0 rounded-2xl sm:rounded-3xl overflow-hidden opacity-20 group-hover:opacity-30 transition-opacity duration-300">
-                                    <img 
-                                        src="/aber2.webp" 
-                                        alt="Mission" 
-                                        className="w-full h-full object-cover"
-                                    />
                                 </div>
                             </div>
                         </div>

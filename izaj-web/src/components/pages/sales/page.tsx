@@ -218,7 +218,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
         setFilteredProducts(transformedProducts);
         
         // Calculate max price for price range
-        const maxProductPrice = Math.max(...transformedProducts.map(p => p.price));
+        const maxProductPrice = Math.ceil(Math.max(...transformedProducts.map(p => p.price)));
         setMaxPrice(maxProductPrice);
         setPriceRange({ min: 0, max: maxProductPrice });
         

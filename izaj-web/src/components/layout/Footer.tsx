@@ -247,44 +247,84 @@ const Footer: React.FC = () => {
               <h3 className="text-lg md:text-xl mb-3 md:mb-4 tracking-tight hidden md:block font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>OUR BRANCHES</h3>
               <ul className={`space-y-1 md:space-y-2 text-gray-500 text-sm md:text-base ${isBranchesOpen ? 'block' : 'hidden'} md:block`}>
                 <li>
-                  <BranchDropdown name="San Pablo City">
-                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">173 1, San Pablo City, 4000 Laguna</span>
-                  </BranchDropdown>
+                  <a 
+                    href="https://www.google.com/maps/place/Izaj+Lighting+Centre+-+San+Pablo/@14.0680728,121.3103475,17z/data=!3m1!4b1!4m6!3m5!1s0x33bd5ddbc696a00d:0x65bad29909e92f04!8m2!3d14.0680728!4d121.3152184!16s%2Fg%2F11h22htb19?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-2 py-1 hover:underline transition-colors"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    San Pablo City
+                  </a>
                 </li>
                 <li>
-                  <BranchDropdown name="Quezon">
-                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Lucena, Quezon Province</span>
-                  </BranchDropdown>
+                  <a 
+                    href="https://www.google.com/maps/place/Izaj+Trading+-+Isabang/@13.9554531,121.5698904,17z/data=!3m1!4b1!4m6!3m5!1s0x33bd4d36ed45d383:0xb5d4f1d657fd5710!8m2!3d13.9554531!4d121.5724653!16s%2Fg%2F11fss_vt86?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-2 py-1 hover:underline transition-colors"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    Quezon
+                  </a>
                 </li>
                 <li>
-                  <BranchDropdown name="Laguna">
-                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Sta. Cruz, Laguna</span>
-                  </BranchDropdown>
+                  <span className="block px-2 py-1" style={{ fontFamily: 'Jost, sans-serif' }}>Laguna</span>
                 </li>
                 <li>
-                  <BranchDropdown name="Cavite">
-                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Silang, Cavite</span>
-                  </BranchDropdown>
+                  <a 
+                    href="https://www.google.com/maps/place/Izaj+Lighting+Centre+-+Silang,+Cavite/@14.222957,121.0352701,17z/data=!3m1!4b1!4m6!3m5!1s0x33bd7deb0241cebf:0x6c3fb95ff88ea9e5!8m2!3d14.222957!4d121.037845!16s%2Fg%2F11r7l9rwh6?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-2 py-1 hover:underline transition-colors"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    Cavite
+                  </a>
                 </li>
                 <li>
-                  <BranchDropdown name="Batangas">
-                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Lipa, Batangas</span>
-                  </BranchDropdown>
+                  <a 
+                    href="https://www.google.com/maps/place/Izaj+Lighting+Centre+-+The+Outlets/@14.0089879,121.1659881,17z/data=!4m14!1m7!3m6!1s0x33bd6f3d390306bd:0xa232bac2f4c93d56!2sIzaj+Lighting+Centre+-+The+Outlets!8m2!3d14.0089879!4d121.168563!16s%2Fg%2F11lrykbd20!3m5!1s0x33bd6f3d390306bd:0xa232bac2f4c93d56!8m2!3d14.0089879!4d121.168563!16s%2Fg%2F11lrykbd20?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-2 py-1 hover:underline transition-colors"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    Batangas
+                  </a>
                 </li>
                 <li>
-                  <BranchDropdown name="Camarines Sur">
-                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Naga City, Camarines Sur</span>
-                  </BranchDropdown>
+                  <a 
+                    href="https://www.google.com/maps/place/Izaj+Lighting+Centre/@13.7618155,122.5099722,10z/data=!4m6!3m5!1s0x33a18cb9111c5bd7:0x6d4dbcb899ac7b91!8m2!3d13.6162057!4d123.1876693!16s%2Fg%2F11yb7pz8gs?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-2 py-1 hover:underline transition-colors"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    Camarines Sur
+                  </a>
                 </li>
                 <li>
-                  <BranchDropdown name="Sorsogon">
-                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Sorsogon City, Sorsogon</span>
-                  </BranchDropdown>
+                  <a 
+                    href="https://www.google.com/maps/place/Izaj+Lighting+Centre+-+Sorsogon/@12.9840183,123.98977,17z/data=!3m1!4b1!4m6!3m5!1s0x33a0ef7263c12b3d:0x578b0d91a824001!8m2!3d12.9840183!4d123.9923449!16s%2Fg%2F11s4wh01xb?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-2 py-1 hover:underline transition-colors"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    Sorsogon
+                  </a>
                 </li>
                 <li>
-                  <BranchDropdown name="La Union">
-                    <span className="block px-4 py-2 text-gray-700 text-xs md:text-sm">Bauang, La Union</span>
-                  </BranchDropdown>
+                  <a 
+                    href="https://www.google.com/maps/place/Izaj+Lighting+Centre+-+La+Union/@16.5429009,120.3206011,17z/data=!3m1!4b1!4m6!3m5!1s0x3391850088aacc93:0xc5080291f2de408!8m2!3d16.542901!4d120.325472!16s%2Fg%2F11tfg8zwwm?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-2 py-1 hover:underline transition-colors"
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                  >
+                    La Union
+                  </a>
                 </li>
               </ul>
             </div>
@@ -448,33 +488,6 @@ const Footer: React.FC = () => {
         </div>
       )}
     </>
-  );
-};
-
-// BranchDropdown component
-interface BranchDropdownProps {
-  name: string;
-  children: React.ReactNode;
-}
-
-const BranchDropdown: React.FC<BranchDropdownProps> = ({ name, children }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        className="w-full text-left px-2 py-1 hover:underline transition-colors"
-        style={{ fontFamily: 'Jost, sans-serif' }}
-        onClick={() => setOpen(!open)}
-      >
-        <span>{name}</span>
-      </button>
-      {open && (
-        <div className="pl-4 pt-1" style={{ fontFamily: 'Jost, sans-serif' }}>
-          {children}
-        </div>
-      )}
-    </div>
   );
 };
 
