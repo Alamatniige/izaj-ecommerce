@@ -103,20 +103,225 @@ const Footer: React.FC = () => {
             </p>
             
             {/* Social Media Icons */}
-            <div className="flex justify-center gap-3 md:gap-6">
-              <a href="https://facebook.com/izajlighting" target="_blank" rel="noopener noreferrer" 
-                 className="bg-[#1877F3] text-white rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center hover:bg-[#166FE5] transition-colors">
-                <Icon icon="mdi:facebook" width="20" height="20" className="md:w-7 md:h-7" />
-              </a>
-              <a href="https://www.instagram.com/izajlightingcentre/" target="_blank" rel="noopener noreferrer" 
-                 className="bg-[#E4405F] text-white rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center hover:bg-[#D62976] transition-colors">
-                <Icon icon="mdi:instagram" width="20" height="20" className="md:w-7 md:h-7" />
-              </a>
-              <a href="https://www.tiktok.com/@izaj.lighting.cen" target="_blank" rel="noopener noreferrer" 
-                 className="bg-black text-white rounded-full w-10 h-10 md:w-14 md:h-14 flex items-center justify-center hover:bg-gray-800 transition-colors">
-                <Icon icon="ri:tiktok-fill" width="20" height="20" className="md:w-7 md:h-7" />
-              </a>
-            </div>
+            <style dangerouslySetInnerHTML={{__html: `
+              .social-container {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 1.5rem;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+              }
+              
+              @media (max-width: 600px) {
+                .social-container {
+                  gap: 1rem;
+                }
+              }
+              
+              .social-item {
+                position: relative;
+                animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) backwards;
+              }
+              
+              .social-item:nth-child(1) {
+                animation-delay: 0.1s;
+              }
+              .social-item:nth-child(2) {
+                animation-delay: 0.2s;
+              }
+              .social-item:nth-child(3) {
+                animation-delay: 0.3s;
+              }
+              
+              @keyframes popIn {
+                from {
+                  opacity: 0;
+                  transform: scale(0) rotate(-180deg);
+                }
+                to {
+                  opacity: 1;
+                  transform: scale(1) rotate(0deg);
+                }
+              }
+              
+              .social-item::after {
+                position: absolute;
+                content: attr(data-tooltip);
+                bottom: calc(100% + 15px);
+                left: 50%;
+                transform: translateX(-50%) translateY(15px);
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+                font-weight: 600;
+                color: #fff;
+                background: var(--bg, #070707);
+                border-radius: 8px;
+                white-space: nowrap;
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+                box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.8);
+                z-index: 10;
+              }
+              
+              @keyframes tooltipEnter {
+                0% {
+                  opacity: 0;
+                  transform: translateX(-50%) translateY(18px);
+                }
+                60% {
+                  opacity: 1;
+                  transform: translateX(-50%) translateY(-5px);
+                }
+                100% {
+                  opacity: 1;
+                  transform: translateX(-50%) translateY(0);
+                }
+              }
+              
+              @keyframes tooltipExit {
+                0% {
+                  opacity: 1;
+                  transform: translateX(-50%) translateY(0);
+                }
+                40% {
+                  opacity: 1;
+                  transform: translateX(-50%) translateY(-5px);
+                }
+                100% {
+                  opacity: 0;
+                  transform: translateX(-50%) translateY(18px);
+                }
+              }
+              
+              .social-item:hover::after {
+                visibility: visible;
+                animation: tooltipEnter 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+              }
+              
+              .social-link {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 65px;
+                height: 65px;
+                font-size: 1.5rem;
+                color: #000;
+                background: #fff;
+                border: 2px solid #000;
+                border-radius: 50%;
+                text-decoration: none;
+                outline: none;
+                overflow: hidden;
+                transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                  box-shadow 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+                  border-color 0.3s ease, border-width 0.3s ease;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+              }
+              
+              @media (min-width: 768px) {
+                .social-link {
+                  width: 80px;
+                  height: 80px;
+                  font-size: 2rem;
+                }
+              }
+              
+              .social-link:hover,
+              .social-link:focus-visible {
+                transform: translateY(-5px) scale(1.02);
+                border-color: transparent;
+                border-width: 0;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                transition-delay: 0.08s;
+              }
+              
+              .social-link::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: var(--bg, #070707);
+                border-radius: 50%;
+                transform: scale(0);
+                transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                z-index: 0;
+              }
+              
+              .social-link.instagram-link::before {
+                background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+              }
+              
+              .social-link:hover::before,
+              .social-link:focus-visible::before {
+                transform: scale(1);
+              }
+              
+              .social-icon {
+                position: relative;
+                z-index: 1;
+                transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                color: inherit;
+                width: 24px;
+                height: 24px;
+              }
+              
+              @media (min-width: 768px) {
+                .social-icon {
+                  width: 32px;
+                  height: 32px;
+                }˜
+              }
+              
+              .social-link:hover .social-icon,
+              .social-link:focus-visible .social-icon {
+                color: #fff !important;
+                transform: scale(1.2) rotate(360deg);
+              }
+            `}} />
+            <ul className="social-container">
+              <li className="social-item" data-tooltip="Facebook" style={{ '--bg': '#1877f2' } as React.CSSProperties}>
+                <a 
+                  href="https://facebook.com/izajlighting" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="social-link"
+                  aria-label="Facebook"
+                >
+                  <Icon icon="mdi:facebook" className="social-icon" width="24" height="24" />
+                </a>
+              </li>
+              <li 
+                className="social-item" 
+                data-tooltip="Instagram" 
+                style={{ 
+                  '--bg': '#E4405F' 
+                } as React.CSSProperties}
+              >
+                <a 
+                  href="https://www.instagram.com/izajlightingcentre/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="social-link instagram-link"
+                  aria-label="Instagram"
+                >
+                  <Icon icon="mdi:instagram" className="social-icon" width="24" height="24" />
+                </a>
+              </li>
+              <li className="social-item" data-tooltip="TikTok" style={{ '--bg': '#000000' } as React.CSSProperties}>
+                <a 
+                  href="https://www.tiktok.com/@izaj.lighting.cen" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="social-link"
+                  aria-label="TikTok"
+                >
+                  <Icon icon="ri:tiktok-fill" className="social-icon" width="24" height="24" />
+                </a>
+              </li>
+            </ul>
             
             {/* Call to Action */}
             <div className="mt-3 md:mt-4">
@@ -269,7 +474,7 @@ const Footer: React.FC = () => {
                   </a>
                 </li>
                 <li>
-                  <span className="block px-2 py-1" style={{ fontFamily: 'Jost, sans-serif' }}>Laguna</span>
+                  <span className="block px-2 py-1" style={{ fontFamily: 'Jost, sans-serif' }}>Santa Cruz</span>
                 </li>
                 <li>
                   <a 

@@ -427,13 +427,16 @@ const LoginPage: React.FC = () => {
               <div className="space-y-2">
                 <label htmlFor="password" className="block text-sm font-medium text-black font-jost">Password</label>
                 <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 md:pl-4 flex items-center pointer-events-none">
+                    <Icon icon="mdi:lock" className="w-4 h-4 text-gray-400" />
+                  </div>
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className={`w-full px-3 md:px-4 py-3 md:py-4 pr-10 md:pr-12 text-sm md:text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
+                    className={`w-full pl-10 md:pl-12 py-3 md:py-4 pr-10 md:pr-12 text-sm md:text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                     placeholder="Enter your password"
                   />
                   <button

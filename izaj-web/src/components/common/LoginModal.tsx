@@ -277,13 +277,16 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
                 <div className="space-y-2">
                   <label htmlFor="modal-password" className="block text-sm font-medium text-black font-jost">Password</label>
                   <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Icon icon="mdi:lock" className="w-4 h-4 text-gray-400" />
+                    </div>
                     <input
                       type={showPassword ? "text" : "password"}
                       id="modal-password"
                       name="password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-4 pr-12 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
+                      className={`w-full pl-12 pr-12 py-4 text-base border-2 bg-white text-black placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'} focus:ring-2 focus:ring-black focus:border-black transition-all duration-200 rounded-none font-jost`}
                       placeholder="Enter your password"
                     />
                     <button
