@@ -55,7 +55,7 @@ const MyOrders: React.FC = () => {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({ 
+  const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error'; title?: string }>({ 
     show: false, 
     message: '', 
     type: 'success' 
@@ -415,7 +415,7 @@ const MyOrders: React.FC = () => {
         message: 'Please provide a reason for cancellation', 
         type: 'error' 
       });
-      setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+      setTimeout(() => setToast({ show: false, message: '', type: 'success', title: undefined }), 3000);
       return;
     }
 
@@ -445,7 +445,7 @@ const MyOrders: React.FC = () => {
           message: 'Cancellation request submitted successfully. Your request is under review and awaiting admin approval.', 
           type: 'success' 
         });
-        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 6000);
+        setTimeout(() => setToast({ show: false, message: '', type: 'success', title: undefined }), 6000);
         
         // Refresh orders
         const fetchOrders = async () => {
@@ -500,7 +500,7 @@ const MyOrders: React.FC = () => {
           message: result.error || 'Failed to cancel order. Please try again.', 
           type: 'error' 
         });
-        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 5000);
+        setTimeout(() => setToast({ show: false, message: '', type: 'success', title: undefined }), 5000);
       }
     } catch (error) {
       console.error('Error cancelling order:', error);
@@ -519,8 +519,8 @@ const MyOrders: React.FC = () => {
     const orderToReview = order || selectedOrder;
     
     if (!orderToReview || !reviewComment.trim()) {
-      setToast({ show: true, message: 'Please write a review comment', type: 'error' });
-      setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+      setToast({ show: true, message: 'Please write a review comment', type: 'error', title: 'Error' });
+      setTimeout(() => setToast({ show: false, message: '', type: 'success', title: undefined }), 3000);
       return;
     }
 
@@ -562,15 +562,15 @@ const MyOrders: React.FC = () => {
         setReviewOrderId(null);
         setReviewRating(5);
         setReviewComment('');
-        setToast({ show: true, message: 'Thank you for your review! Your feedback has been submitted and will appear on the product page.', type: 'success' });
-        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 5000);
+        setToast({ show: true, message: 'Your feedback is under review and will appear on the product page once approved.', type: 'success', title: 'Feedback Under Review' });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success', title: undefined }), 5000);
       } else {
-        setToast({ show: true, message: result.error || 'Failed to submit review. Please try again.', type: 'error' });
-        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 5000);
+        setToast({ show: true, message: result.error || 'Failed to submit review. Please try again.', type: 'error', title: 'Error' });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success', title: undefined }), 5000);
       }
     } catch (error) {
       console.error('❌ Error submitting review:', error);
-      setToast({ show: true, message: 'Failed to submit review. Please try again.', type: 'error' });
+      setToast({ show: true, message: 'Failed to submit review. Please try again.', type: 'error', title: 'Error' });
       setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 5000);
     } finally {
       setIsSubmittingReview(false);
@@ -625,14 +625,14 @@ const MyOrders: React.FC = () => {
                 </div>
                 <div className="ml-3 flex-1">
                   <h3 className={`text-sm font-semibold mb-1 ${toast.type === 'success' ? 'text-green-800' : 'text-red-800'}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                    {toast.type === 'success' ? 'Cancellation Request Submitted' : 'Error'}
+                    {toast.title && toast.title.trim() ? toast.title : (toast.type === 'success' ? 'Cancellation Request Submitted' : 'Error')}
                   </h3>
                   <p className={`text-sm ${toast.type === 'success' ? 'text-green-700' : 'text-red-700'}`} style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
                     {toast.message}
                   </p>
                 </div>
                 <button
-                  onClick={() => setToast({ show: false, message: '', type: 'success' })}
+                  onClick={() => setToast({ show: false, message: '', type: 'success', title: undefined })}
                   className={`flex-shrink-0 ml-4 ${toast.type === 'success' ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'}`}
                 >
                   <Icon icon="mdi:close" className="w-5 h-5" />

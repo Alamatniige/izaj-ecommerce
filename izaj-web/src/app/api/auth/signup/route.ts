@@ -59,13 +59,15 @@ export async function POST(request: Request) {
 		const fullName = [body.firstName, body.lastName].filter(Boolean).join(' ').trim() || 'User';
 		const normalizedPhone = body.phone ? normalizePhone(body.phone) : null;
 
-		// Create user with Supabase's native signup (includes email confirmation)
+		// Create user with Supabase's native signup
+		// Note: We disable Supabase's email confirmation since we use custom email service
 		const supabase = await getSupabaseServerClient();
 		const { data, error } = await supabase.auth.signUp({
 			email: body.email.trim().toLowerCase(),
 			password: body.password,
 			options: {
-				emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+				// Don't set emailRedirectTo to prevent Supabase from sending its own email
+				// We'll send our own confirmation email via Gmail SMTP using email-service.ts
 				data: {
 					name: fullName,
 					firstName: (body.firstName || '').trim(),
