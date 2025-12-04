@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { useUserContext } from '../../context/UserContext';
 import HeroSection from './HeroSection';
 import ItemsCategory from './ItemsCategory';
@@ -38,7 +38,7 @@ const MotionSection = ({ children, delay = 0 }: MotionSectionProps) => (
     initial="hidden"
     whileInView="visible"
     viewport={{ once: true, amount: 0.2 }}
-    variants={sectionVariants}
+    variants={sectionVariants as Variants}
     custom={delay}
   >
     {children}
