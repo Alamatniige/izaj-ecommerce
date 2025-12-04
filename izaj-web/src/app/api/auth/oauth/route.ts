@@ -9,7 +9,7 @@ export async function GET(request: Request) {
 	}
 
 	const supabase = await getSupabaseServerClient();
-	const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3002'}/auth/callback`;
+	const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL || 'https://izaj-ecommerce.vercel.app'}/auth/callback`;
 
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',

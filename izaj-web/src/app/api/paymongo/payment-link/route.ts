@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the base URL from environment or request
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SITE_URL || 'https://izaj-ecommerce.vercel.app';
     
     // Set redirect URL for PayMongo callback
     const redirectUrl = `${baseUrl}/paymongo-callback`;

@@ -21,6 +21,9 @@ class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL || 'https://izaj-ecommerce.vercel.app';
+
     const config: EmailConfig = {
       host: 'smtp.gmail.com',
       port: 587,
@@ -32,6 +35,8 @@ class EmailService {
     };
 
     this.transporter = nodemailer.createTransport(config);
+
+    console.log('EmailService configured with appUrl:', appUrl);
   }
 
   async sendEmail(options: EmailOptions): Promise<void> {
@@ -439,7 +444,9 @@ class EmailService {
   }
 
   async sendPasswordResetEmail(email: string, resetToken: string, userName: string): Promise<void> {
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`;
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL || 'https://izaj-ecommerce.vercel.app';
+    const resetUrl = `${appUrl}/reset-password?token=${resetToken}`;
     
     const html = `
       <!DOCTYPE html>
