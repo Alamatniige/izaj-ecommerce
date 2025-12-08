@@ -149,7 +149,7 @@ export default function FreshDrops() {
           return {
             id: numericId,
             name: newProduct.product_name,
-            price: fullProduct?.price || `₱${parseFloat(newProduct.price.toString()).toLocaleString()}`,
+            price: fullProduct?.price || `₱${parseFloat(newProduct.price.toString()).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             image: primaryImage,
             mediaUrls: newProduct.media_urls || [],
             colors: ["black"], // Default color

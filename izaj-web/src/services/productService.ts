@@ -55,7 +55,7 @@ const transformToLegacyProduct = (internalProduct: InternalProduct): Product => 
   const transformedProduct = {
     id: numericId,
     name: internalProduct.product_name,
-    price: `₱${parseFloat(internalProduct.price.toString()).toLocaleString()}`,
+    price: `₱${parseFloat(internalProduct.price.toString()).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
     image: primaryImage,
     mediaUrls: internalProduct.media_urls || [],
     colors: ["black"], // Default color
@@ -126,7 +126,7 @@ export const getAllProducts = async (): Promise<Product[]> => {
       const isOnSale = productData.on_sale === true;
       const saleDetails = productData.sale?.[0]; // Sale is an array, get first element
       let finalPrice = originalPrice;
-      let originalPriceFormatted = `₱${originalPrice.toLocaleString()}`;
+      let originalPriceFormatted = `₱${originalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
       // Only apply sale price if product is marked as on_sale and has sale details
       if (isOnSale && saleDetails) {
@@ -143,7 +143,7 @@ export const getAllProducts = async (): Promise<Product[]> => {
       return {
         id: numericId,
         name: productData.product_name,
-        price: `₱${finalPrice.toLocaleString()}`,
+        price: `₱${finalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
         originalPrice: (isOnSale && saleDetails) ? originalPriceFormatted : undefined,
         image: primaryImage,
         mediaUrls: productData.media_urls || [],

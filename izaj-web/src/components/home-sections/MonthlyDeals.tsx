@@ -88,7 +88,7 @@ export default function MonthlyDeals() {
           const originalPrice = parseFloat(product.price.toString());
           const saleDetails = (product as any).sale?.[0]; // Sale is an array, get first element
           let salePrice = originalPrice;
-          let originalPriceFormatted = `₱${originalPrice.toLocaleString()}`;
+          let originalPriceFormatted = `₱${originalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
           let discountPercentage: number | undefined = undefined;
           
           if (saleDetails) {
@@ -108,7 +108,7 @@ export default function MonthlyDeals() {
           return {
           id: parseInt(product.product_id) || 0,
           name: product.product_name,
-          price: `₱${salePrice.toLocaleString()}`,
+          price: `₱${salePrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
           originalPrice: saleDetails ? originalPriceFormatted : undefined,
           image: product.media_urls?.[0] || "/placeholder.jpg",
             mediaUrls: product.media_urls || [],

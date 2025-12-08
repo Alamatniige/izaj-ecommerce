@@ -164,7 +164,7 @@ const Sales: React.FC<SalesProps> = ({ user: _user }) => {
               // Calculate percentage from fixed amount
               discountPercentage = originalPrice > 0 ? Math.round((saleDetails.fixed_amount / originalPrice) * 100) : 0;
             }
-            originalPriceFormatted = `₱${originalPrice.toLocaleString()}`;
+            originalPriceFormatted = `₱${originalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
           }
           
           return {

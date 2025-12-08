@@ -1131,7 +1131,7 @@ class EmailService {
         ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}" style="width: 100%; max-width: 560px; display: block; margin: 0 auto 12px;">` : ''}
         <h3 style="font-family: 'Poppins', sans-serif; color: #000000; margin: 0 0 6px; font-size: 18px;">${product.name}</h3>
         ${product.category ? `<p style="font-family: 'Jost', sans-serif; color: #666666; font-size: 13px; margin: 0 0 10px;">${product.category}</p>` : ''}
-        <p style="font-family: 'Poppins', sans-serif; color: #000000; font-size: 18px; font-weight: 700; margin: 0 0 10px;">₱${product.price.toLocaleString()}</p>
+        <p style="font-family: 'Poppins', sans-serif; color: #000000; font-size: 18px; font-weight: 700; margin: 0 0 10px;">₱${product.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
         ${product.productUrl ? `<a href="${product.productUrl}" style="font-family: 'Jost', sans-serif; color: #000000; text-decoration: underline;">View Product →</a>` : ''}
       </div>
     `).join('');

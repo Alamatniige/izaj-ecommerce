@@ -174,7 +174,7 @@ const ProductList: React.FC<ProductListProps> = ({
                     </div>
                   )}
                   <h3 className="text-gray-900 text-sm sm:text-base text-left line-clamp-2 leading-snug sm:leading-tight" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.name}</h3>
-                  <p className="text-gray-900 text-base sm:text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>₱{product.price.toLocaleString()}</p>
+                  <p className="text-gray-900 text-base sm:text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>₱{product.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
                     (product.stock || 0) > 5 ? 'bg-green-100 text-green-800' : 
                     (product.stock || 0) > 0 ? 'bg-orange-100 text-orange-800' : 

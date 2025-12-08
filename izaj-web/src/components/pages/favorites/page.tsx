@@ -154,7 +154,7 @@ const MyFavorites: React.FC = () => {
                   
                   <div className="flex items-center justify-between mb-3 sm:mb-4">
                     <span className="text-xl sm:text-2xl font-bold text-gray-900" style={{ fontFamily: 'Jost, sans-serif' }}>
-                      ₱{item.price.toLocaleString()}
+                      ₱{item.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                     <div className="flex items-center gap-1 text-yellow-500">
                       <Icon icon="mdi:star" className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />

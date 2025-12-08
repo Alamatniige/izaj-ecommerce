@@ -633,7 +633,7 @@ function capitalize(str: string) {
                                   </p>
                                   {product.price && (
                                     <p className="text-xs font-semibold text-black" style={{ fontFamily: 'Jost, sans-serif' }}>
-                                      ₱{product.price.toLocaleString()}
+                                      ₱{product.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </p>
                                   )}
                                 </div>
@@ -1004,7 +1004,7 @@ function capitalize(str: string) {
                                           Qty: {item.quantity}
                                         </p>
                                         <p className="font-bold text-black text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
-                                          ₱{(item.price * item.quantity).toLocaleString()}
+                                          ₱{(item.price * item.quantity).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </p>
                                       </div>
                                     </div>
@@ -1032,7 +1032,7 @@ function capitalize(str: string) {
                                   Total ({cart.totalItems} items):
                                 </span>
                                 <span className="font-bold text-black text-lg" style={{ fontFamily: 'Jost, sans-serif' }}>
-                                  ₱{cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString()}
+                                  ₱{cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                               </div>
                               <Link
@@ -1147,7 +1147,7 @@ function capitalize(str: string) {
                                 </p>
                                 {product.price && (
                                   <p className="text-xs font-semibold text-black" style={{ fontFamily: 'Jost, sans-serif' }}>
-                                    ₱{product.price.toLocaleString()}
+                                    ₱{product.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                   </p>
                                 )}
                               </div>

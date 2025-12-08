@@ -99,7 +99,7 @@ const ProductSuggestions: React.FC<ProductSuggestionsProps> = ({
           return {
             id: productId,
             name: product.product_name,
-            price: `₱${price.toLocaleString()}`,
+            price: `₱${price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
             image: product.media_urls?.[0] || "/placeholder.jpg",
             colors: ["black"],
             stock: getStockFromStatus(product.status)

@@ -373,14 +373,14 @@ export default function SaleItem() {
                 <div className="mb-6">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-2xl font-semibold text-red-600" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>
-                      ₱{salePrice.toLocaleString()} PHP
+                      ₱{salePrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PHP
                     </span>
                     <span className="text-lg text-gray-500 line-through" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>
-                      ₱{originalPrice.toLocaleString()}
+                      ₱{originalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   <p className="text-sm text-green-600 font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>
-                    You save ₱{discountAmount.toLocaleString()}!
+                    You save ₱{discountAmount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}!
                   </p>
                 </div>
                 

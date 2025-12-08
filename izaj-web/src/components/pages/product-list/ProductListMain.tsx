@@ -185,9 +185,9 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
                   )}
                   <h3 className="text-gray-900 text-sm sm:text-base text-left line-clamp-2 leading-snug sm:leading-tight" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>{product.name}</h3>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-gray-900 text-base sm:text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>₱{product.price.toLocaleString()}</p>
+                    <p className="text-gray-900 text-base sm:text-lg" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 600 }}>₱{product.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     {product.originalPrice && product.isOnSale && (
-                      <p className="text-gray-500 text-sm sm:text-base line-through" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>₱{product.originalPrice.toLocaleString()}</p>
+                      <p className="text-gray-500 text-sm sm:text-base line-through" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 400 }}>₱{product.originalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     )}
                   </div>
                   <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
@@ -248,9 +248,9 @@ const ProductListMain: React.FC<ProductListMainProps> = ({
                        </p>
                      </div>
                      <div className="text-right flex-shrink-0">
-                       <p className="text-2xl lg:text-3xl font-bold text-gray-900">₱{product.price.toLocaleString()}</p>
+                       <p className="text-2xl lg:text-3xl font-bold text-gray-900">₱{product.price.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                        {product.originalPrice && (
-                         <p className="text-sm text-gray-500 line-through">₱{product.originalPrice.toLocaleString()}</p>
+                         <p className="text-sm text-gray-500 line-through">₱{product.originalPrice.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                        )}
                        <div className="flex items-center justify-end space-x-2 mt-2">
                          <div className={`w-3 h-3 rounded-full ${
