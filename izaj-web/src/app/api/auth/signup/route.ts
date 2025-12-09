@@ -59,77 +59,49 @@ export async function POST(request: Request) {
 		const fullName = [body.firstName, body.lastName].filter(Boolean).join(' ').trim() || 'User';
 		const normalizedPhone = body.phone ? normalizePhone(body.phone) : null;
 
-		// Create user with Supabase's native signup
-		// Note: We use custom email service, so Supabase email errors are handled gracefully
-		const supabase = await getSupabaseServerClient();
-		let signupResult = await supabase.auth.signUp({
+		// Create user using Admin API to bypass Supabase's email sending
+		// We use our custom email service with templates from email-templates.ts
+		const { data: createdUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
 			email: body.email.trim().toLowerCase(),
 			password: body.password,
-			options: {
-				// Don't set emailRedirectTo to prevent Supabase from sending its own email
-				// We'll send our own confirmation email via Gmail SMTP using email-service.ts
-				data: {
-					name: fullName,
-					firstName: (body.firstName || '').trim(),
-					lastName: (body.lastName || '').trim(),
-					phone: normalizedPhone,
-					emailConfirmed: false,
-				}
+			email_confirm: false, // Don't auto-confirm, user needs to confirm via our custom email
+			user_metadata: {
+				name: fullName,
+				firstName: (body.firstName || '').trim(),
+				lastName: (body.lastName || '').trim(),
+				phone: normalizedPhone,
+				emailConfirmed: false,
 			}
 		});
 
-		const { data, error } = signupResult;
-
-		if (error) {
-			console.error('Supabase Signup error:', error);
-			console.error('Error details:', JSON.stringify(error, null, 2));
+		if (createError) {
+			console.error('Supabase Admin CreateUser error:', createError);
+			console.error('Error details:', JSON.stringify(createError, null, 2));
 			
 			// Handle specific error cases
-			if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+			if (createError.message.includes('already registered') || 
+			    createError.message.includes('User already registered') ||
+			    createError.message.includes('already exists')) {
 				return NextResponse.json({ 
 					error: 'An account with this email already exists',
 					code: 'user_exists'
 				}, { status: 400 });
 			}
 			
-			// If error is about email sending, we can ignore it since we use custom email service
-			// Check if user was actually created despite the email error
-			if (error.message.includes('Error sending confirmation email') || 
-			    error.message.includes('confirmation email') ||
-			    error.code === 'unexpected_failure') {
-				console.warn('⚠️ Supabase email sending failed, but this is okay - we use custom email service');
-				
-				// Try to get the user that might have been created
-				// If user exists, continue with our custom email flow
-				const { data: existingUser } = await supabaseAdmin.auth.admin.getUserByEmail(body.email.trim().toLowerCase());
-				
-				if (existingUser?.user) {
-					console.log('✅ User was created despite email error, continuing with custom email...');
-					// Update signupResult with the existing user
-					signupResult.data = { user: existingUser.user };
-				} else {
-					// User wasn't created, return error
-					return NextResponse.json({ 
-						error: error.message || 'Signup failed',
-						details: error.status || 'Unknown error'
-					}, { status: 400 });
-				}
-			} else {
-				// Other errors should be returned
-				return NextResponse.json({ 
-					error: error.message || 'Signup failed',
-					details: error.status || 'Unknown error'
-				}, { status: 400 });
-			}
+			// Return error for other cases
+			return NextResponse.json({ 
+				error: createError.message || 'Signup failed',
+				details: createError.status || 'Unknown error'
+			}, { status: 400 });
 		}
 
-		// Use signupResult.data to handle both normal flow and email error recovery
-		const userData = signupResult.data || data;
-		if (!userData?.user) {
+		if (!createdUser?.user) {
 			return NextResponse.json({ 
 				error: 'Failed to create user'
 			}, { status: 500 });
 		}
+
+		const userData = { user: createdUser.user };
 
 		// Create profile in profiles table using admin client
 		// (We use admin to bypass RLS policies during signup)

@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { getConfirmationEmail } from './email-templates';
 
 interface EmailConfig {
   host: string;
@@ -24,25 +25,50 @@ class EmailService {
     const appUrl =
       process.env.NEXT_PUBLIC_APP_URL || 'https://izaj-ecommerce.vercel.app';
 
+    const gmailUser = process.env.GMAIL_USER || '';
+    const gmailPassword = process.env.GMAIL_APP_PASSWORD || '';
+
+    // Validate email configuration
+    if (!gmailUser || !gmailPassword) {
+      console.error('❌ Email Service Configuration Error:');
+      console.error('   GMAIL_USER:', gmailUser ? 'Set ✓' : 'NOT SET ✗');
+      console.error('   GMAIL_APP_PASSWORD:', gmailPassword ? 'Set ✓' : 'NOT SET ✗');
+      console.error('   Please set GMAIL_USER and GMAIL_APP_PASSWORD in your .env file');
+      console.error('   For Gmail, you need to generate an App Password: https://support.google.com/accounts/answer/185833');
+    }
+
     const config: EmailConfig = {
       host: 'smtp.gmail.com',
       port: 587,
       secure: false, // true for 465, false for other ports
       auth: {
-        user: process.env.GMAIL_USER || '',
-        pass: process.env.GMAIL_APP_PASSWORD || '',
+        user: gmailUser,
+        pass: gmailPassword,
       },
     };
 
     this.transporter = nodemailer.createTransport(config);
 
     console.log('EmailService configured with appUrl:', appUrl);
+    if (gmailUser && gmailPassword) {
+      console.log('Email credentials configured for:', gmailUser);
+    }
   }
 
   async sendEmail(options: EmailOptions): Promise<void> {
+    // Check if credentials are configured
+    const gmailUser = process.env.GMAIL_USER || '';
+    const gmailPassword = process.env.GMAIL_APP_PASSWORD || '';
+
+    if (!gmailUser || !gmailPassword) {
+      const errorMsg = 'Email service not configured: GMAIL_USER and/or GMAIL_APP_PASSWORD are missing';
+      console.error('❌', errorMsg);
+      throw new Error(errorMsg);
+    }
+
     try {
       const mailOptions = {
-        from: `"IZAJ Trading" <${process.env.GMAIL_USER}>`,
+        from: `"IZAJ Trading" <${gmailUser}>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -50,98 +76,44 @@ class EmailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Email sent successfully:', info.messageId);
-    } catch (error) {
-      console.error('Error sending email:', error);
-      throw new Error('Failed to send email');
+      console.log('✅ Email sent successfully:', info.messageId);
+    } catch (error: any) {
+      console.error('❌ Error sending email:', error);
+      
+      // Provide more specific error messages
+      if (error.code === 'EAUTH') {
+        const errorMsg = 'Gmail authentication failed. Please check your GMAIL_USER and GMAIL_APP_PASSWORD. ' +
+          'Make sure you\'re using an App Password (not your regular Gmail password). ' +
+          'Generate one at: https://support.google.com/accounts/answer/185833';
+        console.error('   ', errorMsg);
+        throw new Error(errorMsg);
+      } else if (error.code === 'ECONNECTION') {
+        const errorMsg = 'Failed to connect to Gmail SMTP server. Check your internet connection.';
+        console.error('   ', errorMsg);
+        throw new Error(errorMsg);
+      } else {
+        throw new Error(`Failed to send email: ${error.message || 'Unknown error'}`);
+      }
     }
   }
 
   async sendConfirmationEmail(email: string, confirmationToken: string, userName: string): Promise<void> {
-    const confirmationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm-email?token=${confirmationToken}`;
+    // Always use production URL for confirmation links (not localhost)
+    const appUrl = 'https://izaj-ecommerce.vercel.app';
+    const confirmationUrl = `${appUrl}/auth/confirm-email?token=${confirmationToken}`;
     
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Email Confirmation - IZAJ</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Jost', sans-serif; line-height: 1.6; color: #000000; background: #ffffff; padding: 20px; }
-          .email-container { max-width: 640px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e5e5; }
-          .header { background: #000000; color: white; padding: 36px 28px; text-align: center; }
-          .header h1 { font-family: 'Jost', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: 1px; margin-bottom: 6px; }
-          .header p { font-family: 'Jost', sans-serif; font-size: 16px; opacity: 0.9; }
-          .content { padding: 28px; }
-          .greeting { font-family: 'Jost', sans-serif; font-size: 22px; font-weight: 700; color: #000000; margin: 0 0 18px; }
-          .content p { font-family: 'Jost', sans-serif; color: #333333; margin: 0 0 16px; }
-          .button-container { text-align: center; margin: 26px 0; }
-          .button { display: inline-block; background: #000000; color: white; padding: 14px 28px; text-decoration: none; font-family: 'Jost', sans-serif; font-weight: 600; border: 2px solid #000000; }
-          .button:hover { background: #ffffff; color: #000000; }
-          .link-container { background: #f8f8f8; border: 1px solid #e5e5e5; padding: 16px; margin: 18px 0; }
-          .link-container p { font-family: 'Jost', sans-serif; font-size: 13px; color: #666666; margin-bottom: 8px; }
-          .link-url { word-break: break-all; background: #ffffff; border: 1px solid #e5e5e5; padding: 10px; font-family: monospace; font-size: 13px; color: #333333; }
-          .notice { background: #f8f8f8; border-left: 3px solid #000000; padding: 16px; margin: 18px 0; font-family: 'Jost', sans-serif; color: #333333; }
-          .footer { background: #f8f8f8; padding: 24px; text-align: center; border-top: 1px solid #e5e5e5; }
-          .footer p, .footer a { font-family: 'Jost', sans-serif; color: #666666; font-size: 13px; }
-          @media (max-width: 600px) { .content, .header, .footer { padding: 20px; } .header h1 { font-size: 22px; } }
-        </style>
-      </head>
-      <body>
-        <div class="email-container">
-          <div class="header">
-            <h1>IZAJ Lighting Centre</h1>
-            <p>Email Confirmation</p>
-          </div>
-          <div class="content">
-            <h2 class="greeting">Hello ${userName}!</h2>
-            <p>Thank you for creating an account with <strong>IZAJ Lighting Centre</strong>. Please confirm your email address by clicking the button below:</p>
-            <div class="button-container">
-              <a href="${confirmationUrl}" class="button">Confirm Email Address</a>
-            </div>
-            <div class="link-container">
-              <p>If the button doesn't work, copy and paste this link:</p>
-              <div class="link-url">${confirmationUrl}</div>
-            </div>
-            <div class="notice">
-              This confirmation link will expire in 24 hours for security reasons.
-            </div>
-            <p>If you didn't create an account with IZAJ Lighting Centre, please ignore this email.</p>
-            <p style="margin-top: 20px;">Best regards,<br><strong>The IZAJ Lighting Centre Team</strong></p>
-          </div>
-          <div class="footer">
-            <p>© 2024 IZAJ Lighting Centre. All rights reserved.</p>
-            <p>For support, contact us at <strong>izajtrading@gmail.com</strong></p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    const text = `
-      Hello ${userName}!
-      
-      Thank you for creating an account with IZAJ Lighting Centre. To complete your registration, please confirm your email address by visiting this link:
-      
-      ${confirmationUrl}
-      
-      This link will expire in 24 hours for security reasons.
-      
-      If you didn't create an account with IZAJ Lighting Centre, please ignore this email.
-      
-      Welcome to the IZAJ family!
-      
-      Best regards,
-      The IZAJ Lighting Centre Team
-    `;
+    // Use template from email-templates.ts
+    const emailTemplate = getConfirmationEmail({
+      confirmationUrl,
+      userName,
+      expiryHours: 24
+    });
 
     await this.sendEmail({
       to: email,
-      subject: 'Confirm Your Email - IZAJ Lighting Centre',
-      html,
-      text,
+      subject: emailTemplate.subject,
+      html: emailTemplate.html,
+      text: emailTemplate.text,
     });
   }
 
@@ -444,8 +416,8 @@ class EmailService {
   }
 
   async sendPasswordResetEmail(email: string, resetToken: string, userName: string): Promise<void> {
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL || 'https://izaj-ecommerce.vercel.app';
+    // Always use production URL for password reset links (not localhost)
+    const appUrl = 'https://izaj-ecommerce.vercel.app';
     const resetUrl = `${appUrl}/reset-password?token=${resetToken}`;
     
     const html = `
