@@ -11,6 +11,7 @@ const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
   subsets: ["latin"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 const lato = Lato({
@@ -18,6 +19,7 @@ const lato = Lato({
   weight: ["300", "400", "700", "900"],
   subsets: ["latin"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 const greatVibes = Great_Vibes({
@@ -25,6 +27,7 @@ const greatVibes = Great_Vibes({
   weight: "400",
   subsets: ["latin"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 const poppins = Poppins({
@@ -32,6 +35,7 @@ const poppins = Poppins({
   weight: ["400", "600", "700"],
   subsets: ["latin"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 const lora = Lora({
@@ -39,6 +43,7 @@ const lora = Lora({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 const cinzel = Cinzel({
@@ -46,6 +51,7 @@ const cinzel = Cinzel({
   weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 const jost = Jost({
@@ -53,6 +59,7 @@ const jost = Jost({
   weight: ["400"],
   subsets: ["latin"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {
@@ -103,10 +110,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
       <body
         className={`${playfairDisplay.variable} ${lato.variable} ${greatVibes.variable} ${poppins.variable} ${lora.variable} ${cinzel.variable} ${jost.variable} antialiased bg-white`}
       >

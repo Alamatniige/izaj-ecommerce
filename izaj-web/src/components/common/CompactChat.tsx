@@ -257,24 +257,45 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
           // Add message to current conversation
           if (currentRoomId === selectedConversation) {
             setMessages(prev => {
-              // Better duplicate detection using message ID
-              const exists = prev.some(m => {
-                // Check by exact ID match
+              const msgTime = new Date(supabaseMsg.created_at).getTime();
+              const msgText = supabaseMsg.message_text;
+              const msgSender = supabaseMsg.sender_type === 'admin' ? 'izaj' : 'user';
+              
+              // Check for duplicates and optimistic messages to replace
+              let foundDuplicate = false;
+              let optimisticIndex = -1;
+              
+              prev.forEach((m, index) => {
+                // Check by exact ID match (UUID from database)
                 if (String(m.id) === String(supabaseMsg.id)) {
                   console.log('⚠️ [Web] Duplicate message detected by ID:', supabaseMsg.id);
-                  return true;
+                  foundDuplicate = true;
+                  return;
                 }
-                // Check by text and timestamp (within 2 seconds)
-                const msgTime = new Date(supabaseMsg.created_at).getTime();
-                if (m.text === supabaseMsg.message_text && 
+                
+                // Check if this is an optimistic message that should be replaced
+                // Optimistic messages have numeric IDs (Date.now()) and match text+sender+time
+                const isOptimisticId = typeof m.id === 'number' || /^\d+$/.test(String(m.id));
+                if (isOptimisticId && 
+                    m.text === msgText && 
+                    m.sender === msgSender &&
+                    Math.abs(m.timestamp.getTime() - msgTime) < 5000) { // 5 second window
+                  console.log('🔄 [Web] Found optimistic message to replace:', m.id, 'with:', supabaseMsg.id);
+                  optimisticIndex = index;
+                  return;
+                }
+                
+                // Check by text and timestamp (within 2 seconds) - catch other duplicates
+                if (m.text === msgText && 
+                    m.sender === msgSender &&
                     Math.abs(m.timestamp.getTime() - msgTime) < 2000) {
-                  console.log('⚠️ [Web] Duplicate message detected by text+time');
-                  return true;
+                  console.log('⚠️ [Web] Duplicate message detected by text+sender+time');
+                  foundDuplicate = true;
+                  return;
                 }
-                return false;
               });
               
-              if (exists) {
+              if (foundDuplicate) {
                 console.log('⏭️ [Web] Skipping duplicate message');
                 return prev;
               }
@@ -289,21 +310,40 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
                 messageId = Date.now();
               }
               
-              console.log('✅ [Web] Adding new message to chat:', {
-                id: messageId,
-                text: supabaseMsg.message_text.substring(0, 30),
-                sender: supabaseMsg.sender_type === 'admin' ? 'izaj' : 'user'
-              });
-              
-              const newMessage: Message = {
-                id: messageId,
-                text: supabaseMsg.message_text,
-                sender: supabaseMsg.sender_type === 'admin' ? 'izaj' : 'user',
-                timestamp: new Date(supabaseMsg.created_at),
-              };
-              
-              const updated = [...prev, newMessage];
-              return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+              // Replace optimistic message if found, otherwise add new
+              if (optimisticIndex !== -1) {
+                console.log('✅ [Web] Replacing optimistic message with real-time message:', {
+                  oldId: prev[optimisticIndex].id,
+                  newId: messageId,
+                  text: msgText.substring(0, 30),
+                  sender: msgSender
+                });
+                
+                const updated = [...prev];
+                updated[optimisticIndex] = {
+                  id: messageId,
+                  text: msgText,
+                  sender: msgSender,
+                  timestamp: new Date(supabaseMsg.created_at),
+                };
+                return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+              } else {
+                console.log('✅ [Web] Adding new message to chat:', {
+                  id: messageId,
+                  text: msgText.substring(0, 30),
+                  sender: msgSender
+                });
+                
+                const newMessage: Message = {
+                  id: messageId,
+                  text: msgText,
+                  sender: msgSender,
+                  timestamp: new Date(supabaseMsg.created_at),
+                };
+                
+                const updated = [...prev, newMessage];
+                return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+              }
             });
           } else {
             console.log('⏭️ [Web] Message received for different room, not adding to current chat');
@@ -1300,7 +1340,36 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
           messageText: userInput,
         });
         
-        if (result.success) {
+        if (result.success && result.message) {
+          // Replace optimistic message with real message from database
+          setMessages(prev => {
+            const optimisticIndex = prev.findIndex(m => 
+              m.id === userMessage.id && 
+              m.text === userInput && 
+              m.sender === 'user'
+            );
+            
+            if (optimisticIndex !== -1) {
+              // Generate ID from UUID
+              let messageId: number;
+              try {
+                const idStr = result.message!.id.replace(/-/g, '');
+                messageId = parseInt(idStr.substring(0, 15), 16) || userMessage.id;
+              } catch {
+                messageId = userMessage.id;
+              }
+              
+              const updated = [...prev];
+              updated[optimisticIndex] = {
+                ...updated[optimisticIndex],
+                id: messageId, // Replace with database ID
+                timestamp: new Date(result.message!.created_at),
+              };
+              return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+            }
+            return prev;
+          });
+          
           setIsTyping(true);
           
           // Update conversation list
@@ -1326,6 +1395,8 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
           // Typing indicator will be cleared when admin responds via real-time
           return;
         } else {
+          // Remove optimistic message on failure
+          setMessages(prev => prev.filter(m => m.id !== userMessage.id));
           alert('Failed to send message. Please try again.');
           setIsTyping(false);
           return;
@@ -1335,13 +1406,44 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
 
     // Bot mode - save message to Supabase and generate bot response
     if (finalRoomId && finalSessionId) {
-      // Save customer message to database
-      await sendMessage({
+      // Save customer message to database and replace optimistic message
+      const result = await sendMessage({
         roomId: finalRoomId,
         sessionId: finalSessionId,
         senderType: 'customer',
         messageText: userInput,
       });
+      
+      // Replace optimistic message with real message from database
+      if (result.success && result.message) {
+        setMessages(prev => {
+          const optimisticIndex = prev.findIndex(m => 
+            m.id === userMessage.id && 
+            m.text === userInput && 
+            m.sender === 'user'
+          );
+          
+          if (optimisticIndex !== -1) {
+            // Generate ID from UUID
+            let messageId: number;
+            try {
+              const idStr = result.message!.id.replace(/-/g, '');
+              messageId = parseInt(idStr.substring(0, 15), 16) || userMessage.id;
+            } catch {
+              messageId = userMessage.id;
+            }
+            
+            const updated = [...prev];
+            updated[optimisticIndex] = {
+              ...updated[optimisticIndex],
+              id: messageId, // Replace with database ID
+              timestamp: new Date(result.message!.created_at),
+            };
+            return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+          }
+          return prev;
+        });
+      }
     }
     
     // Generate bot response
