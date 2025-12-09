@@ -2,8 +2,19 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
-import { getSocket, disconnectSocket } from '@/services/socket';
 import { useUserContext } from '@/context/UserContext';
+import {
+  getOrCreateConversation,
+  getConversations,
+  getMessages,
+  sendMessage,
+  updateAdminConnection,
+  subscribeToConversation,
+  subscribeToConversations,
+  type Conversation as SupabaseConversation,
+  type Message as SupabaseMessage,
+} from '@/services/messaging';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 interface Conversation {
   roomId: string;
@@ -46,6 +57,7 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const connectingToAgentRef = useRef(false);
+  const subscriptionChannelsRef = useRef<RealtimeChannel[]>([]);
   
   // Derive customer name
   const getCustomerName = () => {
@@ -125,15 +137,6 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
     }
   }, [persistentUserId]);
   
-  // Get API URL from socket URL or use default
-  const getApiUrl = () => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
-    if (socketUrl) {
-      return socketUrl.replace(/\/socket\.io\/?$/, '');
-    }
-    return 'http://localhost:3001';
-  };
-
   // Helper function to create a new conversation properly
   const createNewConversation = async (): Promise<{ roomId: string; sessionId: string } | null> => {
     if (!persistentUserId) return null;
@@ -146,56 +149,21 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
     const newSessionId = persistentUserId;
 
     try {
-      // Create conversation in database
-      const apiUrl = getApiUrl();
-      const response = await fetch(`${apiUrl}/api/messaging/conversations/get-or-create`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Create conversation in Supabase
+        const result = await getOrCreateConversation({
           roomId: newRoomId,
           sessionId: newSessionId,
-          productName: productName || null,
-          preferredLanguage: preferredLanguage || null,
-          customerEmail: user?.email || null,
-          customerName: getCustomerName(),
-        }),
-      });
+          productName: productName || undefined,
+          preferredLanguage: preferredLanguage || undefined,
+          customerEmail: user?.email || undefined,
+          customerName: getCustomerName() || undefined,
+        });
 
-      const data = await response.json();
-
-      if (data.success) {
-        console.log(`✅ [Web] Created conversation in database: ${newRoomId}`);
-
-        // Notify admins about new conversation via socket
-        const socket = getSocket();
-        if (socket) {
-          // Ensure socket is connected
-          if (!socket.connected && persistentUserId) {
-            socket.auth = { sessionId: persistentUserId };
-            socket.connect();
-          }
-          
-          // Wait for connection if needed, then emit
-          const emitRequest = () => {
-            if (socket.connected) {
-              socket.emit('customer:request-agent', {
-                roomId: newRoomId,
-                sessionId: newSessionId,
-                productName: productName || null,
-                customerEmail: user?.email || null,
-                customerName: getCustomerName(),
-              });
-              console.log(`📢 [Web] Notified admins about new conversation: ${newRoomId}`);
-            } else {
-              socket.once('connect', emitRequest);
-            }
-          };
-          emitRequest();
-        }
-
+      if (result.success) {
+        console.log(`✅ [Web] Created conversation in Supabase: ${newRoomId}`);
         return { roomId: newRoomId, sessionId: newSessionId };
+      } else {
+        console.error('Error creating conversation:', result.error);
       }
     } catch (error) {
       console.error('Error creating conversation in database:', error);
@@ -204,15 +172,232 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
     return { roomId: newRoomId, sessionId: newSessionId };
   };
 
-  // Initialize socket listeners
+  // Initialize Supabase real-time subscriptions
   useEffect(() => {
-    const socket = getSocket();
-    if (!socket) {
-      console.warn('Socket not available - make sure NEXT_PUBLIC_SOCKET_URL is set');
-      return;
+    if (!persistentUserId) return;
+
+    // Cleanup previous subscriptions
+    subscriptionChannelsRef.current.forEach(channel => {
+      channel.unsubscribe();
+    });
+    subscriptionChannelsRef.current = [];
+
+    // Subscribe to conversation updates for current session
+    const conversationsChannel = subscribeToConversations(persistentUserId, (conv) => {
+      setConversations(prev => {
+        // Use Map to ensure uniqueness by roomId
+        const convMap = new Map(prev.map(c => [c.roomId, c]));
+        const existing = convMap.get(conv.room_id);
+        
+        if (existing) {
+          // Update existing conversation
+          convMap.set(conv.room_id, {
+            ...existing,
+            adminConnected: conv.admin_connected || false,
+            lastMessage: existing.lastMessage || '', // Keep existing lastMessage
+            lastMessageTime: new Date(conv.last_message_at || conv.updated_at),
+            productName: conv.product_name || existing.productName,
+            customerName: conv.customer_name || existing.customerName,
+          });
+        } else {
+          // Add new conversation only if it doesn't exist
+          console.log('➕ [Web] Adding new conversation from real-time:', conv.room_id);
+          convMap.set(conv.room_id, {
+            roomId: conv.room_id,
+            sessionId: conv.session_id,
+            lastMessage: '',
+            lastMessageTime: new Date(conv.last_message_at || conv.created_at),
+            productName: conv.product_name || undefined,
+            adminConnected: conv.admin_connected || false,
+            customerName: conv.customer_name || undefined,
+          });
+        }
+        
+        // Convert back to array and sort
+        return Array.from(convMap.values()).sort((a, b) => 
+          b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
+        );
+      });
+    });
+    subscriptionChannelsRef.current.push(conversationsChannel);
+
+    // Subscribe to selected conversation for real-time updates
+    if (selectedConversation) {
+      const conversationChannel = subscribeToConversation(selectedConversation, {
+        onMessage: (supabaseMsg: SupabaseMessage) => {
+          console.log('📨 [Web] Real-time message received:', {
+            id: supabaseMsg.id,
+            text: supabaseMsg.message_text.substring(0, 50),
+            sender: supabaseMsg.sender_type,
+            roomId: supabaseMsg.room_id,
+            timestamp: supabaseMsg.created_at
+          });
+          
+          setIsTyping(false);
+          
+          const currentRoomId = selectedConversation;
+          
+          // Update conversation list
+          setConversations(prev => {
+            const existing = prev.find(c => c.roomId === currentRoomId);
+            if (existing) {
+              return prev.map(conv => 
+                conv.roomId === currentRoomId 
+                  ? { 
+                      ...conv, 
+                      lastMessage: supabaseMsg.message_text, 
+                      lastMessageTime: new Date(supabaseMsg.created_at) 
+                    }
+                  : conv
+              ).sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+            }
+            return prev;
+          });
+          
+          // Add message to current conversation
+          if (currentRoomId === selectedConversation) {
+            setMessages(prev => {
+              // Better duplicate detection using message ID
+              const exists = prev.some(m => {
+                // Check by exact ID match
+                if (String(m.id) === String(supabaseMsg.id)) {
+                  console.log('⚠️ [Web] Duplicate message detected by ID:', supabaseMsg.id);
+                  return true;
+                }
+                // Check by text and timestamp (within 2 seconds)
+                const msgTime = new Date(supabaseMsg.created_at).getTime();
+                if (m.text === supabaseMsg.message_text && 
+                    Math.abs(m.timestamp.getTime() - msgTime) < 2000) {
+                  console.log('⚠️ [Web] Duplicate message detected by text+time');
+                  return true;
+                }
+                return false;
+              });
+              
+              if (exists) {
+                console.log('⏭️ [Web] Skipping duplicate message');
+                return prev;
+              }
+              
+              // Generate a more reliable ID from Supabase message ID
+              let messageId: number;
+              try {
+                // Try to extract numeric part from UUID or use hash
+                const idStr = supabaseMsg.id.replace(/-/g, '');
+                messageId = parseInt(idStr.substring(0, 15), 16) || Date.now();
+              } catch {
+                messageId = Date.now();
+              }
+              
+              console.log('✅ [Web] Adding new message to chat:', {
+                id: messageId,
+                text: supabaseMsg.message_text.substring(0, 30),
+                sender: supabaseMsg.sender_type === 'admin' ? 'izaj' : 'user'
+              });
+              
+              const newMessage: Message = {
+                id: messageId,
+                text: supabaseMsg.message_text,
+                sender: supabaseMsg.sender_type === 'admin' ? 'izaj' : 'user',
+                timestamp: new Date(supabaseMsg.created_at),
+              };
+              
+              const updated = [...prev, newMessage];
+              return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+            });
+          } else {
+            console.log('⏭️ [Web] Message received for different room, not adding to current chat');
+          }
+        },
+        onAdminConnected: ({ roomId: connectedRoomId, adminConnected }) => {
+          if (connectedRoomId !== selectedConversation) return;
+          
+          setIsConnectingToAgent(false);
+          connectingToAgentRef.current = false;
+          
+          setConversations(prev => {
+            const existing = prev.find(c => c.roomId === connectedRoomId);
+            if (existing) {
+              return prev.map(conv => 
+                conv.roomId === connectedRoomId 
+                  ? { ...conv, adminConnected: true }
+                  : conv
+              );
+            }
+            return prev;
+          });
+          
+          // Add greeting message
+          setMessages(prev => {
+            const hasGreeting = prev.some(m => 
+              m.text.includes('Hello! You are now connected')
+            );
+            if (hasGreeting) return prev;
+            
+            return [...prev, {
+              id: prev.length + 1,
+              text: 'Hello! You are now connected to one of our agents. How can I help you?',
+              sender: 'izaj',
+              timestamp: new Date(),
+            }];
+          });
+        },
+        onAdminDisconnected: ({ roomId: disconnectedRoomId }) => {
+          if (disconnectedRoomId !== selectedConversation) return;
+          
+          setIsConnectingToAgent(false);
+          connectingToAgentRef.current = false;
+          
+          setConversations(prev => {
+            const existing = prev.find(c => c.roomId === disconnectedRoomId);
+            if (existing) {
+              return prev.map(conv => 
+                conv.roomId === disconnectedRoomId 
+                  ? { ...conv, adminConnected: false }
+                  : conv
+              );
+            }
+            return prev;
+          });
+          
+          setInputValue('');
+          
+          // Add disconnect message
+          setMessages(prev => {
+            const hasDisconnectMessage = prev.some(m => 
+              m.text.includes('disconnected') || 
+              m.text.includes('can no longer reply')
+            );
+            
+            if (hasDisconnectMessage) return prev;
+            
+            return [...prev, {
+              id: prev.length + 1,
+              text: 'The agent has disconnected. You can no longer reply to this conversation.',
+              sender: 'izaj',
+              timestamp: new Date(),
+            }];
+          });
+        },
+      });
+      subscriptionChannelsRef.current.push(conversationChannel);
     }
 
-    const handleAdminConnected = (msg: { text: string; sentAt?: string; roomId?: string }) => {
+    return () => {
+      console.log('🧹 [Web] Cleaning up subscriptions for persistentUserId:', persistentUserId, 'selectedConversation:', selectedConversation);
+      subscriptionChannelsRef.current.forEach(channel => {
+        try {
+          channel.unsubscribe();
+        } catch (error) {
+          console.warn('⚠️ [Web] Error unsubscribing channel:', error);
+        }
+      });
+      subscriptionChannelsRef.current = [];
+    };
+  }, [persistentUserId, selectedConversation]);
+
+  // Legacy handler for admin connected (kept for compatibility but not used with Supabase)
+  const handleAdminConnected = (msg: { text: string; sentAt?: string; roomId?: string }) => {
       console.log('✅ [Web] Admin connected event received:', msg);
       console.log('Current roomId:', roomId, 'selectedConversation:', selectedConversation, 'msg.roomId:', msg.roomId);
       console.log('Current conversations:', conversations.map(c => c.roomId));
@@ -266,34 +451,35 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
       // Always update/create the conversation in the list
       if (finalRoomId) {
         setConversations(prev => {
-          const existing = prev.find(c => c.roomId === finalRoomId);
-          console.log('📋 [Web] Existing conversation found:', existing ? 'yes' : 'no');
+          const convMap = new Map(prev.map(c => [c.roomId, c]));
+          const existing = convMap.get(finalRoomId);
           
           if (existing) {
             // Update existing conversation
-            const updated = prev.map(conv => 
-              conv.roomId === finalRoomId 
-                ? { ...conv, adminConnected: true, lastMessage: msg.text || conv.lastMessage, lastMessageTime: new Date() }
-                : conv
-            );
+            convMap.set(finalRoomId, {
+              ...existing,
+              adminConnected: true,
+              lastMessage: msg.text || existing.lastMessage,
+              lastMessageTime: new Date(),
+            });
             console.log('✅ [Web] Updated conversation adminConnected to true');
-            // Sort by last message time (newest first)
-            return updated.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
           } else {
             // Add new conversation if it doesn't exist
-            console.log('➕ [Web] Adding new conversation to list');
-            const newConv = {
+            console.log('➕ [Web] Adding new conversation to list from handleAdminConnected');
+            convMap.set(finalRoomId, {
               roomId: finalRoomId,
               sessionId: sessionId || persistentUserId || '',
               lastMessage: msg.text || '',
               lastMessageTime: new Date(),
               productName,
               adminConnected: true,
-            };
-            const updated = [...prev, newConv];
-            // Sort by last message time (newest first)
-            return updated.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+            });
           }
+          
+          // Convert back to array and sort
+          return Array.from(convMap.values()).sort((a, b) => 
+            b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
+          );
         });
       }
       
@@ -320,274 +506,6 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
       console.log('✅ [Web] isAgentMode will be:', true, 'isConnected will be:', true);
     };
 
-    const handleAdminDisconnected = (msg: { text: string; sentAt?: string; roomId?: string }) => {
-      console.log('Admin disconnected event received:', msg);
-      
-      setIsConnectingToAgent(false);
-      connectingToAgentRef.current = false;
-      
-      // Check if message is for current room
-      const currentRoomId = roomId || selectedConversation;
-      const msgRoomId = msg.roomId || currentRoomId;
-      
-      if (msg.roomId && currentRoomId && msg.roomId !== currentRoomId) {
-        console.log('Room ID mismatch:', { msgRoomId: msg.roomId, currentRoomId });
-        return;
-      }
-      
-      // Update conversation list to reflect disconnected status (per-conversation)
-      if (msgRoomId) {
-        setConversations(prev => {
-          const existing = prev.find(c => c.roomId === msgRoomId);
-          if (existing) {
-            return prev.map(conv => 
-              conv.roomId === msgRoomId 
-                ? { ...conv, adminConnected: false }
-                : conv
-            );
-          }
-          return prev;
-        });
-      }
-      
-      // Clear input field when admin disconnects to prevent sending messages
-      if (msgRoomId === currentRoomId || msgRoomId === selectedConversation) {
-        setInputValue('');
-      }
-      
-      // Add disconnect message
-      setMessages(prev => {
-        // Check if disconnect message already exists to avoid duplicates
-        const hasDisconnectMessage = prev.some(m => 
-          m.text.includes('disconnected') || 
-          m.text.includes('can no longer reply')
-        );
-        
-        if (hasDisconnectMessage) {
-          return prev;
-        }
-        
-        return [...prev, {
-          id: prev.length + 1,
-          text: msg.text || 'The agent has disconnected. You can no longer reply to this conversation.',
-          sender: 'izaj',
-          timestamp: msg.sentAt ? new Date(msg.sentAt) : new Date(),
-        }];
-      });
-    };
-
-    const handleSession = ({ sessionId: sid, roomId: rid }: { sessionId: string; roomId: string }) => {
-      console.log('Session established:', { sessionId: sid, roomId: rid });
-      
-      // Use persistent user ID for session
-      const persistentId = persistentUserId || sid;
-      const finalSessionId = persistentId;
-      
-      // Use selected conversation's roomId if available, otherwise use server's roomId
-      const finalRoomId = selectedConversation || rid || (persistentUserId ? `customer:${persistentId}` : `customer:${sid}`);
-      
-      // Server will handle room joining automatically
-      if (finalRoomId) {
-        console.log(`✅ [Web] Session room: ${finalRoomId}`);
-      }
-      
-      setSessionId(finalSessionId);
-      if (!roomId) {
-        setRoomId(finalRoomId);
-      }
-      
-      // Save to localStorage
-      if (persistentUserId) {
-        localStorage.setItem(`chat_sessionId_${persistentUserId}`, finalSessionId);
-        if (finalRoomId) {
-          localStorage.setItem(`chat_roomId_${persistentUserId}`, finalRoomId);
-        }
-        if (!selectedConversation && finalRoomId) {
-          setSelectedConversation(finalRoomId);
-          localStorage.setItem(`chat_selectedConversation_${persistentUserId}`, finalRoomId);
-        }
-      }
-      
-      // If connecting to agent, emit request
-      if (connectingToAgentRef.current && finalRoomId && finalSessionId) {
-        socket.emit('customer:request-agent', {
-          roomId: finalRoomId,
-          sessionId: finalSessionId,
-          productName,
-          customerEmail: user?.email || null,
-          customerName: getCustomerName(),
-        });
-      }
-    };
-
-    const handleAdminMessage = (msg: { text: string; sentAt?: string; roomId?: string; id?: string }) => {
-      setIsTyping(false);
-      
-      const currentRoomId = roomId || selectedConversation;
-      const msgRoomId = msg.roomId || currentRoomId;
-      
-      // Update conversation list regardless of which conversation
-      setConversations(prev => {
-        const existing = prev.find(c => c.roomId === msgRoomId);
-        if (existing) {
-          const updated = prev.map(conv => 
-            conv.roomId === msgRoomId 
-              ? { ...conv, lastMessage: msg.text, lastMessageTime: new Date(msg.sentAt || Date.now()) }
-              : conv
-          );
-          // Sort by last message time (newest first)
-          return updated.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
-        } else {
-          // Add new conversation if it doesn't exist
-          if (msgRoomId) {
-            const newConvs = [...prev, {
-              roomId: msgRoomId,
-              sessionId: sessionId || '',
-              lastMessage: msg.text,
-              lastMessageTime: new Date(msg.sentAt || Date.now()),
-              productName,
-            }];
-            // Sort by last message time (newest first)
-            return newConvs.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
-          }
-          return prev;
-        }
-      });
-      
-      // Only add message if it's for the current conversation
-      if (currentRoomId && msgRoomId === currentRoomId) {
-        setMessages(prev => {
-          // Check if message already exists to avoid duplicates
-          const exists = prev.some(m => 
-            (msg.id && String(m.id) === String(msg.id)) ||
-            (m.text === msg.text && 
-             Math.abs(m.timestamp.getTime() - new Date(msg.sentAt || Date.now()).getTime()) < 2000)
-          );
-          if (exists) return prev;
-          
-          // Insert message in correct chronological order
-          const newMessage: Message = {
-            id: typeof msg.id === 'number' ? msg.id : (typeof msg.id === 'string' ? parseInt(msg.id) || Date.now() : Date.now()),
-            text: msg.text,
-            sender: 'izaj',
-            timestamp: msg.sentAt ? new Date(msg.sentAt) : new Date(),
-          };
-          
-          const updated = [...prev, newMessage];
-          // Sort by timestamp to maintain order
-          return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-        });
-      }
-    };
-    
-    const handleCustomerMessage = (msg: { text: string; sentAt?: string; roomId?: string; id?: string }) => {
-      const msgRoomId = msg.roomId || roomId || selectedConversation;
-      
-      // Update conversation list when customer sends message
-      setConversations(prev => {
-        const existing = prev.find(c => c.roomId === msgRoomId);
-        if (existing) {
-          const updated = prev.map(conv => 
-            conv.roomId === msgRoomId 
-              ? { ...conv, lastMessage: msg.text, lastMessageTime: new Date(msg.sentAt || Date.now()) }
-              : conv
-          );
-          // Sort by last message time (newest first)
-          return updated.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
-        } else {
-          // Add new conversation
-          if (msgRoomId) {
-            const newConvs = [...prev, {
-              roomId: msgRoomId,
-              sessionId: sessionId || '',
-              lastMessage: msg.text,
-              lastMessageTime: new Date(msg.sentAt || Date.now()),
-              productName,
-            }];
-            // Sort by last message time (newest first)
-            return newConvs.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
-          }
-          return prev;
-        }
-      });
-      
-      // If this is for the current conversation, add to messages
-      if (selectedConversation === msgRoomId) {
-        setMessages(prev => {
-          const exists = prev.some(m => 
-            (msg.id && String(m.id) === String(msg.id)) ||
-            (m.text === msg.text && 
-             Math.abs(m.timestamp.getTime() - new Date(msg.sentAt || Date.now()).getTime()) < 2000)
-          );
-          if (exists) return prev;
-          
-          const newMessage: Message = {
-            id: typeof msg.id === 'number' ? msg.id : (typeof msg.id === 'string' ? parseInt(msg.id) || Date.now() : Date.now()),
-            text: msg.text,
-            sender: 'user',
-            timestamp: msg.sentAt ? new Date(msg.sentAt) : new Date(),
-          };
-          
-          const updated = [...prev, newMessage];
-          return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-        });
-      }
-    };
-
-    const handleConnect = () => {
-      console.log('Socket connected');
-      // Socket connection is separate from admin connection - don't update adminConnected here
-    };
-    
-    const handleDisconnect = (reason: string) => {
-      console.log('Socket disconnected:', reason);
-      // Socket disconnection doesn't affect admin connection status
-      // Admin connection is tracked per-conversation via adminConnected
-    };
-
-    const handleConnectError = (error: Error) => {
-      console.error('Socket connection error:', error);
-      if (connectingToAgentRef.current) {
-        setIsConnectingToAgent(false);
-        connectingToAgentRef.current = false;
-        setMessages(prev => [...prev, {
-          id: prev.length + 1,
-          text: 'Unable to connect to agent. Please make sure the server is running.',
-          sender: 'izaj',
-          timestamp: new Date(),
-        }]);
-      }
-    };
-
-    socket.on('session', handleSession);
-    socket.on('admin:message', handleAdminMessage);
-    socket.on('admin:connected', handleAdminConnected);
-    socket.on('admin:disconnected', handleAdminDisconnected);
-    socket.on('customer:message', handleCustomerMessage);
-    socket.on('connect', handleConnect);
-    socket.on('disconnect', handleDisconnect);
-    socket.on('connect_error', handleConnectError);
-
-    // Only connect if socket URL is configured
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
-    if (socketUrl && persistentUserId) {
-      // Connect with persistent user ID in auth
-      socket.auth = { sessionId: persistentUserId };
-      socket.connect();
-    }
-
-    return () => {
-      socket.off('session', handleSession);
-      socket.off('admin:message', handleAdminMessage);
-      socket.off('admin:connected', handleAdminConnected);
-      socket.off('admin:disconnected', handleAdminDisconnected);
-      socket.off('customer:message', handleCustomerMessage);
-      socket.off('connect', handleConnect);
-      socket.off('disconnect', handleDisconnect);
-      socket.off('connect_error', handleConnectError);
-    };
-  }, [preferredLanguage, selectedConversation, sessionId, productName, persistentUserId, roomId, conversations]);
-
   // Load conversation history based on persistent user ID
   useEffect(() => {
     const loadConversations = async () => {
@@ -596,31 +514,63 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
       
       setIsLoadingHistory(true);
       try {
-        const apiUrl = getApiUrl();
-        const response = await fetch(`${apiUrl}/api/messaging/conversations?sessionId=${userId}`);
-        const data = await response.json();
+        const result = await getConversations(userId);
         
-        if (data.success && data.conversations) {
-          const convs = data.conversations.map((conv: any) => ({
-            roomId: conv.room_id,
-            sessionId: conv.session_id,
-            lastMessage: conv.last_message?.message_text || conv.messages?.[0]?.message_text || '',
-            lastMessageTime: new Date(conv.last_message_at || conv.created_at),
-            productName: conv.product_name,
-            adminConnected: conv.admin_connected || false,
-            customerName: conv.customer_name,
-          }));
+        if (result.success && result.conversations) {
+          // Get last message for each conversation
+          const convsWithMessages = await Promise.all(
+            result.conversations.map(async (conv) => {
+              try {
+                const messagesResult = await getMessages(conv.room_id);
+                const lastMessage = messagesResult.messages && messagesResult.messages.length > 0
+                  ? messagesResult.messages[messagesResult.messages.length - 1].message_text
+                  : '';
+                
+                return {
+                  roomId: conv.room_id,
+                  sessionId: conv.session_id,
+                  lastMessage,
+                  lastMessageTime: new Date(conv.last_message_at || conv.created_at),
+                  productName: conv.product_name || undefined,
+                  adminConnected: conv.admin_connected || false,
+                  customerName: conv.customer_name || undefined,
+                };
+              } catch (error) {
+                console.warn('⚠️ [Web] Error loading messages for conversation:', conv.room_id, error);
+                // Return conversation without last message if error
+                return {
+                  roomId: conv.room_id,
+                  sessionId: conv.session_id,
+                  lastMessage: '',
+                  lastMessageTime: new Date(conv.last_message_at || conv.created_at),
+                  productName: conv.product_name || undefined,
+                  adminConnected: conv.admin_connected || false,
+                  customerName: conv.customer_name || undefined,
+                };
+              }
+            })
+          );
+          
+          // Use Map to ensure uniqueness and prevent duplicates
+          const convMap = new Map<string, Conversation>();
+          convsWithMessages.forEach(conv => {
+            if (!convMap.has(conv.roomId)) {
+              convMap.set(conv.roomId, conv);
+            } else {
+              console.warn('⚠️ [Web] Duplicate conversation found during load, skipping:', conv.roomId);
+            }
+          });
           
           // Sort conversations by last message time (newest first)
-          convs.sort((a: Conversation, b: Conversation) => 
+          const sortedConvs = Array.from(convMap.values()).sort((a, b) => 
             b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
           );
           
-          setConversations(convs);
+          setConversations(sortedConvs);
           
           // If no conversation is selected and we have conversations, select the most recent one
-          if (!selectedConversation && convs.length > 0) {
-            const mostRecent = convs[0];
+          if (!selectedConversation && sortedConvs.length > 0) {
+            const mostRecent = sortedConvs[0];
             setSelectedConversation(mostRecent.roomId);
             if (!roomId) {
               setRoomId(mostRecent.roomId);
@@ -633,7 +583,7 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
           }
         }
       } catch (error) {
-        console.error('Error loading conversations:', error);
+        console.error('❌ [Web] Error loading conversations:', error);
       } finally {
         setIsLoadingHistory(false);
       }
@@ -659,23 +609,21 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
   // Cleanup function when chat box closes
   useEffect(() => {
     return () => {
-      // Disconnect socket when component unmounts (chat box closes)
-      const socket = getSocket();
-      if (socket) {
-        socket.disconnect();
-        disconnectSocket();
-      }
+      // Unsubscribe from all Supabase channels when component unmounts
+      subscriptionChannelsRef.current.forEach(channel => {
+        channel.unsubscribe();
+      });
+      subscriptionChannelsRef.current = [];
     };
   }, []);
 
   // Handle close button with cleanup
   const handleClose = () => {
-    // Disconnect socket but keep conversation state
-    const socket = getSocket();
-    if (socket) {
-      socket.disconnect();
-      disconnectSocket();
-    }
+    // Unsubscribe from Supabase channels but keep conversation state
+    subscriptionChannelsRef.current.forEach(channel => {
+      channel.unsubscribe();
+    });
+    subscriptionChannelsRef.current = [];
     
     // Don't reset conversation state - keep it for when chat reopens
     // Don't reset isAgentMode and isConnected - they will be restored from database when chat reopens
@@ -700,18 +648,16 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
       
       setIsLoadingHistory(true);
       try {
-        const apiUrl = getApiUrl();
-        const response = await fetch(`${apiUrl}/api/messaging/conversations/${selectedConversation}/messages`);
-        const data = await response.json();
+        const result = await getMessages(selectedConversation);
         
-        if (data.success && data.messages) {
+        if (result.success && result.messages) {
           // Sort messages by timestamp to ensure correct order
-          const sortedMessages = [...data.messages].sort((a: any, b: any) => 
+          const sortedMessages = [...result.messages].sort((a, b) => 
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
           );
           
-          const loadedMessages: Message[] = sortedMessages.map((msg: any, index: number) => ({
-            id: msg.id || Date.now() + index,
+          const loadedMessages: Message[] = sortedMessages.map((msg, index) => ({
+            id: parseInt(msg.id.replace(/-/g, '').substring(0, 15)) || Date.now() + index,
             text: msg.message_text || '',
             sender: msg.sender_type === 'customer' ? 'user' : 'izaj',
             timestamp: new Date(msg.created_at),
@@ -727,17 +673,18 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
           }
           
           // Update conversation admin_connected status in conversations list
-          if (data.conversation && data.conversation.admin_connected !== undefined && selectedConversation) {
+          if (result.conversation && result.conversation.admin_connected !== undefined && selectedConversation) {
+            const conv = result.conversation;
             setConversations(prev => {
               const existing = prev.find(c => c.roomId === selectedConversation);
               if (existing) {
-                const updated = prev.map(conv => 
-                  conv.roomId === selectedConversation 
-                    ? { ...conv, adminConnected: data.conversation.admin_connected }
-                    : conv
+                const updated = prev.map(c => 
+                  c.roomId === selectedConversation 
+                    ? { ...c, adminConnected: conv.admin_connected }
+                    : c
                 );
                 // If admin is disconnected, clear input to prevent sending
-                if (!data.conversation.admin_connected) {
+                if (!conv.admin_connected) {
                   setInputValue('');
                 }
                 return updated;
@@ -745,22 +692,17 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
                 // If conversation doesn't exist in list, add it
                 return [...prev, {
                   roomId: selectedConversation,
-                  sessionId: sessionId || '',
+                  sessionId: conv.session_id || sessionId || '',
                   lastMessage: loadedMessages.length > 0 ? loadedMessages[loadedMessages.length - 1].text : '',
                   lastMessageTime: loadedMessages.length > 0 ? loadedMessages[loadedMessages.length - 1].timestamp : new Date(),
-                  productName,
-                  adminConnected: data.conversation.admin_connected,
+                  productName: conv.product_name || productName,
+                  adminConnected: conv.admin_connected,
                 }];
               }
             });
           }
           
-          // Ensure socket is in the correct room
-          const socket = getSocket();
-          if (socket && socket.connected && selectedConversation) {
-            // Socket should already be in the room from session, but ensure it
-            console.log(`📥 [Web] Loaded ${loadedMessages.length} messages for room: ${selectedConversation}`);
-          }
+          console.log(`📥 [Web] Loaded ${loadedMessages.length} messages for room: ${selectedConversation}`);
         } else {
           setMessages([]);
           setShowInitialActions(true);
@@ -1186,14 +1128,7 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
     return { text: defaultResponses[Math.floor(Math.random() * defaultResponses.length)] };
   };
 
-  const handleConnectToAgent = () => {
-    const socket = getSocket();
-    
-    if (!socket) {
-      alert('Unable to connect. Please check your connection and refresh the page.');
-      return;
-    }
-
+  const handleConnectToAgent = async () => {
     // Use persistent user ID
     let finalSessionId = persistentUserId || sessionId || '';
     // Use selectedConversation first (from New Chat), then roomId, then check localStorage
@@ -1215,16 +1150,17 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
         }
       } else {
         // Create new conversation
-        const newRoomId = `customer:${persistentUserId}_${Date.now()}`;
-        finalRoomId = newRoomId;
-        finalSessionId = persistentUserId;
-        setRoomId(finalRoomId);
-        setSessionId(finalSessionId);
-        setSelectedConversation(finalRoomId);
-        // Save to localStorage
-        localStorage.setItem(`chat_roomId_${persistentUserId}`, finalRoomId);
-        localStorage.setItem(`chat_sessionId_${persistentUserId}`, finalSessionId);
-        localStorage.setItem(`chat_selectedConversation_${persistentUserId}`, finalRoomId);
+        const newConv = await createNewConversation();
+        if (newConv) {
+          finalRoomId = newConv.roomId;
+          finalSessionId = newConv.sessionId;
+          setRoomId(finalRoomId);
+          setSessionId(finalSessionId);
+          setSelectedConversation(finalRoomId);
+        } else {
+          alert('Unable to create conversation. Please try again.');
+          return;
+        }
       }
     } else if (finalRoomId && !selectedConversation) {
       // Ensure selectedConversation is set if we have a roomId
@@ -1243,56 +1179,34 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
     setIsConnectingToAgent(true);
     connectingToAgentRef.current = true;
 
-    // Ensure conversation is in the list before requesting agent
+    // Ensure conversation exists in Supabase
     if (finalRoomId && finalSessionId) {
+      await getOrCreateConversation({
+        roomId: finalRoomId,
+        sessionId: finalSessionId,
+        productName: productName || undefined,
+        preferredLanguage: preferredLanguage || undefined,
+        customerEmail: user?.email || undefined,
+        customerName: getCustomerName() || undefined,
+      });
+      
+      // Ensure conversation is in the list
       setConversations(prev => {
         const exists = prev.find(c => c.roomId === finalRoomId);
         if (!exists) {
-          // Add conversation to list if it doesn't exist
           return [...prev, {
             roomId: finalRoomId,
             sessionId: finalSessionId,
             lastMessage: '',
             lastMessageTime: new Date(),
             productName,
-            adminConnected: false, // Will be updated when admin connects
+            adminConnected: false, // Will be updated when admin connects via real-time
           }];
         }
         return prev;
       });
-    }
-    
-    // Connect socket if not connected with persistent user ID
-    if (!socket.connected && persistentUserId) {
-      socket.auth = { sessionId: persistentUserId };
-      socket.connect();
-    }
-    
-    // Emit request for agent connection
-    // Wait for socket to be connected if not already
-    if (socket.connected && finalRoomId && finalSessionId) {
-      socket.emit('customer:request-agent', {
-        roomId: finalRoomId,
-        sessionId: finalSessionId,
-        productName,
-        customerEmail: user?.email || null,
-        customerName: getCustomerName(),
-      });
+      
       console.log(`📢 [Web] Requested agent for room: ${finalRoomId}`);
-    } else if (!socket.connected && persistentUserId) {
-      // Wait for connection then emit
-      socket.once('connect', () => {
-        if (finalRoomId && finalSessionId) {
-          socket.emit('customer:request-agent', {
-            roomId: finalRoomId,
-            sessionId: finalSessionId,
-            productName,
-            customerEmail: user?.email || null,
-            customerName: getCustomerName(),
-          });
-          console.log(`📢 [Web] Requested agent for room: ${finalRoomId} (after connect)`);
-        }
-      });
     }
   };
 
@@ -1345,25 +1259,26 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
         setSessionId(finalSessionId);
         setSelectedConversation(finalRoomId);
         
-        // Server will handle room joining when messages are sent
-        const socket = getSocket();
-        if (socket && socket.connected) {
-          console.log(`✅ [Web] Room ready for messages: ${finalRoomId}`);
-        }
+        console.log(`✅ [Web] Room ready for messages: ${finalRoomId}`);
         
-        // Add to conversations list
+        // Add to conversations list (prevent duplicates)
         setConversations(prev => {
-          const exists = prev.find(c => c.roomId === finalRoomId);
-          if (!exists) {
-            return [{
+          const convMap = new Map(prev.map(c => [c.roomId, c]));
+          
+          if (!convMap.has(finalRoomId)) {
+            console.log('➕ [Web] Adding conversation from handleSend:', finalRoomId);
+            convMap.set(finalRoomId, {
               roomId: finalRoomId,
               sessionId: finalSessionId,
               lastMessage: userInput,
               lastMessageTime: new Date(),
               productName,
-            }, ...prev];
+            });
           }
-          return prev;
+          
+          return Array.from(convMap.values()).sort((a, b) => 
+            b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
+          );
         });
       }
     }
@@ -1373,123 +1288,89 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
       setSelectedConversation(finalRoomId);
     }
 
-    // If in agent mode, send via socket
+    // If in agent mode, send via Supabase
     if (isAgentMode) {
-      const socket = getSocket();
-      if (socket && socket.connected && finalRoomId && finalSessionId) {
+      if (finalRoomId && finalSessionId) {
         console.log('📤 [Web] Sending customer message:', { roomId: finalRoomId, sessionId: finalSessionId, text: userInput });
         
-        socket.emit('customer:message', {
-          text: userInput,
-          productName,
-          preferredLanguage,
-          customerEmail: user?.email || null,
-          customerName: getCustomerName(),
+        const result = await sendMessage({
           roomId: finalRoomId,
           sessionId: finalSessionId,
+          senderType: 'customer',
+          messageText: userInput,
         });
-        setIsTyping(true);
         
-        // Update conversation list
-        if (finalRoomId) {
-          setConversations(prev => {
-            const existing = prev.find(c => c.roomId === finalRoomId);
-            if (existing) {
-              const updated = prev.map(conv => 
-                conv.roomId === finalRoomId 
-                  ? { ...conv, lastMessage: userInput, lastMessageTime: new Date() }
-                  : conv
-              );
-              // Sort by last message time
-              return updated.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
-            } else {
-              const newConvs = [...prev, {
-                roomId: finalRoomId,
-                sessionId: finalSessionId,
-                lastMessage: userInput,
-                lastMessageTime: new Date(),
-                productName,
-              }];
-              // Sort by last message time
-              return newConvs.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
-            }
-          });
-        }
-        
-        // Typing indicator will be cleared when admin responds
-        return;
-      } else {
-        // If socket not ready, show error and fallback to bot
-        alert('Connection lost. Switching back to bot mode.');
-        // Update conversation to mark as disconnected
-        if (finalRoomId) {
+        if (result.success) {
+          setIsTyping(true);
+          
+          // Update conversation list
           setConversations(prev => {
             const existing = prev.find(c => c.roomId === finalRoomId);
             if (existing) {
               return prev.map(conv => 
                 conv.roomId === finalRoomId 
-                  ? { ...conv, adminConnected: false }
+                  ? { ...conv, lastMessage: userInput, lastMessageTime: new Date() }
                   : conv
-              );
+              ).sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+            } else {
+              return [...prev, {
+                roomId: finalRoomId,
+                sessionId: finalSessionId,
+                lastMessage: userInput,
+                lastMessageTime: new Date(),
+                productName,
+              }].sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
             }
-            return prev;
           });
+          
+          // Typing indicator will be cleared when admin responds via real-time
+          return;
+        } else {
+          alert('Failed to send message. Please try again.');
+          setIsTyping(false);
+          return;
         }
-        // Continue with bot response below
       }
     }
 
-    const socket = getSocket();
-    if (!socket) {
-      // fallback bot if no socket url configured
-      setIsTyping(true);
-      setTimeout(() => {
-        const botResponse = generateBotResponse(userInput);
-        
-        const botMessage: Message = {
-          id: messages.length + 2,
-          text: botResponse.text,
-          sender: 'izaj',
-          timestamp: new Date(),
-          isContactInfo: botResponse.showContactInfo
-        };
-        
-        setMessages(prev => [...prev, botMessage]);
-        setIsTyping(false);
-      }, 800);
-      return;
-    }
-
-    if (socket.connected && finalRoomId && finalSessionId) {
-      console.log('📤 [Web] Sending customer message (bot mode):', { roomId: finalRoomId, sessionId: finalSessionId, text: userInput });
-      
-      socket.emit('customer:message', {
-        text: userInput,
-        productName,
-        preferredLanguage,
-        customerEmail: user?.email || null,
-        customerName: getCustomerName(),
+    // Bot mode - save message to Supabase and generate bot response
+    if (finalRoomId && finalSessionId) {
+      // Save customer message to database
+      await sendMessage({
         roomId: finalRoomId,
         sessionId: finalSessionId,
+        senderType: 'customer',
+        messageText: userInput,
       });
-    } else {
-      // fallback to local bot response if socket is down
-      setIsTyping(true);
-      setTimeout(() => {
-        const botResponse = generateBotResponse(userInput);
-        
-        const botMessage: Message = {
-          id: messages.length + 2,
-          text: botResponse.text,
-          sender: 'izaj',
-          timestamp: new Date(),
-          isContactInfo: botResponse.showContactInfo
-        };
-        
-        setMessages(prev => [...prev, botMessage]);
-        setIsTyping(false);
-      }, 800);
     }
+    
+    // Generate bot response
+    setIsTyping(true);
+    setTimeout(() => {
+      const botResponse = generateBotResponse(userInput);
+      
+      const botMessage: Message = {
+        id: Date.now(),
+        text: botResponse.text,
+        sender: 'izaj',
+        timestamp: new Date(),
+        isContactInfo: botResponse.showContactInfo
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
+      
+      // Save bot response to database
+      if (finalRoomId && finalSessionId) {
+        sendMessage({
+          roomId: finalRoomId,
+          sessionId: finalSessionId,
+          senderType: 'admin', // Bot responses are treated as admin messages
+          messageText: botResponse.text,
+        });
+      }
+      
+      setIsTyping(false);
+    }, 800);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -1570,40 +1451,48 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
                 setShowInitialActions(true);
                 
                 // Set new conversation
-                setRoomId(newRoomId);
-                setSessionId(newSessionId);
-                setSelectedConversation(newRoomId);
-                
-                // Reset connecting state (adminConnected will be false for new conversation)
-                setIsConnectingToAgent(false);
-                connectingToAgentRef.current = false;
-                
-                // Save to localStorage
-                if (persistentUserId) {
-                  localStorage.setItem(`chat_roomId_${persistentUserId}`, newRoomId);
-                  localStorage.setItem(`chat_sessionId_${persistentUserId}`, newSessionId);
-                  localStorage.setItem(`chat_selectedConversation_${persistentUserId}`, newRoomId);
-                }
-                
-                // Server will handle room joining when messages are sent
-                const socket = getSocket();
-                if (socket && socket.connected) {
-                  console.log(`✅ [Web] New room ready: ${newRoomId}`);
-                }
+        setRoomId(newRoomId);
+        setSessionId(newSessionId);
+        setSelectedConversation(newRoomId);
+        
+        // Reset connecting state (adminConnected will be false for new conversation)
+        setIsConnectingToAgent(false);
+        connectingToAgentRef.current = false;
+        
+        // Save to localStorage
+        if (persistentUserId) {
+          localStorage.setItem(`chat_roomId_${persistentUserId}`, newRoomId);
+          localStorage.setItem(`chat_sessionId_${persistentUserId}`, newSessionId);
+          localStorage.setItem(`chat_selectedConversation_${persistentUserId}`, newRoomId);
+        }
+        
+        console.log(`✅ [Web] New room ready: ${newRoomId}`);
                 
                 // Add to conversations list (adminConnected defaults to false for new conversation)
+                // Use Map to prevent duplicates
                 setConversations(prev => {
-                  const newConvs = [{
-                    roomId: newRoomId,
-                    sessionId: newSessionId,
-                    lastMessage: '',
-                    lastMessageTime: new Date(),
-                    productName,
-                    customerName: getCustomerName() || undefined,
-                    adminConnected: false, // New conversation starts disconnected
-                  }, ...prev];
-                  // Sort by last message time (newest first)
-                  return newConvs.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+                  const convMap = new Map(prev.map(c => [c.roomId, c]));
+                  
+                  // Only add if it doesn't already exist
+                  if (!convMap.has(newRoomId)) {
+                    console.log('➕ [Web] Adding new conversation to list:', newRoomId);
+                    convMap.set(newRoomId, {
+                      roomId: newRoomId,
+                      sessionId: newSessionId,
+                      lastMessage: '',
+                      lastMessageTime: new Date(),
+                      productName,
+                      customerName: getCustomerName() || undefined,
+                      adminConnected: false, // New conversation starts disconnected
+                    });
+                  } else {
+                    console.log('⚠️ [Web] Conversation already exists, skipping:', newRoomId);
+                  }
+                  
+                  // Convert back to array and sort
+                  return Array.from(convMap.values()).sort((a, b) => 
+                    b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
+                  );
                 });
                 
                 console.log(`✨ [Web] Created new conversation: ${newRoomId}`);
@@ -1639,11 +1528,7 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
                     // Connection status is now per-conversation (adminConnected in conv object)
                     // No need to set global state - currentConversation computed value handles it
                     
-                    // Server will handle room joining when messages are sent
-                    const socket = getSocket();
-                    if (socket && socket.connected) {
-                      console.log(`✅ [Web] Switched to room: ${conv.roomId}`);
-                    }
+                    console.log(`✅ [Web] Switched to room: ${conv.roomId}`);
                     
                     // Save selected conversation
                     if (persistentUserId) {
