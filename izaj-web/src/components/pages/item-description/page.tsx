@@ -944,7 +944,7 @@ const ItemDescription: React.FC<ItemDescriptionProps> = ({ params }) => {
         <div className="fixed z-[9999] bottom-4 right-4 md:bottom-6 md:right-6">
           {/* Compact chat window positioned where floating icon was */}
           <div
-            className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-[340px] h-[520px] md:w-[380px] md:h-[560px] overflow-hidden animate-scale-in"
+            className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 w-[600px] h-[500px] md:w-[700px] md:h-[550px] lg:w-[800px] lg:h-[600px] overflow-hidden animate-scale-in max-w-[calc(100vw-2rem)]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Chat component */}

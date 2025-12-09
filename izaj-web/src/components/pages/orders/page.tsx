@@ -6,6 +6,7 @@ import RequireAuth from '../../common/RequireAuth';
 import AccountSidebar from '../../common/AccountSidebar';
 import { useUserContext } from '../../../context/UserContext';
 import { useCartContext } from '../../../context/CartContext';
+import CompactChat from '../../common/CompactChat';
 
 interface Order {
   id: string;
@@ -51,6 +52,8 @@ const MyOrders: React.FC = () => {
   const [isCancelReasonInputFocused, setIsCancelReasonInputFocused] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [chatProductName, setChatProductName] = useState<string | undefined>(undefined);
   const [reviewOrderId, setReviewOrderId] = useState<string | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState('');
@@ -663,6 +666,23 @@ const MyOrders: React.FC = () => {
               </div>
             </div>
 
+    {/* Chat Modal */}
+    {showChatModal && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 modal-backdrop"
+        onClick={() => setShowChatModal(false)}
+      >
+        <div
+          className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden modal-scale-in h-[80vh] max-h-[80vh] flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-0 flex-1 overflow-hidden relative">
+            <CompactChat onClose={() => setShowChatModal(false)} productName={chatProductName} />
+          </div>
+        </div>
+      </div>
+    )}
+
             <div className="flex flex-col lg:flex-row lg:items-start gap-6 lg:gap-8">
               {/* Left Column - Sidebar - Only on large screens */}
               <AccountSidebar 
@@ -783,6 +803,22 @@ const MyOrders: React.FC = () => {
                                   <Icon icon="mdi:eye-outline" className="w-4 h-4" />
                                   View Details
                                 </button>
+
+                                {/* Chat Now for pending orders */}
+                                {order.status === 'pending' && (
+                                  <button
+                                    onClick={() => {
+                                      const firstItemName = order.items?.[0]?.name;
+                                      setChatProductName(firstItemName);
+                                      setShowChatModal(true);
+                                    }}
+                                    className="w-full sm:w-auto lg:w-full px-4 py-2.5 sm:py-2 bg-white border border-gray-300 text-gray-800 rounded-lg hover:bg-gray-100 transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 whitespace-nowrap"
+                                    style={{ fontFamily: 'Jost, sans-serif', fontWeight: 500 }}
+                                  >
+                                    <Icon icon="mdi:chat" className="w-4 h-4" />
+                                    Chat Now
+                                  </button>
+                                )}
                                 
                                 {/* Pay Now Button - For Approved Orders with GCash/Maya */}
                                 {order.status === 'approved' && (order.paymentMethod === 'GCash' || order.paymentMethod === 'Maya') && (

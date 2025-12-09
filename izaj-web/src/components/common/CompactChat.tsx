@@ -1,5 +1,19 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Icon } from '@iconify/react';
+import { getSocket, disconnectSocket } from '@/services/socket';
+import { useUserContext } from '@/context/UserContext';
+
+interface Conversation {
+  roomId: string;
+  sessionId: string;
+  lastMessage: string;
+  lastMessageTime: Date;
+  productName?: string;
+  adminConnected?: boolean;
+  customerName?: string;
+}
 
 interface CompactChatProps {
   onClose?: () => void;
@@ -12,23 +26,755 @@ interface Message {
   sender: 'user' | 'izaj';
   timestamp: Date;
   isContactInfo?: boolean;
-  showLanguageSelection?: boolean;
+  showQuickActions?: boolean;
+  showChatWithAgent?: boolean;
 }
 
 const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
-  const [messages, setMessages] = useState<Message[]>([
-    { 
-      id: 1, 
-      text: `Hi! I'm your IZAJ Assistant. Please choose your preferred language:`, 
-      sender: 'izaj', 
-      timestamp: new Date(),
-      showLanguageSelection: true
-    },
-  ]);
+  const { user } = useUserContext();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [showInitialActions, setShowInitialActions] = useState(true);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [preferredLanguage, setPreferredLanguage] = useState<'en' | 'tl' | null>(null);
+  const [preferredLanguage] = useState<'en' | 'tl'>('en'); // Default to English
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [persistentUserId, setPersistentUserId] = useState<string | null>(null);
+  const [isConnectingToAgent, setIsConnectingToAgent] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const connectingToAgentRef = useRef(false);
+  
+  // Derive customer name
+  const getCustomerName = () => {
+    const fullName = [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim();
+    return fullName || null;
+  };
+
+  // Get connection status for current conversation
+  const currentConversation = conversations.find(c => c.roomId === selectedConversation);
+  // Check if conversation has admin messages (indicates it was in agent mode at some point)
+  const hasAdminMessages = messages.some(m => m.sender === 'izaj');
+  // Check if there's a disconnect message (indicates admin was connected and then disconnected)
+  const hasDisconnectMessage = messages.some(m => 
+    m.sender === 'izaj' && 
+    (m.text.includes('disconnected') || m.text.includes('can no longer reply'))
+  );
+  // isAgentMode is true if:
+  // 1. Currently connected (adminConnected === true), OR
+  // 2. Was connected but now disconnected (adminConnected === false AND has disconnect message)
+  // This ensures that only conversations that were actually connected show as agent mode when disconnected
+  // New chats (adminConnected === false without disconnect message) should NOT show as agent mode
+  const isAgentMode = currentConversation?.adminConnected === true || 
+                      (currentConversation?.adminConnected === false && hasDisconnectMessage);
+  const isConnected = currentConversation?.adminConnected === true;
+  
+  // Get or create persistent user identifier
+  useEffect(() => {
+    const getPersistentUserId = () => {
+      // If user is logged in, use their user ID
+      if (user?.id) {
+        const userId = `user_${user.id}`;
+        localStorage.setItem('chat_user_id', userId);
+        setPersistentUserId(userId);
+        return userId;
+      }
+      
+      // If not logged in, check for existing anonymous ID in localStorage
+      let anonymousId = localStorage.getItem('chat_anonymous_id');
+      if (!anonymousId) {
+        // Generate new anonymous ID
+        anonymousId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('chat_anonymous_id', anonymousId);
+      }
+      setPersistentUserId(anonymousId);
+      return anonymousId;
+    };
+    
+    const persistentId = getPersistentUserId();
+    setPersistentUserId(persistentId);
+    
+    // Update persistent ID when user logs in/out
+    if (user?.id) {
+      const userId = `user_${user.id}`;
+      if (persistentId !== userId) {
+        localStorage.setItem('chat_user_id', userId);
+        setPersistentUserId(userId);
+      }
+    }
+  }, [user]);
+
+  // Load saved conversation state from localStorage
+  useEffect(() => {
+    if (persistentUserId) {
+      const savedRoomId = localStorage.getItem(`chat_roomId_${persistentUserId}`);
+      const savedSessionId = localStorage.getItem(`chat_sessionId_${persistentUserId}`);
+      const savedSelectedConversation = localStorage.getItem(`chat_selectedConversation_${persistentUserId}`);
+      
+      if (savedRoomId && savedSessionId) {
+        setRoomId(savedRoomId);
+        setSessionId(savedSessionId);
+        if (savedSelectedConversation) {
+          setSelectedConversation(savedSelectedConversation);
+        } else {
+          setSelectedConversation(savedRoomId);
+        }
+      }
+    }
+  }, [persistentUserId]);
+  
+  // Get API URL from socket URL or use default
+  const getApiUrl = () => {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    if (socketUrl) {
+      return socketUrl.replace(/\/socket\.io\/?$/, '');
+    }
+    return 'http://localhost:3001';
+  };
+
+  // Helper function to create a new conversation properly
+  const createNewConversation = async (): Promise<{ roomId: string; sessionId: string } | null> => {
+    if (!persistentUserId) return null;
+
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 9);
+    const newRoomId = persistentUserId.startsWith('user_') || persistentUserId.startsWith('anon_')
+      ? `customer:${persistentUserId}_${timestamp}`
+      : `customer:${timestamp}_${random}`;
+    const newSessionId = persistentUserId;
+
+    try {
+      // Create conversation in database
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/messaging/conversations/get-or-create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          roomId: newRoomId,
+          sessionId: newSessionId,
+          productName: productName || null,
+          preferredLanguage: preferredLanguage || null,
+          customerEmail: user?.email || null,
+          customerName: getCustomerName(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log(`✅ [Web] Created conversation in database: ${newRoomId}`);
+
+        // Notify admins about new conversation via socket
+        const socket = getSocket();
+        if (socket) {
+          // Ensure socket is connected
+          if (!socket.connected && persistentUserId) {
+            socket.auth = { sessionId: persistentUserId };
+            socket.connect();
+          }
+          
+          // Wait for connection if needed, then emit
+          const emitRequest = () => {
+            if (socket.connected) {
+              socket.emit('customer:request-agent', {
+                roomId: newRoomId,
+                sessionId: newSessionId,
+                productName: productName || null,
+                customerEmail: user?.email || null,
+                customerName: getCustomerName(),
+              });
+              console.log(`📢 [Web] Notified admins about new conversation: ${newRoomId}`);
+            } else {
+              socket.once('connect', emitRequest);
+            }
+          };
+          emitRequest();
+        }
+
+        return { roomId: newRoomId, sessionId: newSessionId };
+      }
+    } catch (error) {
+      console.error('Error creating conversation in database:', error);
+    }
+
+    return { roomId: newRoomId, sessionId: newSessionId };
+  };
+
+  // Initialize socket listeners
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket) {
+      console.warn('Socket not available - make sure NEXT_PUBLIC_SOCKET_URL is set');
+      return;
+    }
+
+    const handleAdminConnected = (msg: { text: string; sentAt?: string; roomId?: string }) => {
+      console.log('✅ [Web] Admin connected event received:', msg);
+      console.log('Current roomId:', roomId, 'selectedConversation:', selectedConversation, 'msg.roomId:', msg.roomId);
+      console.log('Current conversations:', conversations.map(c => c.roomId));
+      
+      // Get current room ID
+      const currentRoomId = selectedConversation || roomId;
+      const msgRoomId = msg.roomId || currentRoomId;
+      
+      // Always accept the event if roomId is provided (server ensures it's for the right room)
+      // If roomId matches current conversation or exists in conversations list, process it
+      if (msg.roomId) {
+        // Check if this roomId exists in conversations list or matches current
+        const convExists = conversations.some(c => c.roomId === msg.roomId);
+        const matchesCurrent = msg.roomId === currentRoomId;
+        
+        console.log('🔍 [Web] Room check:', { 
+          msgRoomId: msg.roomId, 
+          currentRoomId, 
+          convExists, 
+          matchesCurrent 
+        });
+        
+        // If it exists but is not the current one, switch to it
+        if (convExists && !matchesCurrent) {
+          console.log('🔄 [Web] Switching to conversation:', msg.roomId);
+          setSelectedConversation(msg.roomId);
+          setRoomId(msg.roomId);
+        }
+        
+        // If it doesn't exist and doesn't match current, still process it (might be new)
+        if (!convExists && !matchesCurrent) {
+          console.log('⚠️ [Web] Room ID not found in conversations, but processing anyway:', msg.roomId);
+          // Set as selected conversation if no current selection
+          if (!selectedConversation) {
+            setSelectedConversation(msg.roomId);
+            setRoomId(msg.roomId);
+          }
+        }
+      }
+      
+      // Update connecting state
+      setIsConnectingToAgent(false);
+      connectingToAgentRef.current = false;
+      
+      // Use the correct roomId = msg.roomId if available, otherwise use current
+      const finalRoomId = msg.roomId || currentRoomId;
+      
+      console.log('🔧 [Web] Updating conversation with finalRoomId:', finalRoomId);
+      
+      // Update conversation list to reflect connected status (per-conversation)
+      // Always update/create the conversation in the list
+      if (finalRoomId) {
+        setConversations(prev => {
+          const existing = prev.find(c => c.roomId === finalRoomId);
+          console.log('📋 [Web] Existing conversation found:', existing ? 'yes' : 'no');
+          
+          if (existing) {
+            // Update existing conversation
+            const updated = prev.map(conv => 
+              conv.roomId === finalRoomId 
+                ? { ...conv, adminConnected: true, lastMessage: msg.text || conv.lastMessage, lastMessageTime: new Date() }
+                : conv
+            );
+            console.log('✅ [Web] Updated conversation adminConnected to true');
+            // Sort by last message time (newest first)
+            return updated.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+          } else {
+            // Add new conversation if it doesn't exist
+            console.log('➕ [Web] Adding new conversation to list');
+            const newConv = {
+              roomId: finalRoomId,
+              sessionId: sessionId || persistentUserId || '',
+              lastMessage: msg.text || '',
+              lastMessageTime: new Date(),
+              productName,
+              adminConnected: true,
+            };
+            const updated = [...prev, newConv];
+            // Sort by last message time (newest first)
+            return updated.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+          }
+        });
+      }
+      
+      // Remove waiting message if exists and add greeting
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.text !== 'Please wait for agent to connect to you.');
+        // Check if greeting message already exists
+        const hasGreeting = filtered.some(m => 
+          m.text.includes('Hello! You are now connected') || 
+          m.text === msg.text
+        );
+        if (hasGreeting) {
+          return filtered;
+        }
+        return [...filtered, {
+          id: filtered.length + 1,
+          text: msg.text || 'Hello! You are now connected to one of our agents. How can I help you?',
+          sender: 'izaj',
+          timestamp: msg.sentAt ? new Date(msg.sentAt) : new Date(),
+        }];
+      });
+      
+      console.log('✅ [Web] Admin connected - finalRoomId:', finalRoomId, 'conversation updated in list');
+      console.log('✅ [Web] isAgentMode will be:', true, 'isConnected will be:', true);
+    };
+
+    const handleAdminDisconnected = (msg: { text: string; sentAt?: string; roomId?: string }) => {
+      console.log('Admin disconnected event received:', msg);
+      
+      setIsConnectingToAgent(false);
+      connectingToAgentRef.current = false;
+      
+      // Check if message is for current room
+      const currentRoomId = roomId || selectedConversation;
+      const msgRoomId = msg.roomId || currentRoomId;
+      
+      if (msg.roomId && currentRoomId && msg.roomId !== currentRoomId) {
+        console.log('Room ID mismatch:', { msgRoomId: msg.roomId, currentRoomId });
+        return;
+      }
+      
+      // Update conversation list to reflect disconnected status (per-conversation)
+      if (msgRoomId) {
+        setConversations(prev => {
+          const existing = prev.find(c => c.roomId === msgRoomId);
+          if (existing) {
+            return prev.map(conv => 
+              conv.roomId === msgRoomId 
+                ? { ...conv, adminConnected: false }
+                : conv
+            );
+          }
+          return prev;
+        });
+      }
+      
+      // Clear input field when admin disconnects to prevent sending messages
+      if (msgRoomId === currentRoomId || msgRoomId === selectedConversation) {
+        setInputValue('');
+      }
+      
+      // Add disconnect message
+      setMessages(prev => {
+        // Check if disconnect message already exists to avoid duplicates
+        const hasDisconnectMessage = prev.some(m => 
+          m.text.includes('disconnected') || 
+          m.text.includes('can no longer reply')
+        );
+        
+        if (hasDisconnectMessage) {
+          return prev;
+        }
+        
+        return [...prev, {
+          id: prev.length + 1,
+          text: msg.text || 'The agent has disconnected. You can no longer reply to this conversation.',
+          sender: 'izaj',
+          timestamp: msg.sentAt ? new Date(msg.sentAt) : new Date(),
+        }];
+      });
+    };
+
+    const handleSession = ({ sessionId: sid, roomId: rid }: { sessionId: string; roomId: string }) => {
+      console.log('Session established:', { sessionId: sid, roomId: rid });
+      
+      // Use persistent user ID for session
+      const persistentId = persistentUserId || sid;
+      const finalSessionId = persistentId;
+      
+      // Use selected conversation's roomId if available, otherwise use server's roomId
+      const finalRoomId = selectedConversation || rid || (persistentUserId ? `customer:${persistentId}` : `customer:${sid}`);
+      
+      // Server will handle room joining automatically
+      if (finalRoomId) {
+        console.log(`✅ [Web] Session room: ${finalRoomId}`);
+      }
+      
+      setSessionId(finalSessionId);
+      if (!roomId) {
+        setRoomId(finalRoomId);
+      }
+      
+      // Save to localStorage
+      if (persistentUserId) {
+        localStorage.setItem(`chat_sessionId_${persistentUserId}`, finalSessionId);
+        if (finalRoomId) {
+          localStorage.setItem(`chat_roomId_${persistentUserId}`, finalRoomId);
+        }
+        if (!selectedConversation && finalRoomId) {
+          setSelectedConversation(finalRoomId);
+          localStorage.setItem(`chat_selectedConversation_${persistentUserId}`, finalRoomId);
+        }
+      }
+      
+      // If connecting to agent, emit request
+      if (connectingToAgentRef.current && finalRoomId && finalSessionId) {
+        socket.emit('customer:request-agent', {
+          roomId: finalRoomId,
+          sessionId: finalSessionId,
+          productName,
+          customerEmail: user?.email || null,
+          customerName: getCustomerName(),
+        });
+      }
+    };
+
+    const handleAdminMessage = (msg: { text: string; sentAt?: string; roomId?: string; id?: string }) => {
+      setIsTyping(false);
+      
+      const currentRoomId = roomId || selectedConversation;
+      const msgRoomId = msg.roomId || currentRoomId;
+      
+      // Update conversation list regardless of which conversation
+      setConversations(prev => {
+        const existing = prev.find(c => c.roomId === msgRoomId);
+        if (existing) {
+          const updated = prev.map(conv => 
+            conv.roomId === msgRoomId 
+              ? { ...conv, lastMessage: msg.text, lastMessageTime: new Date(msg.sentAt || Date.now()) }
+              : conv
+          );
+          // Sort by last message time (newest first)
+          return updated.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+        } else {
+          // Add new conversation if it doesn't exist
+          if (msgRoomId) {
+            const newConvs = [...prev, {
+              roomId: msgRoomId,
+              sessionId: sessionId || '',
+              lastMessage: msg.text,
+              lastMessageTime: new Date(msg.sentAt || Date.now()),
+              productName,
+            }];
+            // Sort by last message time (newest first)
+            return newConvs.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+          }
+          return prev;
+        }
+      });
+      
+      // Only add message if it's for the current conversation
+      if (currentRoomId && msgRoomId === currentRoomId) {
+        setMessages(prev => {
+          // Check if message already exists to avoid duplicates
+          const exists = prev.some(m => 
+            (msg.id && String(m.id) === String(msg.id)) ||
+            (m.text === msg.text && 
+             Math.abs(m.timestamp.getTime() - new Date(msg.sentAt || Date.now()).getTime()) < 2000)
+          );
+          if (exists) return prev;
+          
+          // Insert message in correct chronological order
+          const newMessage: Message = {
+            id: typeof msg.id === 'number' ? msg.id : (typeof msg.id === 'string' ? parseInt(msg.id) || Date.now() : Date.now()),
+            text: msg.text,
+            sender: 'izaj',
+            timestamp: msg.sentAt ? new Date(msg.sentAt) : new Date(),
+          };
+          
+          const updated = [...prev, newMessage];
+          // Sort by timestamp to maintain order
+          return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+        });
+      }
+    };
+    
+    const handleCustomerMessage = (msg: { text: string; sentAt?: string; roomId?: string; id?: string }) => {
+      const msgRoomId = msg.roomId || roomId || selectedConversation;
+      
+      // Update conversation list when customer sends message
+      setConversations(prev => {
+        const existing = prev.find(c => c.roomId === msgRoomId);
+        if (existing) {
+          const updated = prev.map(conv => 
+            conv.roomId === msgRoomId 
+              ? { ...conv, lastMessage: msg.text, lastMessageTime: new Date(msg.sentAt || Date.now()) }
+              : conv
+          );
+          // Sort by last message time (newest first)
+          return updated.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+        } else {
+          // Add new conversation
+          if (msgRoomId) {
+            const newConvs = [...prev, {
+              roomId: msgRoomId,
+              sessionId: sessionId || '',
+              lastMessage: msg.text,
+              lastMessageTime: new Date(msg.sentAt || Date.now()),
+              productName,
+            }];
+            // Sort by last message time (newest first)
+            return newConvs.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+          }
+          return prev;
+        }
+      });
+      
+      // If this is for the current conversation, add to messages
+      if (selectedConversation === msgRoomId) {
+        setMessages(prev => {
+          const exists = prev.some(m => 
+            (msg.id && String(m.id) === String(msg.id)) ||
+            (m.text === msg.text && 
+             Math.abs(m.timestamp.getTime() - new Date(msg.sentAt || Date.now()).getTime()) < 2000)
+          );
+          if (exists) return prev;
+          
+          const newMessage: Message = {
+            id: typeof msg.id === 'number' ? msg.id : (typeof msg.id === 'string' ? parseInt(msg.id) || Date.now() : Date.now()),
+            text: msg.text,
+            sender: 'user',
+            timestamp: msg.sentAt ? new Date(msg.sentAt) : new Date(),
+          };
+          
+          const updated = [...prev, newMessage];
+          return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+        });
+      }
+    };
+
+    const handleConnect = () => {
+      console.log('Socket connected');
+      // Socket connection is separate from admin connection - don't update adminConnected here
+    };
+    
+    const handleDisconnect = (reason: string) => {
+      console.log('Socket disconnected:', reason);
+      // Socket disconnection doesn't affect admin connection status
+      // Admin connection is tracked per-conversation via adminConnected
+    };
+
+    const handleConnectError = (error: Error) => {
+      console.error('Socket connection error:', error);
+      if (connectingToAgentRef.current) {
+        setIsConnectingToAgent(false);
+        connectingToAgentRef.current = false;
+        setMessages(prev => [...prev, {
+          id: prev.length + 1,
+          text: 'Unable to connect to agent. Please make sure the server is running.',
+          sender: 'izaj',
+          timestamp: new Date(),
+        }]);
+      }
+    };
+
+    socket.on('session', handleSession);
+    socket.on('admin:message', handleAdminMessage);
+    socket.on('admin:connected', handleAdminConnected);
+    socket.on('admin:disconnected', handleAdminDisconnected);
+    socket.on('customer:message', handleCustomerMessage);
+    socket.on('connect', handleConnect);
+    socket.on('disconnect', handleDisconnect);
+    socket.on('connect_error', handleConnectError);
+
+    // Only connect if socket URL is configured
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL;
+    if (socketUrl && persistentUserId) {
+      // Connect with persistent user ID in auth
+      socket.auth = { sessionId: persistentUserId };
+      socket.connect();
+    }
+
+    return () => {
+      socket.off('session', handleSession);
+      socket.off('admin:message', handleAdminMessage);
+      socket.off('admin:connected', handleAdminConnected);
+      socket.off('admin:disconnected', handleAdminDisconnected);
+      socket.off('customer:message', handleCustomerMessage);
+      socket.off('connect', handleConnect);
+      socket.off('disconnect', handleDisconnect);
+      socket.off('connect_error', handleConnectError);
+    };
+  }, [preferredLanguage, selectedConversation, sessionId, productName, persistentUserId, roomId, conversations]);
+
+  // Load conversation history based on persistent user ID
+  useEffect(() => {
+    const loadConversations = async () => {
+      const userId = persistentUserId;
+      if (!userId) return;
+      
+      setIsLoadingHistory(true);
+      try {
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/api/messaging/conversations?sessionId=${userId}`);
+        const data = await response.json();
+        
+        if (data.success && data.conversations) {
+          const convs = data.conversations.map((conv: any) => ({
+            roomId: conv.room_id,
+            sessionId: conv.session_id,
+            lastMessage: conv.last_message?.message_text || conv.messages?.[0]?.message_text || '',
+            lastMessageTime: new Date(conv.last_message_at || conv.created_at),
+            productName: conv.product_name,
+            adminConnected: conv.admin_connected || false,
+            customerName: conv.customer_name,
+          }));
+          
+          // Sort conversations by last message time (newest first)
+          convs.sort((a: Conversation, b: Conversation) => 
+            b.lastMessageTime.getTime() - a.lastMessageTime.getTime()
+          );
+          
+          setConversations(convs);
+          
+          // If no conversation is selected and we have conversations, select the most recent one
+          if (!selectedConversation && convs.length > 0) {
+            const mostRecent = convs[0];
+            setSelectedConversation(mostRecent.roomId);
+            if (!roomId) {
+              setRoomId(mostRecent.roomId);
+              setSessionId(mostRecent.sessionId);
+            }
+            // Save to localStorage
+            if (persistentUserId) {
+              localStorage.setItem(`chat_selectedConversation_${persistentUserId}`, mostRecent.roomId);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading conversations:', error);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+    
+    loadConversations();
+  }, [persistentUserId]);
+
+  // Conversation state is managed via adminConnected in conversations list
+  // No need for separate useEffect - currentConversation computed value handles it
+
+  // Save conversation state to localStorage whenever it changes
+  useEffect(() => {
+    if (persistentUserId && roomId && sessionId) {
+      localStorage.setItem(`chat_roomId_${persistentUserId}`, roomId);
+      localStorage.setItem(`chat_sessionId_${persistentUserId}`, sessionId);
+      if (selectedConversation) {
+        localStorage.setItem(`chat_selectedConversation_${persistentUserId}`, selectedConversation);
+      }
+    }
+  }, [persistentUserId, roomId, sessionId, selectedConversation]);
+
+  // Cleanup function when chat box closes
+  useEffect(() => {
+    return () => {
+      // Disconnect socket when component unmounts (chat box closes)
+      const socket = getSocket();
+      if (socket) {
+        socket.disconnect();
+        disconnectSocket();
+      }
+    };
+  }, []);
+
+  // Handle close button with cleanup
+  const handleClose = () => {
+    // Disconnect socket but keep conversation state
+    const socket = getSocket();
+    if (socket) {
+      socket.disconnect();
+      disconnectSocket();
+    }
+    
+    // Don't reset conversation state - keep it for when chat reopens
+    // Don't reset isAgentMode and isConnected - they will be restored from database when chat reopens
+    // Only reset UI-related states
+    setIsConnectingToAgent(false);
+    setInputValue('');
+    connectingToAgentRef.current = false;
+    
+    // Call onClose callback
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  // Load messages for selected conversation
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (!selectedConversation) {
+        setMessages([]);
+        return;
+      }
+      
+      setIsLoadingHistory(true);
+      try {
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/api/messaging/conversations/${selectedConversation}/messages`);
+        const data = await response.json();
+        
+        if (data.success && data.messages) {
+          // Sort messages by timestamp to ensure correct order
+          const sortedMessages = [...data.messages].sort((a: any, b: any) => 
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+          
+          const loadedMessages: Message[] = sortedMessages.map((msg: any, index: number) => ({
+            id: msg.id || Date.now() + index,
+            text: msg.message_text || '',
+            sender: msg.sender_type === 'customer' ? 'user' : 'izaj',
+            timestamp: new Date(msg.created_at),
+          }));
+          
+          // Set loaded messages
+          setMessages(loadedMessages);
+          // Show initial actions if no messages loaded
+          if (loadedMessages.length === 0) {
+            setShowInitialActions(true);
+          } else {
+            setShowInitialActions(false);
+          }
+          
+          // Update conversation admin_connected status in conversations list
+          if (data.conversation && data.conversation.admin_connected !== undefined && selectedConversation) {
+            setConversations(prev => {
+              const existing = prev.find(c => c.roomId === selectedConversation);
+              if (existing) {
+                const updated = prev.map(conv => 
+                  conv.roomId === selectedConversation 
+                    ? { ...conv, adminConnected: data.conversation.admin_connected }
+                    : conv
+                );
+                // If admin is disconnected, clear input to prevent sending
+                if (!data.conversation.admin_connected) {
+                  setInputValue('');
+                }
+                return updated;
+              } else {
+                // If conversation doesn't exist in list, add it
+                return [...prev, {
+                  roomId: selectedConversation,
+                  sessionId: sessionId || '',
+                  lastMessage: loadedMessages.length > 0 ? loadedMessages[loadedMessages.length - 1].text : '',
+                  lastMessageTime: loadedMessages.length > 0 ? loadedMessages[loadedMessages.length - 1].timestamp : new Date(),
+                  productName,
+                  adminConnected: data.conversation.admin_connected,
+                }];
+              }
+            });
+          }
+          
+          // Ensure socket is in the correct room
+          const socket = getSocket();
+          if (socket && socket.connected && selectedConversation) {
+            // Socket should already be in the room from session, but ensure it
+            console.log(`📥 [Web] Loaded ${loadedMessages.length} messages for room: ${selectedConversation}`);
+          }
+        } else {
+          setMessages([]);
+          setShowInitialActions(true);
+        }
+      } catch (error) {
+        console.error('Error loading messages:', error);
+        setMessages([]);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+    
+    loadMessages();
+  }, [selectedConversation]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -37,43 +783,62 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
     }
   }, [messages]);
 
-  // Language selection component
-  const LanguageSelection = () => {
-    const handleLanguageSelect = (lang: 'en' | 'tl') => {
-      setPreferredLanguage(lang);
-      const greeting = lang === 'tl' 
-        ? `Kumusta! Ako ang IZAJ Assistant. Paano ko kayo matutulungan tungkol sa ${productName || 'aming mga produkto'} ngayon?`
-        : `Hi! I'm your IZAJ Assistant. How can I help you with ${productName || 'our products'} today?`;
+
+  // Quick Actions component
+  const QuickActions = () => {
+    const handleAction = (action: 'customer-support' | 'faq') => {
+      let response = '';
       
-      // Remove language selection from first message
-      setMessages(prev => prev.map(msg => 
-        msg.id === 1 ? { ...msg, showLanguageSelection: false, text: greeting } : msg
-      ));
+      // Hide initial actions
+      setShowInitialActions(false);
       
-      // Add user's language choice as a message
-      setMessages(prev => [...prev, {
-        id: prev.length + 1,
-        text: lang === 'tl' ? 'Tagalog' : 'English',
-        sender: 'user',
-        timestamp: new Date()
-      }]);
+      if (action === 'customer-support') {
+        response = "I'd be happy to connect you with one of our agents! Click the button below to start chatting with a live agent who can help you with any questions or concerns.";
+        setMessages(prev => [...prev, {
+          id: prev.length + 1,
+          text: 'Customer Support',
+          sender: 'user',
+          timestamp: new Date()
+        }, {
+          id: prev.length + 2,
+          text: response,
+          sender: 'izaj',
+          timestamp: new Date(),
+          showChatWithAgent: true
+        }]);
+      } else if (action === 'faq') {
+        response = "Here are some frequently asked questions:\n\n• Product Information\n• Pricing & Discounts\n• Delivery & Shipping\n• Installation Services\n• Payment Methods\n• Warranty & Returns\n• Store Pickup\n• Bulk Orders\n\nWhat would you like to know more about?";
+        setMessages(prev => [...prev, {
+          id: prev.length + 1,
+          text: 'FAQ',
+          sender: 'user',
+          timestamp: new Date()
+        }, {
+          id: prev.length + 2,
+          text: response,
+          sender: 'izaj',
+          timestamp: new Date()
+        }]);
+      }
     };
 
     return (
-      <div className="mt-3 flex gap-2">
+      <div className="flex flex-col gap-2">
         <button
-          onClick={() => handleLanguageSelect('en')}
-          className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
+          onClick={() => handleAction('customer-support')}
+          className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg font-medium text-sm flex items-center justify-center gap-2"
           style={{ fontFamily: 'Jost, sans-serif' }}
         >
-          🇺🇸 English
+          <Icon icon="mdi:account-circle" className="text-lg" />
+          Customer Support
         </button>
         <button
-          onClick={() => handleLanguageSelect('tl')}
-          className="flex-1 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-md hover:shadow-lg font-medium text-sm"
+          onClick={() => handleAction('faq')}
+          className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-md hover:shadow-lg font-medium text-sm flex items-center justify-center gap-2"
           style={{ fontFamily: 'Jost, sans-serif' }}
         >
-          🇵🇭 Tagalog
+          <Icon icon="mdi:help-circle" className="text-lg" />
+          FAQ
         </button>
       </div>
     );
@@ -421,38 +1186,310 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
     return { text: defaultResponses[Math.floor(Math.random() * defaultResponses.length)] };
   };
 
-  const handleSend = () => {
+  const handleConnectToAgent = () => {
+    const socket = getSocket();
+    
+    if (!socket) {
+      alert('Unable to connect. Please check your connection and refresh the page.');
+      return;
+    }
+
+    // Use persistent user ID
+    let finalSessionId = persistentUserId || sessionId || '';
+    // Use selectedConversation first (from New Chat), then roomId, then check localStorage
+    let finalRoomId = selectedConversation || roomId || '';
+    
+    // If no roomId, check localStorage first, then create new one
+    if (!finalRoomId && persistentUserId) {
+      const savedRoomId = localStorage.getItem(`chat_roomId_${persistentUserId}`);
+      const savedSessionId = localStorage.getItem(`chat_sessionId_${persistentUserId}`);
+      
+      if (savedRoomId && savedSessionId) {
+        // Use saved conversation
+        finalRoomId = savedRoomId;
+        finalSessionId = savedSessionId;
+        setRoomId(finalRoomId);
+        setSessionId(finalSessionId);
+        if (!selectedConversation) {
+          setSelectedConversation(finalRoomId);
+        }
+      } else {
+        // Create new conversation
+        const newRoomId = `customer:${persistentUserId}_${Date.now()}`;
+        finalRoomId = newRoomId;
+        finalSessionId = persistentUserId;
+        setRoomId(finalRoomId);
+        setSessionId(finalSessionId);
+        setSelectedConversation(finalRoomId);
+        // Save to localStorage
+        localStorage.setItem(`chat_roomId_${persistentUserId}`, finalRoomId);
+        localStorage.setItem(`chat_sessionId_${persistentUserId}`, finalSessionId);
+        localStorage.setItem(`chat_selectedConversation_${persistentUserId}`, finalRoomId);
+      }
+    } else if (finalRoomId && !selectedConversation) {
+      // Ensure selectedConversation is set if we have a roomId
+      setSelectedConversation(finalRoomId);
+    }
+    
+    // Show waiting message
+    setMessages(prev => [...prev, {
+      id: prev.length + 1,
+      text: 'Please wait for agent to connect to you.',
+      sender: 'izaj',
+      timestamp: new Date(),
+    }]);
+    
+    // Set connecting state
+    setIsConnectingToAgent(true);
+    connectingToAgentRef.current = true;
+
+    // Ensure conversation is in the list before requesting agent
+    if (finalRoomId && finalSessionId) {
+      setConversations(prev => {
+        const exists = prev.find(c => c.roomId === finalRoomId);
+        if (!exists) {
+          // Add conversation to list if it doesn't exist
+          return [...prev, {
+            roomId: finalRoomId,
+            sessionId: finalSessionId,
+            lastMessage: '',
+            lastMessageTime: new Date(),
+            productName,
+            adminConnected: false, // Will be updated when admin connects
+          }];
+        }
+        return prev;
+      });
+    }
+    
+    // Connect socket if not connected with persistent user ID
+    if (!socket.connected && persistentUserId) {
+      socket.auth = { sessionId: persistentUserId };
+      socket.connect();
+    }
+    
+    // Emit request for agent connection
+    // Wait for socket to be connected if not already
+    if (socket.connected && finalRoomId && finalSessionId) {
+      socket.emit('customer:request-agent', {
+        roomId: finalRoomId,
+        sessionId: finalSessionId,
+        productName,
+        customerEmail: user?.email || null,
+        customerName: getCustomerName(),
+      });
+      console.log(`📢 [Web] Requested agent for room: ${finalRoomId}`);
+    } else if (!socket.connected && persistentUserId) {
+      // Wait for connection then emit
+      socket.once('connect', () => {
+        if (finalRoomId && finalSessionId) {
+          socket.emit('customer:request-agent', {
+            roomId: finalRoomId,
+            sessionId: finalSessionId,
+            productName,
+            customerEmail: user?.email || null,
+            customerName: getCustomerName(),
+          });
+          console.log(`📢 [Web] Requested agent for room: ${finalRoomId} (after connect)`);
+        }
+      });
+    }
+  };
+
+  const handleSend = async () => {
     if (!inputValue.trim()) return;
-    // Don't allow sending messages if language is not selected yet
-    if (preferredLanguage === null) return;
+    
+    // Don't allow sending if in agent mode but not connected (admin disconnected)
+    if (isAgentMode && !isConnected) {
+      alert('The agent has disconnected. You can no longer reply to this conversation. Please start a new chat if you need assistance.');
+      setInputValue(''); // Clear input
+      return;
+    }
+    
+    // Don't allow sending if trying to send before clicking "Chat with an Agent" when in a new conversation
+    // Check if there's a message with showChatWithAgent and agent mode is not active
+    const hasChatWithAgentButton = messages.some(m => m.showChatWithAgent);
+    if (hasChatWithAgentButton && !isAgentMode && !isConnectingToAgent) {
+      alert('Please click "Chat with an Agent" first before sending messages.');
+      setInputValue(''); // Clear input
+      return;
+    }
     
     const userMessage: Message = {
-      id: messages.length + 1,
+      id: Date.now(),
       text: inputValue,
       sender: 'user',
       timestamp: new Date()
     };
     
-    setMessages(prev => [...prev, userMessage]);
+    // Add message optimistically
+    setMessages(prev => {
+      const updated = [...prev, userMessage];
+      return updated.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+    });
+    
     const userInput = inputValue;
     setInputValue('');
-    setIsTyping(true);
 
-    // Generate intelligent response
-    setTimeout(() => {
-      const botResponse = generateBotResponse(userInput);
+    // Use selected conversation's roomId, or current roomId, or create new one
+    let finalSessionId = persistentUserId || sessionId || '';
+    let finalRoomId = selectedConversation || roomId || '';
+    
+    // If no roomId, create a new conversation
+    if (!finalRoomId && persistentUserId) {
+      const newConv = await createNewConversation();
+      if (newConv) {
+        finalRoomId = newConv.roomId;
+        finalSessionId = newConv.sessionId;
+        setRoomId(finalRoomId);
+        setSessionId(finalSessionId);
+        setSelectedConversation(finalRoomId);
+        
+        // Server will handle room joining when messages are sent
+        const socket = getSocket();
+        if (socket && socket.connected) {
+          console.log(`✅ [Web] Room ready for messages: ${finalRoomId}`);
+        }
+        
+        // Add to conversations list
+        setConversations(prev => {
+          const exists = prev.find(c => c.roomId === finalRoomId);
+          if (!exists) {
+            return [{
+              roomId: finalRoomId,
+              sessionId: finalSessionId,
+              lastMessage: userInput,
+              lastMessageTime: new Date(),
+              productName,
+            }, ...prev];
+          }
+          return prev;
+        });
+      }
+    }
+    
+    // Ensure selectedConversation is set to current roomId
+    if (finalRoomId && !selectedConversation) {
+      setSelectedConversation(finalRoomId);
+    }
+
+    // If in agent mode, send via socket
+    if (isAgentMode) {
+      const socket = getSocket();
+      if (socket && socket.connected && finalRoomId && finalSessionId) {
+        console.log('📤 [Web] Sending customer message:', { roomId: finalRoomId, sessionId: finalSessionId, text: userInput });
+        
+        socket.emit('customer:message', {
+          text: userInput,
+          productName,
+          preferredLanguage,
+          customerEmail: user?.email || null,
+          customerName: getCustomerName(),
+          roomId: finalRoomId,
+          sessionId: finalSessionId,
+        });
+        setIsTyping(true);
+        
+        // Update conversation list
+        if (finalRoomId) {
+          setConversations(prev => {
+            const existing = prev.find(c => c.roomId === finalRoomId);
+            if (existing) {
+              const updated = prev.map(conv => 
+                conv.roomId === finalRoomId 
+                  ? { ...conv, lastMessage: userInput, lastMessageTime: new Date() }
+                  : conv
+              );
+              // Sort by last message time
+              return updated.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+            } else {
+              const newConvs = [...prev, {
+                roomId: finalRoomId,
+                sessionId: finalSessionId,
+                lastMessage: userInput,
+                lastMessageTime: new Date(),
+                productName,
+              }];
+              // Sort by last message time
+              return newConvs.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+            }
+          });
+        }
+        
+        // Typing indicator will be cleared when admin responds
+        return;
+      } else {
+        // If socket not ready, show error and fallback to bot
+        alert('Connection lost. Switching back to bot mode.');
+        // Update conversation to mark as disconnected
+        if (finalRoomId) {
+          setConversations(prev => {
+            const existing = prev.find(c => c.roomId === finalRoomId);
+            if (existing) {
+              return prev.map(conv => 
+                conv.roomId === finalRoomId 
+                  ? { ...conv, adminConnected: false }
+                  : conv
+              );
+            }
+            return prev;
+          });
+        }
+        // Continue with bot response below
+      }
+    }
+
+    const socket = getSocket();
+    if (!socket) {
+      // fallback bot if no socket url configured
+      setIsTyping(true);
+      setTimeout(() => {
+        const botResponse = generateBotResponse(userInput);
+        
+        const botMessage: Message = {
+          id: messages.length + 2,
+          text: botResponse.text,
+          sender: 'izaj',
+          timestamp: new Date(),
+          isContactInfo: botResponse.showContactInfo
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+        setIsTyping(false);
+      }, 800);
+      return;
+    }
+
+    if (socket.connected && finalRoomId && finalSessionId) {
+      console.log('📤 [Web] Sending customer message (bot mode):', { roomId: finalRoomId, sessionId: finalSessionId, text: userInput });
       
-      const botMessage: Message = {
-        id: messages.length + 2,
-        text: botResponse.text,
-        sender: 'izaj',
-        timestamp: new Date(),
-        isContactInfo: botResponse.showContactInfo
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
-      setIsTyping(false);
-    }, 1200 + Math.random() * 800); // Random delay between 1.2-2 seconds for more natural feel
+      socket.emit('customer:message', {
+        text: userInput,
+        productName,
+        preferredLanguage,
+        customerEmail: user?.email || null,
+        customerName: getCustomerName(),
+        roomId: finalRoomId,
+        sessionId: finalSessionId,
+      });
+    } else {
+      // fallback to local bot response if socket is down
+      setIsTyping(true);
+      setTimeout(() => {
+        const botResponse = generateBotResponse(userInput);
+        
+        const botMessage: Message = {
+          id: messages.length + 2,
+          text: botResponse.text,
+          sender: 'izaj',
+          timestamp: new Date(),
+          isContactInfo: botResponse.showContactInfo
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+        setIsTyping(false);
+      }, 800);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -465,6 +1502,20 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const formatDate = (date: Date) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-white to-gray-50">
       {/* Header */}
@@ -475,91 +1526,313 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
               <Icon icon="mdi:chat" className="text-white text-sm" />
             </div>
             <h3 className="font-semibold text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>IZAJ Assistant</h3>
+            <div className="flex items-center gap-1 ml-2">
+              <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-yellow-400'}`} />
+              <span className="text-[11px] text-white/80" style={{ fontFamily: 'Jost, sans-serif' }}>
+                {isConnected ? 'Live' : 'Offline'}
+              </span>
+            </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-white/70 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-full"
           >
             <Icon icon="mdi:close" width={18} height={18} />
           </button>
         </div>
-        <p className="text-xs text-white/80" style={{ fontFamily: 'Jost, sans-serif' }}>🤖 Ask me anything about our products and services!</p>
+        <p className="text-xs text-white/80" style={{ fontFamily: 'Jost, sans-serif' }}>
+          {isAgentMode 
+            ? (isConnected ? '👤 Connected to an agent' : '⚠️ Agent disconnected - Cannot reply')
+            : '🤖 Ask me anything about our products and services!'}
+        </p>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50/50 to-white">
-        {messages.map((msg, index) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            <div
-              className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm shadow-sm ${
-                msg.sender === 'user'
-                  ? 'bg-gradient-to-r from-black to-gray-800 text-white rounded-br-md'
-                  : 'bg-white text-gray-800 rounded-bl-md border border-gray-100'
-              }`}
-            >
-              <p className="text-sm leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>{msg.text}</p>
-              {msg.showLanguageSelection && (
-                <div className="mt-3">
-                  <LanguageSelection />
-                </div>
-              )}
-              {msg.isContactInfo && (
-                <div className="mt-3">
-                  <ContactInfoMessage />
-                </div>
-              )}
-              <p className={`text-xs mt-2 ${msg.sender === 'user' ? 'text-white/60' : 'text-gray-400'}`} style={{ fontFamily: 'Jost, sans-serif' }}>
-                {formatTime(msg.timestamp)}
-              </p>
+      {/* Main Content Area - Split Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Sidebar - Conversation History */}
+        <div className="w-80 border-r border-gray-200 bg-gray-50 overflow-y-auto">
+          <div className="p-3 border-b border-gray-200 bg-white">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-semibold text-sm text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>
+                Message History
+              </h4>
             </div>
-          </div>
-        ))}
-        
-        {/* Typing indicator */}
-        {isTyping && (
-          <div className="flex justify-start animate-fade-in">
-            <div className="bg-white text-gray-800 rounded-bl-md border border-gray-100 px-4 py-3 shadow-sm">
-              <div className="flex items-center gap-1">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                </div>
-                <span className="text-xs text-gray-400 ml-2" style={{ fontFamily: 'Jost, sans-serif' }}>IZAJ is typing...</span>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
+            {/* New Chat Button */}
+            <button
+              onClick={async () => {
+                const newConv = await createNewConversation();
+                if (!newConv) return;
 
-      {/* Input */}
-      <div className="p-4 border-t bg-white shadow-lg">
-        <div className="flex gap-3 items-end">
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder={preferredLanguage === null ? "Please select a language first..." : "Type your message..."}
-              disabled={preferredLanguage === null}
-              className="w-full px-4 py-3 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black transition-all bg-gray-50 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                const { roomId: newRoomId, sessionId: newSessionId } = newConv;
+                
+                // Clear current messages
+                setMessages([]);
+                setShowInitialActions(true);
+                
+                // Set new conversation
+                setRoomId(newRoomId);
+                setSessionId(newSessionId);
+                setSelectedConversation(newRoomId);
+                
+                // Reset connecting state (adminConnected will be false for new conversation)
+                setIsConnectingToAgent(false);
+                connectingToAgentRef.current = false;
+                
+                // Save to localStorage
+                if (persistentUserId) {
+                  localStorage.setItem(`chat_roomId_${persistentUserId}`, newRoomId);
+                  localStorage.setItem(`chat_sessionId_${persistentUserId}`, newSessionId);
+                  localStorage.setItem(`chat_selectedConversation_${persistentUserId}`, newRoomId);
+                }
+                
+                // Server will handle room joining when messages are sent
+                const socket = getSocket();
+                if (socket && socket.connected) {
+                  console.log(`✅ [Web] New room ready: ${newRoomId}`);
+                }
+                
+                // Add to conversations list (adminConnected defaults to false for new conversation)
+                setConversations(prev => {
+                  const newConvs = [{
+                    roomId: newRoomId,
+                    sessionId: newSessionId,
+                    lastMessage: '',
+                    lastMessageTime: new Date(),
+                    productName,
+                    customerName: getCustomerName() || undefined,
+                    adminConnected: false, // New conversation starts disconnected
+                  }, ...prev];
+                  // Sort by last message time (newest first)
+                  return newConvs.sort((a, b) => b.lastMessageTime.getTime() - a.lastMessageTime.getTime());
+                });
+                
+                console.log(`✨ [Web] Created new conversation: ${newRoomId}`);
+              }}
+              className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-medium text-sm transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
               style={{ fontFamily: 'Jost, sans-serif' }}
-            />
+            >
+              <Icon icon="mdi:message-plus" className="text-lg" />
+              <span>New Chat</span>
+            </button>
           </div>
-          <button
-            onClick={handleSend}
-            disabled={!inputValue.trim() || isTyping || preferredLanguage === null}
-            className="px-4 py-3 bg-gradient-to-r from-black to-gray-800 text-white rounded-full hover:from-gray-800 hover:to-black disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
-          >
-            <Icon icon="mdi:send" width={18} height={18} />
-          </button>
+          
+          {isLoadingHistory ? (
+            <div className="p-4 text-center">
+              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
+            </div>
+          ) : conversations.length === 0 ? (
+            <div className="p-4 text-center text-gray-500 text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
+              No conversation history
+            </div>
+          ) : (
+            <div className="p-2">
+              {conversations.map((conv) => (
+                <button
+                  key={conv.roomId}
+                  onClick={() => {
+                    // Clear current messages before switching
+                    setMessages([]);
+                    setSelectedConversation(conv.roomId);
+                    setRoomId(conv.roomId);
+                    setSessionId(conv.sessionId);
+                    
+                    // Connection status is now per-conversation (adminConnected in conv object)
+                    // No need to set global state - currentConversation computed value handles it
+                    
+                    // Server will handle room joining when messages are sent
+                    const socket = getSocket();
+                    if (socket && socket.connected) {
+                      console.log(`✅ [Web] Switched to room: ${conv.roomId}`);
+                    }
+                    
+                    // Save selected conversation
+                    if (persistentUserId) {
+                      localStorage.setItem(`chat_selectedConversation_${persistentUserId}`, conv.roomId);
+                      localStorage.setItem(`chat_roomId_${persistentUserId}`, conv.roomId);
+                      localStorage.setItem(`chat_sessionId_${persistentUserId}`, conv.sessionId);
+                    }
+                  }}
+                  className={`w-full p-3 rounded-lg mb-2 text-left transition-all ${
+                    selectedConversation === conv.roomId
+                      ? 'bg-blue-100 border-2 border-blue-500'
+                      : 'bg-white hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-1">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate text-xs" style={{ fontFamily: 'Jost, sans-serif' }}>
+                        {conv.productName ? `Product: ${conv.productName}` : 'Chat Conversation'}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate mt-1" style={{ fontFamily: 'Jost, sans-serif' }}>
+                        {conv.lastMessage || 'No messages yet'}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {formatTime(conv.lastMessageTime)}
+                  </p>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right Side - Conversation Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50/50 to-white">
+            {/* Show initial Quick Actions if no messages */}
+            {showInitialActions && messages.length === 0 && (
+              <>
+                {/* Welcome Message */}
+                <div className="flex justify-start animate-fade-in">
+                  <div className="max-w-[85%] px-4 py-3 rounded-2xl text-sm shadow-sm bg-white text-gray-800 rounded-bl-md border border-gray-100">
+                    <p className="text-sm leading-relaxed mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
+                      Hi! Welcome to IZAJ Lighting. How can I help you today?
+                    </p>
+                    <QuickActions />
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {messages.map((msg, index) => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div
+                  className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm shadow-sm ${
+                    msg.sender === 'user'
+                      ? 'bg-gradient-to-r from-black to-gray-800 text-white rounded-br-md'
+                      : 'bg-white text-gray-800 rounded-bl-md border border-gray-100'
+                  }`}
+                >
+                  <p className="text-sm leading-relaxed" style={{ fontFamily: 'Jost, sans-serif' }}>{msg.text}</p>
+                  {msg.isContactInfo && (
+                    <div className="mt-3">
+                      <ContactInfoMessage />
+                    </div>
+                  )}
+                  {msg.showChatWithAgent && (
+                    <div className="mt-4">
+                      <button
+                        onClick={handleConnectToAgent}
+                        disabled={isConnectingToAgent || isAgentMode}
+                        className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 text-white rounded-lg font-semibold text-sm transition-all shadow-md hover:shadow-lg disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        style={{ fontFamily: 'Jost, sans-serif' }}
+                      >
+                        {isConnectingToAgent ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Connecting to agent...</span>
+                          </>
+                        ) : isAgentMode ? (
+                          <>
+                            <Icon icon="mdi:account-check" className="text-lg" />
+                            <span>{isConnected ? 'Connected to Agent' : 'Waiting for agent...'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Icon icon="mdi:account-circle" className="text-lg" />
+                            <span>Chat with an Agent</span>
+                          </>
+                        )}
+                      </button>
+                      {isConnectingToAgent && (
+                        <p className="text-xs text-gray-500 mt-2 text-center" style={{ fontFamily: 'Jost, sans-serif' }}>
+                          Please wait while we connect you to an agent...
+                        </p>
+                      )}
+                      {isAgentMode && !isConnected && !isConnectingToAgent && (
+                        <p className="text-xs text-orange-500 mt-2 text-center" style={{ fontFamily: 'Jost, sans-serif' }}>
+                          Waiting for agent to connect. You cannot send messages yet.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  <p className={`text-xs mt-2 ${msg.sender === 'user' ? 'text-white/60' : 'text-gray-400'}`} style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {formatTime(msg.timestamp)}
+                  </p>
+                </div>
+              </div>
+            ))}
+            
+            {/* Typing indicator */}
+            {isTyping && (
+              <div className="flex justify-start animate-fade-in">
+                <div className="bg-white text-gray-800 rounded-bl-md border border-gray-100 px-4 py-3 shadow-sm">
+                  <div className="flex items-center gap-1">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                    <span className="text-xs text-gray-400 ml-2" style={{ fontFamily: 'Jost, sans-serif' }}>IZAJ is typing...</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+
+
+          {/* Agent Mode Indicator */}
+          {isAgentMode && (
+            <div className={`px-4 py-2 border-t border-gray-200 ${isConnected ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'bg-gradient-to-r from-red-50 to-orange-50'}`}>
+              <div className={`flex items-center justify-center gap-2 ${isConnected ? 'text-green-700' : 'text-red-700'}`}>
+                <Icon icon={isConnected ? "mdi:account-check" : "mdi:account-off"} className="text-lg" />
+                <span className="text-sm font-semibold" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  {isConnected ? 'Connected to an agent' : 'Disconnected - Cannot reply'}
+                </span>
+              </div>
+              {!isConnected && (
+                <p className="text-xs text-red-600 mt-1 text-center" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  Please reconnect or start a new chat
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Input */}
+          <div className="p-4 border-t bg-white shadow-lg">
+            <div className="flex gap-3 items-end">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={
+                    (isAgentMode && !isConnected)
+                      ? "Agent disconnected - Cannot reply..."
+                      : (messages.some(m => m.showChatWithAgent) && !isAgentMode && !isConnectingToAgent)
+                      ? "Click 'Chat with an Agent' first..."
+                      : "Type your message..."
+                  }
+                  disabled={(isAgentMode && !isConnected) || (messages.some(m => m.showChatWithAgent) && !isAgentMode && !isConnectingToAgent)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-black transition-all bg-gray-50 focus:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ fontFamily: 'Jost, sans-serif' }}
+                />
+              </div>
+              <button
+                onClick={handleSend}
+                disabled={!inputValue.trim() || isTyping || (isAgentMode && !isConnected) || (messages.some(m => m.showChatWithAgent) && !isAgentMode && !isConnectingToAgent)}
+                className="px-4 py-3 bg-gradient-to-r from-black to-gray-800 text-white rounded-full hover:from-gray-800 hover:to-black disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none"
+                title={
+                  isAgentMode && !isConnected 
+                    ? "Agent disconnected - Cannot send messages" 
+                    : (messages.some(m => m.showChatWithAgent) && !isAgentMode && !isConnectingToAgent)
+                    ? "Please click 'Chat with an Agent' first"
+                    : ""
+                }
+              >
+                <Icon icon="mdi:send" width={18} height={18} />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
