@@ -60,9 +60,9 @@ export async function POST(request: Request) {
 		const normalizedPhone = body.phone ? normalizePhone(body.phone) : null;
 
 		// Create user with Supabase's native signup
-		// Note: We disable Supabase's email confirmation since we use custom email service
+		// Note: We use custom email service, so Supabase email errors are handled gracefully
 		const supabase = await getSupabaseServerClient();
-		const { data, error } = await supabase.auth.signUp({
+		let signupResult = await supabase.auth.signUp({
 			email: body.email.trim().toLowerCase(),
 			password: body.password,
 			options: {
@@ -78,6 +78,8 @@ export async function POST(request: Request) {
 			}
 		});
 
+		const { data, error } = signupResult;
+
 		if (error) {
 			console.error('Supabase Signup error:', error);
 			console.error('Error details:', JSON.stringify(error, null, 2));
@@ -90,14 +92,40 @@ export async function POST(request: Request) {
 				}, { status: 400 });
 			}
 			
-			// Return detailed error for debugging
-			return NextResponse.json({ 
-				error: error.message || 'Signup failed',
-				details: error.status || 'Unknown error'
-			}, { status: 400 });
+			// If error is about email sending, we can ignore it since we use custom email service
+			// Check if user was actually created despite the email error
+			if (error.message.includes('Error sending confirmation email') || 
+			    error.message.includes('confirmation email') ||
+			    error.code === 'unexpected_failure') {
+				console.warn('⚠️ Supabase email sending failed, but this is okay - we use custom email service');
+				
+				// Try to get the user that might have been created
+				// If user exists, continue with our custom email flow
+				const { data: existingUser } = await supabaseAdmin.auth.admin.getUserByEmail(body.email.trim().toLowerCase());
+				
+				if (existingUser?.user) {
+					console.log('✅ User was created despite email error, continuing with custom email...');
+					// Update signupResult with the existing user
+					signupResult.data = { user: existingUser.user };
+				} else {
+					// User wasn't created, return error
+					return NextResponse.json({ 
+						error: error.message || 'Signup failed',
+						details: error.status || 'Unknown error'
+					}, { status: 400 });
+				}
+			} else {
+				// Other errors should be returned
+				return NextResponse.json({ 
+					error: error.message || 'Signup failed',
+					details: error.status || 'Unknown error'
+				}, { status: 400 });
+			}
 		}
 
-		if (!data?.user) {
+		// Use signupResult.data to handle both normal flow and email error recovery
+		const userData = signupResult.data || data;
+		if (!userData?.user) {
 			return NextResponse.json({ 
 				error: 'Failed to create user'
 			}, { status: 500 });
@@ -113,7 +141,7 @@ export async function POST(request: Request) {
 			const { data: existingProfile, error: checkError } = await supabaseAdmin
 				.from('profiles')
 				.select('id')
-				.eq('id', data.user.id)
+				.eq('id', userData.user.id)
 				.maybeSingle();
 
 			if (checkError) {
@@ -131,18 +159,18 @@ export async function POST(request: Request) {
 						user_type: 'customer',
 						updated_at: new Date().toISOString()
 					})
-					.eq('id', data.user.id);
+					.eq('id', userData.user.id);
 				
 				if (updateError) {
 					console.error('Profile update error:', updateError);
 				}
 			} else {
 				// Insert new profile
-				console.log('Creating new profile for user:', data.user.id);
+				console.log('Creating new profile for user:', userData.user.id);
 				const { error: insertError } = await supabaseAdmin
 					.from('profiles')
 					.insert({
-						id: data.user.id,
+						id: userData.user.id,
 						name: fullName,
 						phone: normalizedPhone,
 						user_type: 'customer',
@@ -160,10 +188,10 @@ export async function POST(request: Request) {
 			if (body.address && body.address.province && body.address.city && body.address.barangay && body.address.address) {
 				const fullAddress = `${body.address.address.trim()}, ${body.address.barangay.trim()}, ${body.address.city.trim()}, ${body.address.province.trim()}`;
 				
-				const { error: addressError } = await supabaseAdmin
+				const { data: addressData, error: addressError } = await supabaseAdmin
 					.from('user_addresses')
 					.insert({
-						user_id: data.user.id,
+						user_id: userData.user.id,
 						name: fullName,
 						phone: normalizedPhone || '',
 						address: fullAddress,
@@ -188,7 +216,7 @@ export async function POST(request: Request) {
 			console.log('🔑 Generated confirmation token:', confirmationToken.substring(0, 10) + '...');
 			
 			// Store token in user metadata for verification
-			const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
+			const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userData.user.id, {
 				user_metadata: {
 					name: fullName,
 					firstName: (body.firstName || '').trim(),
@@ -205,7 +233,7 @@ export async function POST(request: Request) {
 				throw updateError;
 			}
 
-			console.log('💾 Token saved to user metadata for user:', data.user.email);
+			console.log('💾 Token saved to user metadata for user:', userData.user.email);
 
 			// Small delay to ensure metadata is committed
 			await new Promise(resolve => setTimeout(resolve, 100));
@@ -226,7 +254,7 @@ export async function POST(request: Request) {
 		}
 
 		return NextResponse.json({ 
-			user: data.user,
+			user: userData.user,
 			message: 'Account created successfully! Please check your email to verify your account.',
 			emailSent
 		}, { status: 200 });
