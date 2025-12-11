@@ -36,7 +36,7 @@ interface Order {
 
 const MyOrders: React.FC = () => {
   const { user } = useUserContext();
-  const { clearCart } = useCartContext();
+  const { removeMultipleItems } = useCartContext();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -63,6 +63,7 @@ const MyOrders: React.FC = () => {
     message: '', 
     type: 'success' 
   });
+  const [hasProcessedOrderCompletion, setHasProcessedOrderCompletion] = useState(false);
   // Initialize reviewed orders from localStorage
   const getInitialReviewedOrders = (): Set<string> => {
     if (typeof window !== 'undefined') {
@@ -102,15 +103,44 @@ const MyOrders: React.FC = () => {
 
   useEffect(() => {
     // Check for success message from checkout
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !hasProcessedOrderCompletion) {
       const params = new URLSearchParams(window.location.search);
       const success = params.get('success');
       const orderNumber = params.get('order');
       const orderCompleted = params.get('order_completed');
       
-      // Clear cart if order was just completed
-      if (orderCompleted === 'true') {
-        clearCart();
+      // Remove only checked out items from cart if order was just completed
+      if (orderCompleted === 'true' && !hasProcessedOrderCompletion) {
+        setHasProcessedOrderCompletion(true);
+        try {
+          // Get the selected items that were checked out
+          const savedSelectedItems = localStorage.getItem('checkout_selected_items');
+          console.log('🔍 Orders page - Reading checkout_selected_items from localStorage:', savedSelectedItems);
+          
+          if (savedSelectedItems) {
+            const checkedOutItemIds = JSON.parse(savedSelectedItems);
+            console.log('🔍 Orders page - Parsed checked out item IDs:', checkedOutItemIds);
+            
+            if (Array.isArray(checkedOutItemIds) && checkedOutItemIds.length > 0) {
+              // Remove only the checked out items
+              console.log('✅ Orders page - Removing checked out items from cart:', checkedOutItemIds);
+              removeMultipleItems(checkedOutItemIds);
+              
+              // Clear the saved selected items from localStorage after removing
+              localStorage.removeItem('checkout_selected_items');
+              console.log('✅ Orders page - Removed checkout_selected_items from localStorage');
+            } else {
+              console.warn('⚠️ Orders page - No valid checked out item IDs found (empty array or invalid format)');
+            }
+          } else {
+            console.warn('⚠️ Orders page - No checkout_selected_items found in localStorage. Items will remain in cart.');
+            // Don't remove anything if we can't find the selected items
+            // This prevents accidentally clearing the entire cart
+          }
+        } catch (e) {
+          console.error('❌ Orders page - Error removing checked out items from cart:', e);
+          // Don't remove anything if there's an error
+        }
         // Clear URL parameters
         window.history.replaceState({}, '', '/orders');
       }
@@ -126,7 +156,7 @@ const MyOrders: React.FC = () => {
         setTimeout(() => setShowSuccessMessage(false), 10000);
       }
     }
-  }, [clearCart]);
+  }, [removeMultipleItems, hasProcessedOrderCompletion]);
 
   // Function to check payment status and update order
   const checkAndUpdatePaymentStatus = async (orderId: string, paymentLinkId: string) => {
@@ -669,14 +699,14 @@ const MyOrders: React.FC = () => {
     {/* Chat Modal */}
     {showChatModal && (
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 modal-backdrop"
+        className="fixed inset-0 z-50 md:flex md:items-center md:justify-center bg-black/50 modal-backdrop"
         onClick={() => setShowChatModal(false)}
       >
         <div
-          className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden modal-scale-in h-[80vh] max-h-[80vh] flex flex-col"
+          className="bg-white w-full h-full md:w-full md:max-w-3xl md:h-[80vh] md:max-h-[80vh] md:rounded-2xl shadow-2xl overflow-hidden modal-scale-in flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="p-0 flex-1 overflow-hidden relative">
+          <div className="p-0 flex-1 overflow-hidden relative h-full w-full">
             <CompactChat onClose={() => setShowChatModal(false)} productName={chatProductName} />
           </div>
         </div>

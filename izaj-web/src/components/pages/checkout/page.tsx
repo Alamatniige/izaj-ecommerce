@@ -13,7 +13,7 @@ import toast from 'react-hot-toast';
 
 const Checkout = () => {
   const router = useRouter();
-  const { cart, clearCart } = useCartContext();
+  const { cart } = useCartContext();
   const { user } = useUserContext();
   
   const [deliveryMethod, setDeliveryMethod] = useState('ship');
@@ -25,23 +25,48 @@ const Checkout = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
+  const [hasLoadedSelectedItems, setHasLoadedSelectedItems] = useState(false);
 
-  // Load selected items from localStorage
+  // Load selected items from localStorage only once on mount
   useEffect(() => {
+    if (hasLoadedSelectedItems || cart.items.length === 0) return; // Only load once, and only if cart has items
+    
     try {
       const savedSelectedItems = localStorage.getItem('checkout_selected_items');
+      console.log('🛒 Checkout page - Loading selected items from localStorage:', savedSelectedItems);
+      console.log('🛒 Checkout page - Cart items:', cart.items.map(item => ({ id: item.id, name: item.name })));
+      
       if (savedSelectedItems) {
         const parsed = JSON.parse(savedSelectedItems);
-        setSelectedItemIds(new Set(parsed));
+        console.log('🛒 Checkout page - Parsed selected item IDs:', parsed);
+        
+        // Filter to only include items that still exist in cart
+        const validItemIds = parsed.filter((id: string) => 
+          cart.items.some(item => item.id === id)
+        );
+        console.log('🛒 Checkout page - Valid item IDs after filtering:', validItemIds);
+        
+        if (validItemIds.length > 0) {
+          setSelectedItemIds(new Set(validItemIds));
+          setHasLoadedSelectedItems(true);
+        } else {
+          console.warn('⚠️ Checkout page - No valid items found, selecting all items');
+          setSelectedItemIds(new Set(cart.items.map(item => item.id)));
+          setHasLoadedSelectedItems(true);
+        }
       } else {
+        console.warn('⚠️ Checkout page - No saved selected items found, selecting all items');
         // If no selection saved, select all items
         setSelectedItemIds(new Set(cart.items.map(item => item.id)));
+        setHasLoadedSelectedItems(true);
       }
     } catch (e) {
+      console.error('❌ Checkout page - Error loading selected items:', e);
       // Fallback to all items
       setSelectedItemIds(new Set(cart.items.map(item => item.id)));
+      setHasLoadedSelectedItems(true);
     }
-  }, [cart.items]);
+  }, [cart.items, hasLoadedSelectedItems]);
 
   // Filter cart items to only selected ones
   const checkoutItems = cart.items.filter(item => selectedItemIds.has(item.id));

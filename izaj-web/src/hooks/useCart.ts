@@ -172,6 +172,34 @@ export const useCart = () => {
     });
   };
 
+  const removeMultipleItems = (itemIds: string[]) => {
+    console.log('🗑️ removeMultipleItems called with itemIds:', itemIds);
+    
+    // Use functional update to ensure we have the latest cart state
+    setCart(prevCart => {
+      console.log('🗑️ removeMultipleItems - prevCart.items:', prevCart.items.map(item => ({ id: item.id, name: item.name })));
+      console.log('🗑️ removeMultipleItems - prevCart.items.length:', prevCart.items.length);
+      
+      const updatedItems = prevCart.items.filter(item => !itemIds.includes(item.id));
+      console.log('🗑️ removeMultipleItems - Updated items after filtering:', updatedItems.map(item => ({ id: item.id, name: item.name })));
+      console.log('🗑️ removeMultipleItems - Updated items.length:', updatedItems.length);
+      
+      // Calculate totalItems as count of unique items (not sum of quantities)
+      const totalItems = updatedItems.length;
+      const totalPrice = updatedItems.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
+
+      console.log('🗑️ removeMultipleItems - Setting cart with:', { totalItems, totalPrice, itemsCount: updatedItems.length });
+
+      return {
+        ...prevCart,
+        items: updatedItems,
+        totalItems,
+        totalPrice,
+        updatedAt: new Date(),
+      };
+    });
+  };
+
   const clearCart = () => {
     setCart({
       id: '',
@@ -189,6 +217,7 @@ export const useCart = () => {
     addToCart,
     updateQuantity,
     removeFromCart,
+    removeMultipleItems,
     clearCart,
   };
 };

@@ -55,6 +55,7 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [showConversationView, setShowConversationView] = useState(false); // For mobile: true = show conversation, false = show list
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const connectingToAgentRef = useRef(false);
   const subscriptionChannelsRef = useRef<RealtimeChannel[]>([]);
@@ -1197,6 +1198,8 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
           setRoomId(finalRoomId);
           setSessionId(finalSessionId);
           setSelectedConversation(finalRoomId);
+          // On mobile, show conversation view
+          setShowConversationView(true);
         } else {
           alert('Unable to create conversation. Please try again.');
           return;
@@ -1205,6 +1208,8 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
     } else if (finalRoomId && !selectedConversation) {
       // Ensure selectedConversation is set if we have a roomId
       setSelectedConversation(finalRoomId);
+      // On mobile, show conversation view
+      setShowConversationView(true);
     }
     
     // Show waiting message
@@ -1299,6 +1304,9 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
         setSessionId(finalSessionId);
         setSelectedConversation(finalRoomId);
         
+        // On mobile, show conversation view
+        setShowConversationView(true);
+        
         console.log(`✅ [Web] Room ready for messages: ${finalRoomId}`);
         
         // Add to conversations list (prevent duplicates)
@@ -1326,6 +1334,8 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
     // Ensure selectedConversation is set to current roomId
     if (finalRoomId && !selectedConversation) {
       setSelectedConversation(finalRoomId);
+      // On mobile, show conversation view when selecting a conversation
+      setShowConversationView(true);
     }
 
     // If in agent mode, send via Supabase
@@ -1500,11 +1510,20 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-white to-gray-50">
+    <div className="fixed inset-0 md:relative md:h-full flex flex-col bg-gradient-to-br from-white to-gray-50 z-50">
       {/* Header */}
       <div className="p-4 border-b bg-gradient-to-r from-black to-gray-800 text-white">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
+            {/* Back button for mobile conversation view */}
+            {showConversationView && selectedConversation && (
+              <button
+                onClick={() => setShowConversationView(false)}
+                className="md:hidden text-white/70 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-full mr-2"
+              >
+                <Icon icon="mdi:arrow-left" width={20} height={20} />
+              </button>
+            )}
             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
               <Icon icon="mdi:chat" className="text-white text-sm" />
             </div>
@@ -1533,7 +1552,7 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
       {/* Main Content Area - Split Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Conversation History */}
-        <div className="w-80 border-r border-gray-200 bg-gray-50 overflow-y-auto">
+        <div className={`${showConversationView ? 'hidden' : 'flex'} md:flex w-full md:w-80 border-r border-gray-200 bg-gray-50 overflow-y-auto flex-col`}>
           <div className="p-3 border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between mb-2">
               <h4 className="font-semibold text-sm text-gray-700" style={{ fontFamily: 'Jost, sans-serif' }}>
@@ -1556,6 +1575,9 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
         setRoomId(newRoomId);
         setSessionId(newSessionId);
         setSelectedConversation(newRoomId);
+        
+        // On mobile, show conversation view
+        setShowConversationView(true);
         
         // Reset connecting state (adminConnected will be false for new conversation)
         setIsConnectingToAgent(false);
@@ -1627,6 +1649,9 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
                     setRoomId(conv.roomId);
                     setSessionId(conv.sessionId);
                     
+                    // On mobile, show conversation view
+                    setShowConversationView(true);
+                    
                     // Connection status is now per-conversation (adminConnected in conv object)
                     // No need to set global state - currentConversation computed value handles it
                     
@@ -1665,7 +1690,7 @@ const CompactChat: React.FC<CompactChatProps> = ({ onClose, productName }) => {
         </div>
 
         {/* Right Side - Conversation Area */}
-        <div className="flex-1 flex flex-col">
+        <div className={`${showConversationView ? 'flex' : 'hidden'} md:flex flex-1 flex-col`}>
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50/50 to-white">
             {/* Show initial Quick Actions if no messages */}
